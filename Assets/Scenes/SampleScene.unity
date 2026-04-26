@@ -672,6 +672,7 @@ GameObject:
   - component: {fileID: 1775689241}
   - component: {fileID: 1775689245}
   - component: {fileID: 1775689244}
+  - component: {fileID: 1775689246}
   m_Layer: 0
   m_Name: MapGenerator
   m_TagString: Untagged
@@ -746,6 +747,7 @@ MonoBehaviour:
   highlightTilemap: {fileID: 1662302348}
   mainTilemap: {fileID: 1552112338}
   highlightTile: {fileID: 11400000, guid: 5f0623504f5ca5241ac207a111a29574, type: 2}
+  pathTile: {fileID: 11400000, guid: b6e8e4843f0e27449a2c4edb07436ee3, type: 2}
 --- !u!114 &1775689245
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -758,6 +760,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8bc9d27c3bdb4ff29b5805484352a9f4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HexGrid
+--- !u!114 &1775689246
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1775689240}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d6068b2e4adb435cbf7b9e6b33a93704, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Pathfinder
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
