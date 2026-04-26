@@ -6,23 +6,24 @@ public class UnitManager : MonoBehaviour
 {
     public GameObject unitPrefab;
     public Tilemap mainTilemap;
-    
+    public TurnManager turnManager;
+
     private List<Unit> activeUnits = new List<Unit>();
 
     public Unit SpawnUnit(HexNode spawnNode)
     {
-        if (spawnNode == null || !spawnNode.isLand || unitPrefab == null)
+        if (spawnNode == null || !spawnNode.isLand || unitPrefab == null || turnManager == null)
         {
-            Debug.LogWarning("Cannot spawn unit. Invalid node or missing prefab.");
+            Debug.LogWarning("Cannot spawn unit. Missing references or invalid node.");
             return null;
         }
 
         Vector3 spawnPos = mainTilemap.CellToWorld(new Vector3Int(spawnNode.y, spawnNode.x, 0));
         GameObject unitObj = Instantiate(unitPrefab, spawnPos, Quaternion.identity);
-        
+
         Unit newUnit = unitObj.GetComponent<Unit>();
-        newUnit.Initialize(spawnNode, spawnPos);
-        
+        newUnit.Initialize(spawnNode, spawnPos, mainTilemap, turnManager);
+
         activeUnits.Add(newUnit);
         return newUnit;
     }
@@ -33,6 +34,7 @@ public class UnitManager : MonoBehaviour
         {
             if (u.CurrentNode == node) return u;
         }
+
         return null;
     }
 }

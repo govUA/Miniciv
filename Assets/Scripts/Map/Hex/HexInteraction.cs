@@ -13,6 +13,7 @@ public class HexInteraction : MonoBehaviour
     public TileBase pathTile;
 
     public UnitManager unitManager;
+    public TurnManager turnManager;
 
     private HexGrid hexGrid;
     private Pathfinder pathfinder;
@@ -34,7 +35,7 @@ public class HexInteraction : MonoBehaviour
 
         HandleHover();
         HandleClick();
-        HandleDebugSpawn();
+        HandleHotkeys();
     }
 
     void HandleHover()
@@ -66,14 +67,14 @@ public class HexInteraction : MonoBehaviour
                 selectedUnit = unitManager.GetUnitAtNode(clickedNode);
                 if (selectedUnit != null)
                 {
-                    Debug.Log("Unit selected at: [" + clickedNode.x + ", " + clickedNode.y + "]");
+                    Debug.Log("Unit selected. MP: " + selectedUnit.currentMP + "/" + selectedUnit.maxMP);
                 }
             }
 
             currentPath = null;
             DrawOverlays(cellPosition);
         }
-        else if (Mouse.current.rightButton.wasPressedThisFrame && selectedUnit != null && !selectedUnit.IsMoving())
+        else if (Mouse.current.rightButton.wasPressedThisFrame && selectedUnit != null && !selectedUnit.IsAnimating())
         {
             Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
             Vector3Int cellPosition = mainTilemap.WorldToCell(mousePosition);
@@ -86,25 +87,31 @@ public class HexInteraction : MonoBehaviour
 
             if (currentPath != null && currentPath.Count > 0)
             {
-                selectedUnit.MoveAlongPath(currentPath, mainTilemap);
+                selectedUnit.SetPath(currentPath);
                 selectedNode = null;
                 selectedUnit = null;
-            }
-            else
-            {
-                Debug.Log("Invalid path for unit.");
             }
         }
     }
 
-    private void HandleDebugSpawn()
+    private void HandleHotkeys()
     {
-        if (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame)
+        if (Keyboard.current == null) return;
+
+        if (Keyboard.current.spaceKey.wasPressedThisFrame)
         {
             if (selectedNode != null && unitManager != null && unitManager.GetUnitAtNode(selectedNode) == null)
             {
                 unitManager.SpawnUnit(selectedNode);
                 Debug.Log("Spawned test unit at: [" + selectedNode.x + ", " + selectedNode.y + "]");
+            }
+        }
+
+        if (Keyboard.current.enterKey.wasPressedThisFrame)
+        {
+            if (turnManager != null)
+            {
+                turnManager.EndTurn();
             }
         }
     }
