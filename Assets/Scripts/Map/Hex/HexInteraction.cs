@@ -24,6 +24,8 @@ public class HexInteraction : MonoBehaviour
     private Unit selectedUnit;
     private List<HexNode> currentPath;
 
+    private City selectedCity;
+
     void Awake()
     {
         hexGrid = GetComponent<HexGrid>();
@@ -62,6 +64,25 @@ public class HexInteraction : MonoBehaviour
             if (clickedNode == null) return;
 
             selectedNode = clickedNode;
+            selectedCity = null;
+
+            if (cityManager != null)
+            {
+                foreach (City city in cityManager.GetActiveCities())
+                {
+                    if (city.centerNode == clickedNode && city.ownerID == turnManager.CurrentPlayerID)
+                    {
+                        selectedCity = city;
+                        string projStr = selectedCity.currentProject != null
+                            ? selectedCity.currentProject.name
+                            : "None";
+                        int reqFood = selectedCity.population * 10 + 10;
+                        Debug.Log(
+                            $"City Selected: {selectedCity.cityName} | Pop: {selectedCity.population} | Food: {selectedCity.storedFood}/{reqFood} | Prod: {selectedCity.storedProduction} | Project: {projStr}");
+                        break;
+                    }
+                }
+            }
 
             if (unitManager != null && turnManager != null)
             {
@@ -116,21 +137,13 @@ public class HexInteraction : MonoBehaviour
     {
         if (Keyboard.current == null) return;
 
-        if (Keyboard.current.spaceKey.wasPressedThisFrame)
-        {
-            if (selectedNode != null && unitManager != null && turnManager != null &&
-                unitManager.GetUnitAtNode(selectedNode) == null)
-            {
-                unitManager.SpawnUnit(selectedNode, turnManager.CurrentPlayerID);
-            }
-        }
-
         if (Keyboard.current.enterKey.wasPressedThisFrame)
         {
             if (turnManager != null)
             {
                 selectedUnit = null;
                 selectedNode = null;
+                selectedCity = null;
                 currentPath = null;
                 DrawOverlays(new Vector3Int(-9999, -9999, -9999));
                 turnManager.EndTurn();
@@ -150,6 +163,24 @@ public class HexInteraction : MonoBehaviour
                     currentPath = null;
                     DrawOverlays(new Vector3Int(-9999, -9999, -9999));
                 }
+            }
+        }
+
+        if (selectedCity != null && selectedCity.ownerID == turnManager.CurrentPlayerID)
+        {
+            if (Keyboard.current.digit1Key.wasPressedThisFrame)
+            {
+                selectedCity.SetProject(new CityProject("Scout", ProjectType.Unit, 20));
+            }
+
+            if (Keyboard.current.digit2Key.wasPressedThisFrame)
+            {
+                selectedCity.SetProject(new CityProject("Settler", ProjectType.Unit, 50));
+            }
+
+            if (Keyboard.current.digit3Key.wasPressedThisFrame)
+            {
+                selectedCity.SetProject(new CityProject("Monument", ProjectType.Building, 40));
             }
         }
     }

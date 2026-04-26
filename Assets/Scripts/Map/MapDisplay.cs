@@ -5,8 +5,11 @@ using UnityEngine.Tilemaps;
 public class MapDisplay : MonoBehaviour
 {
     public Tilemap tilemap;
-    public TileBase landTile;
+
     public TileBase waterTile;
+    public TileBase plainsTile;
+    public TileBase forestTile;
+    public TileBase mountainTile;
 
     private MapGenerator mapGenerator;
 
@@ -28,6 +31,12 @@ public class MapDisplay : MonoBehaviour
         int mapWidth = map.GetLength(0);
         int mapHeight = map.GetLength(1);
 
+        HexGrid hexGrid = GetComponent<HexGrid>();
+        if (hexGrid != null)
+        {
+            hexGrid.InitializeGrid(mapGenerator);
+        }
+
         tilemap.ClearAllTiles();
 
         int startOffset = mapGenerator.wrapWorld ? -1 : 0;
@@ -46,9 +55,28 @@ public class MapDisplay : MonoBehaviour
             {
                 for (int y = 0; y < mapHeight; y++)
                 {
-                    TileBase tileToPlace = (map[x, y] == 1) ? landTile : waterTile;
-                    int tileX = x + (offset * mapWidth);
+                    TileBase tileToPlace = waterTile;
 
+                    if (hexGrid != null)
+                    {
+                        HexNode node = hexGrid.GetNode(x, y);
+                        if (node != null)
+                        {
+                            switch (node.terrainType)
+                            {
+                                case TerrainType.Plains: tileToPlace = plainsTile; break;
+                                case TerrainType.Forest: tileToPlace = forestTile; break;
+                                case TerrainType.Mountain: tileToPlace = mountainTile; break;
+                                case TerrainType.Water: tileToPlace = waterTile; break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        tileToPlace = (map[x, y] == 1) ? plainsTile : waterTile;
+                    }
+
+                    int tileX = x + (offset * mapWidth);
                     positions[index] = new Vector3Int(y, tileX, 0);
                     tiles[index] = tileToPlace;
                     index++;
@@ -57,12 +85,6 @@ public class MapDisplay : MonoBehaviour
         }
 
         tilemap.SetTiles(positions, tiles);
-
-        HexGrid hexGrid = GetComponent<HexGrid>();
-        if (hexGrid != null)
-        {
-            hexGrid.InitializeGrid(mapGenerator);
-        }
 
         CameraController camController = Camera.main.GetComponent<CameraController>();
         if (camController != null)

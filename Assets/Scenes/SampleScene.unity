@@ -827,8 +827,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MapDisplay
   tilemap: {fileID: 1552112338}
-  landTile: {fileID: 11400000, guid: dd0b9c8f9b6f01b44b11c6bbe000cb1e, type: 2}
   waterTile: {fileID: 11400000, guid: 50c1e5857f9cfe640a965442a2c1eb5f, type: 2}
+  plainsTile: {fileID: 11400000, guid: 0f762680e7c0d194686cb63750aebe1e, type: 2}
+  forestTile: {fileID: 11400000, guid: 15bb5decc6f8ff848ad88dd1605f5b7c, type: 2}
+  mountainTile: {fileID: 11400000, guid: 1aae4223d5b69684a944cd301b21821a, type: 2}
 --- !u!114 &1775689242
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -988,6 +990,8 @@ MonoBehaviour:
   p0TerritoryTile: {fileID: 11400000, guid: cc2a7669637ed1c409a1a1e018ad5d23, type: 2}
   p1TerritoryTile: {fileID: 11400000, guid: 25df94dd1355a874fb75772ba5cb0446, type: 2}
   fowManager: {fileID: 1775689249}
+  turnManager: {fileID: 1775689248}
+  unitManager: {fileID: 1775689247}
 --- !u!1 &2121509735
 GameObject:
   m_ObjectHideFlags: 0

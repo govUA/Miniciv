@@ -85,10 +85,19 @@ public class FogOfWarManager : MonoBehaviour
             {
                 if (city.ownerID == playerId)
                 {
-                    List<HexNode> visibleNodes = grid.GetNodesInRange(city.centerNode, city.visionRange);
-                    foreach (HexNode node in visibleNodes)
+                    List<HexNode> centerVisible = grid.GetNodesInRange(city.centerNode, city.visionRange);
+                    foreach (HexNode node in centerVisible)
                     {
                         node.SetVision(playerId, VisionState.Visible);
+                    }
+
+                    foreach (HexNode ownedNode in city.territoryNodes)
+                    {
+                        ownedNode.SetVision(playerId, VisionState.Visible);
+                        foreach (HexNode neighbor in grid.GetNeighbors(ownedNode))
+                        {
+                            neighbor.SetVision(playerId, VisionState.Visible);
+                        }
                     }
                 }
             }

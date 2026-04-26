@@ -8,12 +8,25 @@ public enum VisionState
     Visible
 }
 
+public enum TerrainType
+{
+    Water,
+    Plains,
+    Forest,
+    Mountain
+}
+
 public class HexNode
 {
     public int x;
     public int y;
     public bool isLand;
     public float movementCost;
+
+    public TerrainType terrainType;
+    public int foodYield;
+    public int prodYield;
+    public int sciYield;
 
     public int gCost;
     public int hCost;
@@ -31,7 +44,43 @@ public class HexNode
         this.x = x;
         this.y = y;
         this.isLand = isLand;
-        this.movementCost = isLand ? 10f : 1000f;
+
+        if (!isLand)
+        {
+            terrainType = TerrainType.Water;
+            foodYield = 1;
+            prodYield = 0;
+            sciYield = 0;
+            movementCost = 1000f;
+        }
+        else
+        {
+            int rnd = UnityEngine.Random.Range(0, 100);
+            if (rnd < 15)
+            {
+                terrainType = TerrainType.Mountain;
+                foodYield = 0;
+                prodYield = 3;
+                sciYield = 1;
+                movementCost = 20f;
+            }
+            else if (rnd < 45)
+            {
+                terrainType = TerrainType.Forest;
+                foodYield = 1;
+                prodYield = 2;
+                sciYield = 0;
+                movementCost = 15f;
+            }
+            else
+            {
+                terrainType = TerrainType.Plains;
+                foodYield = 2;
+                prodYield = 1;
+                sciYield = 0;
+                movementCost = 10f;
+            }
+        }
     }
 
     public int fCost
@@ -41,8 +90,7 @@ public class HexNode
 
     public VisionState GetVision(int playerId)
     {
-        if (visionStates.TryGetValue(playerId, out VisionState state))
-            return state;
+        if (visionStates.TryGetValue(playerId, out VisionState state)) return state;
         return VisionState.Unexplored;
     }
 
