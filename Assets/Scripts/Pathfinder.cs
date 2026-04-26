@@ -48,10 +48,15 @@ public class Pathfinder : MonoBehaviour
                     isWalkable = true;
                     perceivedCost = 10;
                 }
-
-                if (neighbor.GetVision(playerId) != VisionState.Unexplored && grid.IsNodeOccupied(neighbor))
+                else
                 {
-                    if (neighbor != targetNode)
+                    if (grid.IsNodeOccupied(neighbor) && neighbor.GetVision(playerId) == VisionState.Visible)
+                    {
+                        isWalkable = false;
+                    }
+
+                    int remOwner = neighbor.GetRememberedOwner(playerId);
+                    if (remOwner != -1 && remOwner != playerId)
                     {
                         isWalkable = false;
                     }

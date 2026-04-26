@@ -42,4 +42,13 @@ public class UnitManager : MonoBehaviour
     {
         return activeUnits;
     }
+
+    public void RemoveUnit(Unit unit)
+    {
+        if (activeUnits.Contains(unit))
+        {
+            activeUnits.Remove(unit);
+            Destroy(unit.gameObject);
+        }
+    }
 }

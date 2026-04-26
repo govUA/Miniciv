@@ -11,6 +11,7 @@ public class FogOfWarManager : MonoBehaviour
 
     public TurnManager turnManager;
     public UnitManager unitManager;
+    public CityManager cityManager;
 
     private HexGrid grid;
 
@@ -77,6 +78,34 @@ public class FogOfWarManager : MonoBehaviour
                 }
             }
         }
+
+        if (cityManager != null)
+        {
+            foreach (City city in cityManager.GetActiveCities())
+            {
+                if (city.ownerID == playerId)
+                {
+                    List<HexNode> visibleNodes = grid.GetNodesInRange(city.centerNode, city.visionRange);
+                    foreach (HexNode node in visibleNodes)
+                    {
+                        node.SetVision(playerId, VisionState.Visible);
+                    }
+                }
+            }
+        }
+
+        for (int x = 0; x < grid.GetWidth(); x++)
+        {
+            for (int y = 0; y < grid.GetHeight(); y++)
+            {
+                HexNode node = grid.GetNode(x, y);
+                if (node.GetVision(playerId) == VisionState.Visible)
+                {
+                    node.SetRememberedOwner(playerId, node.ownerID);
+                    node.SetRememberedCity(playerId, node.hasCity);
+                }
+            }
+        }
     }
 
     public void UpdateVisionDisplay(int playerId)
@@ -106,6 +135,54 @@ public class FogOfWarManager : MonoBehaviour
                     else if (state == VisionState.Explored)
                     {
                         fowTilemap.SetTile(pos, exploredTile);
+                    }
+                }
+            }
+        }
+
+        if (cityManager != null)
+        {
+            cityManager.DrawPlayerMemoryTerritory(playerId);
+        }
+
+        if (unitManager != null)
+        {
+            foreach (Unit unit in unitManager.GetActiveUnits())
+            {
+                if (unit.ownerID == playerId)
+                {
+                    unit.SetVisibility(true);
+                }
+                else
+                {
+                    VisionState state = unit.CurrentNode.GetVision(playerId);
+                    unit.SetVisibility(state == VisionState.Visible);
+                }
+            }
+        }
+
+        if (cityManager != null)
+        {
+            foreach (City city in cityManager.GetActiveCities())
+            {
+                if (city.ownerID == playerId)
+                {
+                    city.SetVisibility(true);
+                }
+                else
+                {
+                    VisionState state = city.centerNode.GetVision(playerId);
+                    if (state == VisionState.Visible)
+                    {
+                        city.SetVisibility(true);
+                    }
+                    else if (state == VisionState.Explored && city.centerNode.GetRememberedCity(playerId))
+                    {
+                        city.SetVisibility(true);
+                    }
+                    else
+                    {
+                        city.SetVisibility(false);
                     }
                 }
             }

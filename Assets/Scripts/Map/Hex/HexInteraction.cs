@@ -14,6 +14,7 @@ public class HexInteraction : MonoBehaviour
 
     public UnitManager unitManager;
     public TurnManager turnManager;
+    public CityManager cityManager;
 
     private HexGrid hexGrid;
     private Pathfinder pathfinder;
@@ -68,7 +69,6 @@ public class HexInteraction : MonoBehaviour
                 if (clickedUnit != null && clickedUnit.ownerID == turnManager.CurrentPlayerID)
                 {
                     selectedUnit = clickedUnit;
-                    Debug.Log("Friendly unit selected. MP: " + selectedUnit.currentMP + "/" + selectedUnit.maxMP);
                 }
                 else
                 {
@@ -91,9 +91,14 @@ public class HexInteraction : MonoBehaviour
                 clickedNode.GetVision(turnManager.CurrentPlayerID) != VisionState.Unexplored) return;
 
             if (hexGrid.IsNodeOccupied(clickedNode) &&
-                clickedNode.GetVision(turnManager.CurrentPlayerID) != VisionState.Unexplored)
+                clickedNode.GetVision(turnManager.CurrentPlayerID) == VisionState.Visible)
             {
-                Debug.Log("Cannot move to an occupied tile.");
+                return;
+            }
+
+            int remOwner = clickedNode.GetRememberedOwner(turnManager.CurrentPlayerID);
+            if (remOwner != -1 && remOwner != turnManager.CurrentPlayerID)
+            {
                 return;
             }
 
@@ -117,8 +122,6 @@ public class HexInteraction : MonoBehaviour
                 unitManager.GetUnitAtNode(selectedNode) == null)
             {
                 unitManager.SpawnUnit(selectedNode, turnManager.CurrentPlayerID);
-                Debug.Log("Spawned unit for Player " + turnManager.CurrentPlayerID + " at: [" + selectedNode.x + ", " +
-                          selectedNode.y + "]");
             }
         }
 
@@ -130,8 +133,23 @@ public class HexInteraction : MonoBehaviour
                 selectedNode = null;
                 currentPath = null;
                 DrawOverlays(new Vector3Int(-9999, -9999, -9999));
-
                 turnManager.EndTurn();
+            }
+        }
+
+        if (Keyboard.current.fKey.wasPressedThisFrame)
+        {
+            if (selectedUnit != null && selectedUnit.isSettler && !selectedUnit.IsAnimating() && cityManager != null)
+            {
+                bool success = cityManager.FoundCity(selectedUnit);
+                if (success)
+                {
+                    unitManager.RemoveUnit(selectedUnit);
+                    selectedUnit = null;
+                    selectedNode = null;
+                    currentPath = null;
+                    DrawOverlays(new Vector3Int(-9999, -9999, -9999));
+                }
             }
         }
     }

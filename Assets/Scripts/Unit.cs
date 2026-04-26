@@ -22,6 +22,7 @@ public class Unit : MonoBehaviour
 
     public int ownerID;
     public int visionRange = 2;
+    public bool isSettler = true;
 
     public UnitState State { get; private set; }
 
@@ -60,6 +61,15 @@ public class Unit : MonoBehaviour
         if (turnManager != null)
         {
             turnManager.OnTurnEnded -= HandleNewTurn;
+        }
+    }
+
+    public void SetVisibility(bool isVisible)
+    {
+        SpriteRenderer sr = GetComponent<SpriteRenderer>();
+        if (sr != null)
+        {
+            sr.enabled = isVisible;
         }
     }
 
@@ -105,7 +115,7 @@ public class Unit : MonoBehaviour
 
             if (!nextNode.isLand)
             {
-                Debug.Log("Path blocked by newly discovered water!");
+                Debug.Log("Path blocked by water!");
                 pathQueue.Clear();
                 break;
             }
@@ -114,6 +124,13 @@ public class Unit : MonoBehaviour
             if (um != null && um.GetUnitAtNode(nextNode) != null)
             {
                 Debug.Log("Path blocked by another unit!");
+                pathQueue.Clear();
+                break;
+            }
+
+            if (nextNode.ownerID != -1 && nextNode.ownerID != this.ownerID)
+            {
+                Debug.Log("Path blocked by enemy territory!");
                 pathQueue.Clear();
                 break;
             }
