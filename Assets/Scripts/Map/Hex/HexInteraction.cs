@@ -15,6 +15,7 @@ public class HexInteraction : MonoBehaviour
     public UnitManager unitManager;
     public TurnManager turnManager;
     public CityManager cityManager;
+    public PlayerManager playerManager;
 
     private HexGrid hexGrid;
     private Pathfinder pathfinder;
@@ -77,8 +78,17 @@ public class HexInteraction : MonoBehaviour
                             ? selectedCity.currentProject.name
                             : "None";
                         int reqFood = selectedCity.population * 10 + 10;
+
+                        string sciStr = "";
+                        if (playerManager != null)
+                        {
+                            PlayerData p = playerManager.GetPlayer(turnManager.CurrentPlayerID);
+                            if (p != null)
+                                sciStr = $" | Global Sci: {p.accumulatedResearch} (Target: {p.currentResearch})";
+                        }
+
                         Debug.Log(
-                            $"City Selected: {selectedCity.cityName} | Pop: {selectedCity.population} | Food: {selectedCity.storedFood}/{reqFood} | Prod: {selectedCity.storedProduction} | Project: {projStr}");
+                            $"City: {selectedCity.cityName} | Food: {selectedCity.storedFood}/{reqFood} | Prod: {selectedCity.storedProduction} | Project: {projStr}{sciStr}");
                         break;
                     }
                 }
@@ -166,6 +176,19 @@ public class HexInteraction : MonoBehaviour
             }
         }
 
+        if (playerManager != null && turnManager != null)
+        {
+            if (Keyboard.current.tKey.wasPressedThisFrame)
+            {
+                playerManager.SetResearch(turnManager.CurrentPlayerID, "Pottery");
+            }
+
+            if (Keyboard.current.yKey.wasPressedThisFrame)
+            {
+                playerManager.SetResearch(turnManager.CurrentPlayerID, "Bronze Working");
+            }
+        }
+
         if (selectedCity != null && selectedCity.ownerID == turnManager.CurrentPlayerID)
         {
             if (Keyboard.current.digit1Key.wasPressedThisFrame)
@@ -181,6 +204,16 @@ public class HexInteraction : MonoBehaviour
             if (Keyboard.current.digit3Key.wasPressedThisFrame)
             {
                 selectedCity.SetProject(new CityProject("Monument", ProjectType.Building, 40));
+            }
+
+            if (Keyboard.current.digit4Key.wasPressedThisFrame)
+            {
+                selectedCity.SetProject(new CityProject("Granary", ProjectType.Building, 30, "Pottery"));
+            }
+
+            if (Keyboard.current.digit5Key.wasPressedThisFrame)
+            {
+                selectedCity.SetProject(new CityProject("Warrior", ProjectType.Unit, 40, "Bronze Working"));
             }
         }
     }

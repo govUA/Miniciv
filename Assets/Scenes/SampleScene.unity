@@ -807,6 +807,7 @@ GameObject:
   - component: {fileID: 1775689249}
   - component: {fileID: 1775689250}
   - component: {fileID: 1775689251}
+  - component: {fileID: 1775689252}
   m_Layer: 0
   m_Name: MapGenerator
   m_TagString: Untagged
@@ -887,6 +888,7 @@ MonoBehaviour:
   unitManager: {fileID: 1775689247}
   turnManager: {fileID: 1775689248}
   cityManager: {fileID: 1775689251}
+  playerManager: {fileID: 1775689252}
 --- !u!114 &1775689245
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -973,6 +975,7 @@ MonoBehaviour:
   unitManager: {fileID: 1775689247}
   turnManager: {fileID: 1775689248}
   fowManager: {fileID: 1775689249}
+  playerManager: {fileID: 1775689252}
 --- !u!114 &1775689251
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -992,6 +995,19 @@ MonoBehaviour:
   fowManager: {fileID: 1775689249}
   turnManager: {fileID: 1775689248}
   unitManager: {fileID: 1775689247}
+  playerManager: {fileID: 1775689252}
+--- !u!114 &1775689252
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1775689240}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25f98f3fca7f4057bacb8c39ae563620, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerManager
 --- !u!1 &2121509735
 GameObject:
   m_ObjectHideFlags: 0

@@ -11,7 +11,6 @@ public class City : MonoBehaviour
     public int population = 1;
     public int storedFood = 0;
     public int storedProduction = 0;
-    public int storedScience = 0;
 
     public CityProject currentProject;
     public List<string> builtBuildings = new List<string>();
@@ -19,14 +18,16 @@ public class City : MonoBehaviour
 
     private UnitManager unitManager;
     private CityManager cityManager;
+    private PlayerManager playerManager;
 
-    public void Initialize(HexNode node, int playerId, string name, UnitManager um, CityManager cm)
+    public void Initialize(HexNode node, int playerId, string name, UnitManager um, CityManager cm, PlayerManager pm)
     {
         centerNode = node;
         ownerID = playerId;
         cityName = name;
         unitManager = um;
         cityManager = cm;
+        playerManager = pm;
 
         SpriteRenderer sr = GetComponent<SpriteRenderer>();
         if (sr != null)
@@ -37,8 +38,18 @@ public class City : MonoBehaviour
 
     public void SetProject(CityProject project)
     {
+        if (playerManager != null && !string.IsNullOrEmpty(project.requiredTech))
+        {
+            PlayerData p = playerManager.GetPlayer(ownerID);
+            if (p != null && !p.unlockedTechs.Contains(project.requiredTech))
+            {
+                Debug.LogWarning($"[CITY] Cannot build {project.name}. Requires tech: {project.requiredTech}!");
+                return;
+            }
+        }
+
         currentProject = project;
-        Debug.Log($"City {cityName} started building: {project.name} ({project.cost} Prod)");
+        Debug.Log($"[CITY] {cityName} started building: {project.name} ({project.cost} Prod)");
     }
 
     public void ProcessTurn(HexGrid grid)
@@ -56,14 +67,18 @@ public class City : MonoBehaviour
 
         storedFood += turnFood;
         storedProduction += turnProd;
-        storedScience += turnSci;
+
+        if (playerManager != null && turnSci > 0)
+        {
+            playerManager.AddScience(ownerID, turnSci);
+        }
 
         int foodToGrow = population * 10 + 10;
         if (storedFood >= foodToGrow)
         {
             storedFood -= foodToGrow;
             population++;
-            Debug.Log($"City {cityName} grew! Population is now {population}.");
+            Debug.Log($"[CITY] {cityName} grew! Population is now {population}.");
         }
 
         if (currentProject != null)
@@ -78,7 +93,7 @@ public class City : MonoBehaviour
 
     private void FinishProject()
     {
-        Debug.Log($"City {cityName} completed: {currentProject.name}!");
+        Debug.Log($"[CITY] {cityName} completed: {currentProject.name}!");
 
         if (currentProject.type == ProjectType.Building)
         {
@@ -86,10 +101,11 @@ public class City : MonoBehaviour
 
             if (currentProject.name == "Monument")
             {
-                if (cityManager != null)
-                {
-                    cityManager.ExpandTerritoryByOne(this);
-                }
+                if (cityManager != null) cityManager.ExpandTerritoryByOne(this);
+            }
+            else if (currentProject.name == "Granary")
+            {
+                Debug.Log($"[CITY] Granary built in {cityName}. It will boost food logic later!");
             }
         }
         else if (currentProject.type == ProjectType.Unit)

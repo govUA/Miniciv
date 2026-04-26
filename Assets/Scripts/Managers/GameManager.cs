@@ -7,11 +7,18 @@ public class GameManager : MonoBehaviour
     public UnitManager unitManager;
     public TurnManager turnManager;
     public FogOfWarManager fowManager;
+    public PlayerManager playerManager;
 
     public void StartGame()
     {
         HexGrid grid = GetComponent<HexGrid>();
         int numPlayers = turnManager != null ? turnManager.TotalPlayers : 2;
+
+        if (playerManager != null)
+        {
+            playerManager.InitializePlayers(numPlayers);
+        }
+
         List<HexNode> startNodes = new List<HexNode>();
 
         for (int i = 0; i < numPlayers; i++)

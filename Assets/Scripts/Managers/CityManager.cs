@@ -13,6 +13,7 @@ public class CityManager : MonoBehaviour
     public FogOfWarManager fowManager;
     public TurnManager turnManager;
     public UnitManager unitManager;
+    public PlayerManager playerManager;
 
     private HexGrid grid;
     private List<City> activeCities = new List<City>();
@@ -96,7 +97,8 @@ public class CityManager : MonoBehaviour
         GameObject cityObj = Instantiate(cityPrefab, spawnPos, Quaternion.identity);
         City newCity = cityObj.GetComponent<City>();
 
-        newCity.Initialize(node, settler.ownerID, "City " + (activeCities.Count + 1), unitManager, this);
+        newCity.Initialize(node, settler.ownerID, "City " + (activeCities.Count + 1), unitManager, this, playerManager);
+
         node.hasCity = true;
         activeCities.Add(newCity);
 
