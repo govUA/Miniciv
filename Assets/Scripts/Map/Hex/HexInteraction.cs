@@ -9,15 +9,17 @@ public class HexInteraction : MonoBehaviour
 {
     public Tilemap highlightTilemap;
     public Tilemap mainTilemap;
-
     public TileBase highlightTile;
     public TileBase pathTile;
+
+    public UnitManager unitManager;
 
     private HexGrid hexGrid;
     private Pathfinder pathfinder;
 
     private Vector3Int previousHoverPosition = new Vector3Int(-9999, -9999, -9999);
     private HexNode selectedNode;
+    private Unit selectedUnit;
     private List<HexNode> currentPath;
 
     void Awake()
@@ -32,6 +34,7 @@ public class HexInteraction : MonoBehaviour
 
         HandleHover();
         HandleClick();
+        HandleDebugSpawn();
     }
 
     void HandleHover()
@@ -57,28 +60,51 @@ public class HexInteraction : MonoBehaviour
             if (clickedNode == null) return;
 
             selectedNode = clickedNode;
+
+            if (unitManager != null)
+            {
+                selectedUnit = unitManager.GetUnitAtNode(clickedNode);
+                if (selectedUnit != null)
+                {
+                    Debug.Log("Unit selected at: [" + clickedNode.x + ", " + clickedNode.y + "]");
+                }
+            }
+
             currentPath = null;
             DrawOverlays(cellPosition);
-            Debug.Log("Selected Start Node: [" + selectedNode.x + ", " + selectedNode.y + "]");
         }
-        else if (Mouse.current.rightButton.wasPressedThisFrame && selectedNode != null)
+        else if (Mouse.current.rightButton.wasPressedThisFrame && selectedUnit != null && !selectedUnit.IsMoving())
         {
             Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
             Vector3Int cellPosition = mainTilemap.WorldToCell(mousePosition);
             HexNode clickedNode = hexGrid.GetNode(cellPosition.y, cellPosition.x);
 
-            if (clickedNode == null) return;
+            if (clickedNode == null || !clickedNode.isLand) return;
 
-            currentPath = pathfinder.FindPath(selectedNode, clickedNode);
+            currentPath = pathfinder.FindPath(selectedUnit.CurrentNode, clickedNode);
             DrawOverlays(cellPosition);
 
-            if (currentPath == null)
+            if (currentPath != null && currentPath.Count > 0)
             {
-                Debug.Log("No valid path found.");
+                selectedUnit.MoveAlongPath(currentPath, mainTilemap);
+                selectedNode = null;
+                selectedUnit = null;
             }
             else
             {
-                Debug.Log("Path established. Length: " + currentPath.Count);
+                Debug.Log("Invalid path for unit.");
+            }
+        }
+    }
+
+    private void HandleDebugSpawn()
+    {
+        if (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame)
+        {
+            if (selectedNode != null && unitManager != null && unitManager.GetUnitAtNode(selectedNode) == null)
+            {
+                unitManager.SpawnUnit(selectedNode);
+                Debug.Log("Spawned test unit at: [" + selectedNode.x + ", " + selectedNode.y + "]");
             }
         }
     }
