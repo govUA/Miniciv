@@ -49,7 +49,7 @@ public class MapDisplay : MonoBehaviour
                     TileBase tileToPlace = (map[x, y] == 1) ? landTile : waterTile;
                     int tileX = x + (offset * mapWidth);
 
-                    positions[index] = new Vector3Int(tileX, y, 0);
+                    positions[index] = new Vector3Int(y, tileX, 0);
                     tiles[index] = tileToPlace;
                     index++;
                 }
@@ -57,12 +57,18 @@ public class MapDisplay : MonoBehaviour
         }
 
         tilemap.SetTiles(positions, tiles);
+        HexGrid hexGrid = GetComponent<HexGrid>();
+        if (hexGrid != null)
+        {
+            hexGrid.InitializeGrid(mapGenerator);
+        }
+
         CenterCameraAndInitBounds(mapWidth, mapHeight);
     }
 
     private void CenterCameraAndInitBounds(int mapWidth, int mapHeight)
     {
-        Vector3 centerPosition = tilemap.CellToWorld(new Vector3Int(mapWidth / 2, mapHeight / 2, 0));
+        Vector3 centerPosition = tilemap.CellToWorld(new Vector3Int(mapHeight / 2, mapWidth / 2, 0));
         Camera.main.transform.position = new Vector3(centerPosition.x, centerPosition.y, -10f);
 
         CameraController camController = Camera.main.GetComponent<CameraController>();

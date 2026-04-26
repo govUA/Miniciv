@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.2D.Tilemap.Extras::UnityEngine.HexagonalRuleTile
   m_DefaultSprite: {fileID: -712631045867808456, guid: 455dc0524100cb5438eea13c7d8df09c, type: 3}
   m_DefaultGameObject: {fileID: 0}
-  m_DefaultColliderType: 1
+  m_DefaultColliderType: 0
   m_TilingRules: []
   m_FlatTop: 1

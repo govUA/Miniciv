@@ -27,8 +27,8 @@ public class CameraController : MonoBehaviour
         int height = mapGenerator.mapHeight;
 
         Vector3 cellZero = tilemap.CellToWorld(new Vector3Int(0, 0, 0));
-        Vector3 cellMaxX = tilemap.CellToWorld(new Vector3Int(width, 0, 0));
-        Vector3 cellMaxY = tilemap.CellToWorld(new Vector3Int(0, height - 1, 0));
+        Vector3 cellMaxX = tilemap.CellToWorld(new Vector3Int(0, width, 0));
+        Vector3 cellMaxY = tilemap.CellToWorld(new Vector3Int(height - 1, 0, 0));
 
         mapWorldWidth = cellMaxX.x - cellZero.x;
         float mapWorldHeight = cellMaxY.y - cellZero.y;
