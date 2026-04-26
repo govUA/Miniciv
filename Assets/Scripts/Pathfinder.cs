@@ -11,7 +11,7 @@ public class Pathfinder : MonoBehaviour
         grid = GetComponent<HexGrid>();
     }
 
-    public List<HexNode> FindPath(HexNode startNode, HexNode targetNode)
+    public List<HexNode> FindPath(HexNode startNode, HexNode targetNode, int playerId)
     {
         List<HexNode> openSet = new List<HexNode>();
         HashSet<HexNode> closedSet = new HashSet<HexNode>();
@@ -40,12 +40,29 @@ public class Pathfinder : MonoBehaviour
 
             foreach (HexNode neighbor in grid.GetNeighbors(currentNode))
             {
-                if (!neighbor.isLand || closedSet.Contains(neighbor))
+                bool isWalkable = neighbor.isLand;
+                int perceivedCost = (int)neighbor.movementCost;
+
+                if (neighbor.GetVision(playerId) == VisionState.Unexplored)
+                {
+                    isWalkable = true;
+                    perceivedCost = 10;
+                }
+
+                if (neighbor.GetVision(playerId) != VisionState.Unexplored && grid.IsNodeOccupied(neighbor))
+                {
+                    if (neighbor != targetNode)
+                    {
+                        isWalkable = false;
+                    }
+                }
+
+                if (!isWalkable || closedSet.Contains(neighbor))
                 {
                     continue;
                 }
 
-                int newMovementCostToNeighbor = currentNode.gCost + (int)neighbor.movementCost;
+                int newMovementCostToNeighbor = currentNode.gCost + perceivedCost;
                 if (newMovementCostToNeighbor < neighbor.gCost || !openSet.Contains(neighbor))
                 {
                     neighbor.gCost = newMovementCostToNeighbor;

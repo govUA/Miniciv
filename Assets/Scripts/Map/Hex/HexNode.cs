@@ -1,4 +1,12 @@
 ﻿using UnityEngine;
+using System.Collections.Generic;
+
+public enum VisionState
+{
+    Unexplored,
+    Explored,
+    Visible
+}
 
 public class HexNode
 {
@@ -11,6 +19,8 @@ public class HexNode
     public int hCost;
     public HexNode parent;
 
+    private Dictionary<int, VisionState> visionStates = new Dictionary<int, VisionState>();
+
     public HexNode(int x, int y, bool isLand)
     {
         this.x = x;
@@ -22,5 +32,20 @@ public class HexNode
     public int fCost
     {
         get { return gCost + hCost; }
+    }
+
+    public VisionState GetVision(int playerId)
+    {
+        if (visionStates.TryGetValue(playerId, out VisionState state))
+        {
+            return state;
+        }
+
+        return VisionState.Unexplored;
+    }
+
+    public void SetVision(int playerId, VisionState state)
+    {
+        visionStates[playerId] = state;
     }
 }

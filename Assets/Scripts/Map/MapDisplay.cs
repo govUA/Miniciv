@@ -57,19 +57,12 @@ public class MapDisplay : MonoBehaviour
         }
 
         tilemap.SetTiles(positions, tiles);
+
         HexGrid hexGrid = GetComponent<HexGrid>();
         if (hexGrid != null)
         {
             hexGrid.InitializeGrid(mapGenerator);
         }
-
-        CenterCameraAndInitBounds(mapWidth, mapHeight);
-    }
-
-    private void CenterCameraAndInitBounds(int mapWidth, int mapHeight)
-    {
-        Vector3 centerPosition = tilemap.CellToWorld(new Vector3Int(mapHeight / 2, mapWidth / 2, 0));
-        Camera.main.transform.position = new Vector3(centerPosition.x, centerPosition.y, -10f);
 
         CameraController camController = Camera.main.GetComponent<CameraController>();
         if (camController != null)
@@ -77,12 +70,28 @@ public class MapDisplay : MonoBehaviour
             camController.mapGenerator = mapGenerator;
             camController.tilemap = tilemap;
             camController.InitializeBounds();
-
-            Camera.main.orthographicSize = Mathf.Clamp(mapHeight / 2f, camController.minZoom, camController.maxZoom);
+            Camera.main.orthographicSize = Mathf.Clamp(mapHeight / 3f, camController.minZoom, camController.maxZoom);
         }
         else
         {
             Debug.LogWarning("CameraController not found on Main Camera.");
+        }
+
+        GameManager gameManager = GetComponent<GameManager>();
+        if (gameManager != null)
+        {
+            gameManager.StartGame();
+        }
+        else
+        {
+            Vector3 centerPosition = tilemap.CellToWorld(new Vector3Int(mapHeight / 2, mapWidth / 2, 0));
+            Camera.main.transform.position = new Vector3(centerPosition.x, centerPosition.y, -10f);
+
+            FogOfWarManager fow = GetComponent<FogOfWarManager>();
+            if (fow != null)
+            {
+                fow.InitializeFOW();
+            }
         }
     }
 }

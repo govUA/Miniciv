@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.Tilemaps;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -12,10 +13,15 @@ public enum UnitState
 
 public class Unit : MonoBehaviour
 {
+    public static event Action<Unit> OnUnitMoved;
+
     public HexNode CurrentNode { get; private set; }
     public float moveSpeed = 5f;
     public int maxMP = 30;
     public int currentMP;
+
+    public int ownerID;
+    public int visionRange = 2;
 
     public UnitState State { get; private set; }
 
@@ -24,20 +30,29 @@ public class Unit : MonoBehaviour
     private TurnManager turnManager;
     private bool isAnimating = false;
 
-    public void Initialize(HexNode startNode, Vector3 worldPosition, Tilemap map, TurnManager tm)
+    public void Initialize(HexNode startNode, Vector3 worldPosition, Tilemap map, TurnManager tm, int playerId)
     {
         CurrentNode = startNode;
         transform.position = worldPosition;
         tilemap = map;
         turnManager = tm;
+        ownerID = playerId;
 
         currentMP = maxMP;
         State = UnitState.Idle;
+
+        SpriteRenderer sr = GetComponent<SpriteRenderer>();
+        if (sr != null)
+        {
+            sr.color = (ownerID == 0) ? Color.blue : Color.red;
+        }
 
         if (turnManager != null)
         {
             turnManager.OnTurnEnded += HandleNewTurn;
         }
+
+        OnUnitMoved?.Invoke(this);
     }
 
     private void OnDestroy()
@@ -87,6 +102,22 @@ public class Unit : MonoBehaviour
         while (pathQueue.Count > 0 && currentMP > 0)
         {
             HexNode nextNode = pathQueue.Peek();
+
+            if (!nextNode.isLand)
+            {
+                Debug.Log("Path blocked by newly discovered water!");
+                pathQueue.Clear();
+                break;
+            }
+
+            UnitManager um = FindAnyObjectByType<UnitManager>();
+            if (um != null && um.GetUnitAtNode(nextNode) != null)
+            {
+                Debug.Log("Path blocked by another unit!");
+                pathQueue.Clear();
+                break;
+            }
+
             int cost = (int)nextNode.movementCost;
 
             if (currentMP >= cost)
@@ -104,6 +135,8 @@ public class Unit : MonoBehaviour
 
                 transform.position = targetPos;
                 CurrentNode = nextNode;
+
+                OnUnitMoved?.Invoke(this);
             }
             else
             {
@@ -116,12 +149,10 @@ public class Unit : MonoBehaviour
         if (pathQueue.Count > 0)
         {
             State = UnitState.OutOfMovement;
-            Debug.Log("Unit out of MP. Remaining path: " + pathQueue.Count + " nodes.");
         }
         else
         {
             State = UnitState.Idle;
-            Debug.Log("Unit reached destination.");
         }
     }
 

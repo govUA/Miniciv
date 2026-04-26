@@ -10,7 +10,7 @@ public class UnitManager : MonoBehaviour
 
     private List<Unit> activeUnits = new List<Unit>();
 
-    public Unit SpawnUnit(HexNode spawnNode)
+    public Unit SpawnUnit(HexNode spawnNode, int playerId)
     {
         if (spawnNode == null || !spawnNode.isLand || unitPrefab == null || turnManager == null)
         {
@@ -22,7 +22,7 @@ public class UnitManager : MonoBehaviour
         GameObject unitObj = Instantiate(unitPrefab, spawnPos, Quaternion.identity);
 
         Unit newUnit = unitObj.GetComponent<Unit>();
-        newUnit.Initialize(spawnNode, spawnPos, mainTilemap, turnManager);
+        newUnit.Initialize(spawnNode, spawnPos, mainTilemap, turnManager, playerId);
 
         activeUnits.Add(newUnit);
         return newUnit;
@@ -36,5 +36,10 @@ public class UnitManager : MonoBehaviour
         }
 
         return null;
+    }
+
+    public List<Unit> GetActiveUnits()
+    {
+        return activeUnits;
     }
 }

@@ -4,6 +4,8 @@ using System.Collections.Generic;
 public class HexGrid : MonoBehaviour
 {
     private MapGenerator mapGenerator;
+    public UnitManager unitManager;
+
     private HexNode[,] nodes;
     private int width;
     private int height;
@@ -27,6 +29,8 @@ public class HexGrid : MonoBehaviour
     {
         mapGenerator = generator;
         wrapWorld = mapGenerator.wrapWorld;
+
+        unitManager = GetComponent<UnitManager>();
 
         int[,] mapData = mapGenerator.GetMap();
         width = mapData.GetLength(0);
@@ -87,6 +91,50 @@ public class HexGrid : MonoBehaviour
         }
 
         return neighbors;
+    }
+
+    public List<HexNode> GetNodesInRange(HexNode center, int range)
+    {
+        List<HexNode> inRange = new List<HexNode>();
+        HashSet<HexNode> visited = new HashSet<HexNode>();
+        Queue<HexNode> queue = new Queue<HexNode>();
+        Dictionary<HexNode, int> distances = new Dictionary<HexNode, int>();
+
+        queue.Enqueue(center);
+        visited.Add(center);
+        distances[center] = 0;
+
+        while (queue.Count > 0)
+        {
+            HexNode current = queue.Dequeue();
+            inRange.Add(current);
+
+            int currentDist = distances[current];
+            if (currentDist < range)
+            {
+                foreach (HexNode neighbor in GetNeighbors(current))
+                {
+                    if (!visited.Contains(neighbor))
+                    {
+                        visited.Add(neighbor);
+                        distances[neighbor] = currentDist + 1;
+                        queue.Enqueue(neighbor);
+                    }
+                }
+            }
+        }
+
+        return inRange;
+    }
+
+    public bool IsNodeOccupied(HexNode node)
+    {
+        if (unitManager != null)
+        {
+            return unitManager.GetUnitAtNode(node) != null;
+        }
+
+        return false;
     }
 
     public int GetWidth() => width;

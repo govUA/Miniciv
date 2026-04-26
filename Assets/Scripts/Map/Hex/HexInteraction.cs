@@ -62,12 +62,17 @@ public class HexInteraction : MonoBehaviour
 
             selectedNode = clickedNode;
 
-            if (unitManager != null)
+            if (unitManager != null && turnManager != null)
             {
-                selectedUnit = unitManager.GetUnitAtNode(clickedNode);
-                if (selectedUnit != null)
+                Unit clickedUnit = unitManager.GetUnitAtNode(clickedNode);
+                if (clickedUnit != null && clickedUnit.ownerID == turnManager.CurrentPlayerID)
                 {
-                    Debug.Log("Unit selected. MP: " + selectedUnit.currentMP + "/" + selectedUnit.maxMP);
+                    selectedUnit = clickedUnit;
+                    Debug.Log("Friendly unit selected. MP: " + selectedUnit.currentMP + "/" + selectedUnit.maxMP);
+                }
+                else
+                {
+                    selectedUnit = null;
                 }
             }
 
@@ -80,16 +85,24 @@ public class HexInteraction : MonoBehaviour
             Vector3Int cellPosition = mainTilemap.WorldToCell(mousePosition);
             HexNode clickedNode = hexGrid.GetNode(cellPosition.y, cellPosition.x);
 
-            if (clickedNode == null || !clickedNode.isLand) return;
+            if (clickedNode == null) return;
 
-            currentPath = pathfinder.FindPath(selectedUnit.CurrentNode, clickedNode);
+            if (!clickedNode.isLand &&
+                clickedNode.GetVision(turnManager.CurrentPlayerID) != VisionState.Unexplored) return;
+
+            if (hexGrid.IsNodeOccupied(clickedNode) &&
+                clickedNode.GetVision(turnManager.CurrentPlayerID) != VisionState.Unexplored)
+            {
+                Debug.Log("Cannot move to an occupied tile.");
+                return;
+            }
+
+            currentPath = pathfinder.FindPath(selectedUnit.CurrentNode, clickedNode, turnManager.CurrentPlayerID);
             DrawOverlays(cellPosition);
 
             if (currentPath != null && currentPath.Count > 0)
             {
                 selectedUnit.SetPath(currentPath);
-                selectedNode = null;
-                selectedUnit = null;
             }
         }
     }
@@ -100,10 +113,12 @@ public class HexInteraction : MonoBehaviour
 
         if (Keyboard.current.spaceKey.wasPressedThisFrame)
         {
-            if (selectedNode != null && unitManager != null && unitManager.GetUnitAtNode(selectedNode) == null)
+            if (selectedNode != null && unitManager != null && turnManager != null &&
+                unitManager.GetUnitAtNode(selectedNode) == null)
             {
-                unitManager.SpawnUnit(selectedNode);
-                Debug.Log("Spawned test unit at: [" + selectedNode.x + ", " + selectedNode.y + "]");
+                unitManager.SpawnUnit(selectedNode, turnManager.CurrentPlayerID);
+                Debug.Log("Spawned unit for Player " + turnManager.CurrentPlayerID + " at: [" + selectedNode.x + ", " +
+                          selectedNode.y + "]");
             }
         }
 
@@ -111,6 +126,11 @@ public class HexInteraction : MonoBehaviour
         {
             if (turnManager != null)
             {
+                selectedUnit = null;
+                selectedNode = null;
+                currentPath = null;
+                DrawOverlays(new Vector3Int(-9999, -9999, -9999));
+
                 turnManager.EndTurn();
             }
         }
