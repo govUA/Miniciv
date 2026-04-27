@@ -10,7 +10,7 @@ public class PlayerData
     public Color secondaryColor = Color.black;
     public int gold = 10;
 
-    public PlayerData(int id, bool isAI =  false)
+    public PlayerData(int id, bool isAI = false)
     {
         this.id = id;
         this.isAI = isAI;
@@ -35,7 +35,8 @@ public class PlayerManager : MonoBehaviour
     {
         for (int i = 0; i < count; i++)
         {
-            players[i] = new PlayerData(i);
+            bool isAI = (i > 0);
+            players[i] = new PlayerData(i, isAI);
         }
     }
 

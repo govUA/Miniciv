@@ -18,6 +18,7 @@ public enum UnitClass
     Ranged
 }
 
+[RequireComponent(typeof(VelocityProvider))]
 public class Unit : MonoBehaviour
 {
     public static event Action<Unit> OnUnitMoved;
@@ -50,8 +51,10 @@ public class Unit : MonoBehaviour
     private TechManager techManager;
     private PlayerManager playerManager;
     private UnitManager unitManager;
-    private bool isAnimating = false;
-    private Action onDestinationReached;
+    private VelocityProvider velocityProvider;
+
+    public bool isAnimating = false;
+    public event Action onDestinationReached;
 
     public void Initialize(HexNode startNode, Vector3 worldPosition, Tilemap map, TurnManager tm, int playerId,
         string name, HexGrid grid, Sprite mainSprite = null, Sprite iconSprite = null)
@@ -71,6 +74,8 @@ public class Unit : MonoBehaviour
         currentHP = maxHP;
         currentMP = maxMP;
         State = UnitState.Idle;
+
+        velocityProvider = GetComponent<VelocityProvider>();
 
         SpriteRenderer sr = GetComponent<SpriteRenderer>();
         if (sr != null && mainSprite != null) sr.sprite = mainSprite;
@@ -237,4 +242,57 @@ public class Unit : MonoBehaviour
     }
 
     public bool IsAnimating() => isAnimating;
+
+    public void MoveAlongPath(List<HexNode> newPath)
+    {
+        pathQueue = new Queue<HexNode>(newPath);
+        State = UnitState.Moving;
+        StartCoroutine(FollowPathRoutine());
+    }
+
+    private IEnumerator FollowPathRoutine()
+    {
+        isAnimating = true;
+
+        while (pathQueue.Count > 0 && currentMP > 0)
+        {
+            HexNode nextNode = pathQueue.Peek();
+
+            int cost = 10;
+            if (CurrentNode.isLand && !nextNode.isLand) cost = 10;
+            else if (CurrentNode.isLand != nextNode.isLand) cost = 20;
+
+            if (currentMP >= cost)
+            {
+                pathQueue.Dequeue();
+                currentMP -= cost;
+
+                int dx = nextNode.x - CurrentNode.x;
+                if (hexGrid.wrapWorld && Mathf.Abs(dx) > hexGrid.GetWidth() / 2)
+                    dx = (dx > 0) ? dx - hexGrid.GetWidth() : dx + hexGrid.GetWidth();
+
+                Vector3 targetPos =
+                    tilemap.CellToWorld(new Vector3Int(nextNode.y, tilemap.WorldToCell(transform.position).y + dx, 0));
+
+                velocityProvider.SetTarget(targetPos, moveSpeed);
+
+                while (!velocityProvider.HasReachedTarget())
+                {
+                    yield return null;
+                }
+
+                transform.position = targetPos;
+                CurrentNode = nextNode;
+                OnUnitMoved?.Invoke(this);
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        isAnimating = false;
+        State = pathQueue.Count > 0 ? UnitState.OutOfMovement : UnitState.Idle;
+        if (pathQueue.Count == 0) onDestinationReached?.Invoke();
+    }
 }
