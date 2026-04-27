@@ -4,14 +4,16 @@ using System.Collections.Generic;
 public class PlayerData
 {
     public int id;
+    public bool isAI;
     public HashSet<int> atWarWith = new HashSet<int>();
     public Color primaryColor = Color.white;
     public Color secondaryColor = Color.black;
     public int gold = 10;
 
-    public PlayerData(int id)
+    public PlayerData(int id, bool isAI =  false)
     {
         this.id = id;
+        this.isAI = isAI;
         if (id == 0)
         {
             primaryColor = Color.blue;
