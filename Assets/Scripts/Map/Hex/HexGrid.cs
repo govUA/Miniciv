@@ -139,4 +139,33 @@ public class HexGrid : MonoBehaviour
 
     public int GetWidth() => width;
     public int GetHeight() => height;
+
+    public int GetDistance(HexNode nodeA, HexNode nodeB)
+    {
+        int q1 = nodeA.x;
+        int r1 = nodeA.y - (nodeA.x - (nodeA.x & 1)) / 2;
+        int s1 = -q1 - r1;
+
+        int q2 = nodeB.x;
+        int r2 = nodeB.y - (nodeB.x - (nodeB.x & 1)) / 2;
+        int s2 = -q2 - r2;
+
+        int distNormal = Mathf.Max(Mathf.Abs(q1 - q2), Mathf.Abs(r1 - r2), Mathf.Abs(s1 - s2));
+
+        if (wrapWorld)
+        {
+            int dx = nodeA.x - nodeB.x;
+            if (Mathf.Abs(dx) > width / 2)
+            {
+                int wrappedX = nodeB.x + (dx > 0 ? width : -width);
+                int r3 = nodeB.y - (wrappedX - (wrappedX & 1)) / 2;
+                int s3 = -wrappedX - r3;
+
+                int distWrapped = Mathf.Max(Mathf.Abs(q1 - wrappedX), Mathf.Abs(r1 - r3), Mathf.Abs(s1 - s3));
+                return Mathf.Min(distNormal, distWrapped);
+            }
+        }
+
+        return distNormal;
+    }
 }

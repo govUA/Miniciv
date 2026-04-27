@@ -2,6 +2,7 @@
 using UnityEngine.Tilemaps;
 using System.Collections.Generic;
 
+[RequireComponent(typeof(HexGrid))]
 public class UnitManager : MonoBehaviour
 {
     public GameObject unitPrefab;
@@ -9,38 +10,27 @@ public class UnitManager : MonoBehaviour
     public TurnManager turnManager;
 
     private List<Unit> activeUnits = new List<Unit>();
+    private HexGrid grid;
 
-    public Unit SpawnUnit(HexNode spawnNode, int playerId)
+    void Awake()
     {
-        if (spawnNode == null || !spawnNode.isLand || unitPrefab == null || turnManager == null)
-        {
-            Debug.LogWarning("Cannot spawn unit. Missing references or invalid node.");
-            return null;
-        }
+        grid = GetComponent<HexGrid>();
+    }
+
+    public Unit SpawnUnit(HexNode spawnNode, int playerId, string unitName = "Settler")
+    {
+        if (spawnNode == null || !spawnNode.isLand || unitPrefab == null || turnManager == null) return null;
 
         Vector3 spawnPos = mainTilemap.CellToWorld(new Vector3Int(spawnNode.y, spawnNode.x, 0));
         GameObject unitObj = Instantiate(unitPrefab, spawnPos, Quaternion.identity);
 
         Unit newUnit = unitObj.GetComponent<Unit>();
-        newUnit.Initialize(spawnNode, spawnPos, mainTilemap, turnManager, playerId);
+        newUnit.Initialize(spawnNode, spawnPos, mainTilemap, turnManager, playerId, unitName, grid);
 
         activeUnits.Add(newUnit);
+
+        Debug.Log($"[UNIT] Spawned {unitName} for Player {playerId} at [{spawnNode.x},{spawnNode.y}]");
         return newUnit;
-    }
-
-    public Unit GetUnitAtNode(HexNode node)
-    {
-        foreach (Unit u in activeUnits)
-        {
-            if (u.CurrentNode == node) return u;
-        }
-
-        return null;
-    }
-
-    public List<Unit> GetActiveUnits()
-    {
-        return activeUnits;
     }
 
     public void RemoveUnit(Unit unit)
@@ -51,4 +41,14 @@ public class UnitManager : MonoBehaviour
             Destroy(unit.gameObject);
         }
     }
+
+    public Unit GetUnitAtNode(HexNode node)
+    {
+        foreach (Unit u in activeUnits)
+            if (u.CurrentNode == node)
+                return u;
+        return null;
+    }
+
+    public List<Unit> GetActiveUnits() => activeUnits;
 }

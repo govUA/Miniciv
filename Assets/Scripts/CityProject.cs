@@ -1,7 +1,8 @@
 ﻿public enum ProjectType
 {
     Unit,
-    Building
+    Building,
+    Process
 }
 
 public class CityProject

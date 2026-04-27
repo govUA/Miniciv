@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.Tilemaps;
 using UnityEngine.InputSystem;
 using System.Collections.Generic;
@@ -23,9 +24,8 @@ public class HexInteraction : MonoBehaviour
     private Vector3Int previousHoverPosition = new Vector3Int(-9999, -9999, -9999);
     private HexNode selectedNode;
     private Unit selectedUnit;
-    private List<HexNode> currentPath;
-
     private City selectedCity;
+    private List<HexNode> currentPath;
 
     void Awake()
     {
@@ -36,7 +36,6 @@ public class HexInteraction : MonoBehaviour
     void Update()
     {
         if (highlightTilemap == null || mainTilemap == null) return;
-
         HandleHover();
         HandleClick();
         HandleHotkeys();
@@ -63,9 +62,11 @@ public class HexInteraction : MonoBehaviour
             HexNode clickedNode = hexGrid.GetNode(cellPosition.y, cellPosition.x);
 
             if (clickedNode == null) return;
-
             selectedNode = clickedNode;
             selectedCity = null;
+            selectedUnit = null;
+
+            bool foundSomething = false;
 
             if (cityManager != null)
             {
@@ -78,7 +79,6 @@ public class HexInteraction : MonoBehaviour
                             ? selectedCity.currentProject.name
                             : "None";
                         int reqFood = selectedCity.population * 10 + 10;
-
                         string sciStr = "";
                         if (playerManager != null)
                         {
@@ -88,7 +88,8 @@ public class HexInteraction : MonoBehaviour
                         }
 
                         Debug.Log(
-                            $"City: {selectedCity.cityName} | Food: {selectedCity.storedFood}/{reqFood} | Prod: {selectedCity.storedProduction} | Project: {projStr}{sciStr}");
+                            $"[UI] Selected City: {selectedCity.cityName} | Pop: {selectedCity.population} | Food: {selectedCity.storedFood}/{reqFood} | Prod: {selectedCity.storedProduction} | Project: {projStr}{sciStr}");
+                        foundSomething = true;
                         break;
                     }
                 }
@@ -100,52 +101,358 @@ public class HexInteraction : MonoBehaviour
                 if (clickedUnit != null && clickedUnit.ownerID == turnManager.CurrentPlayerID)
                 {
                     selectedUnit = clickedUnit;
-                }
-                else
-                {
-                    selectedUnit = null;
+                    selectedCity = null;
+                    Debug.Log(
+                        $"[UI] Selected Unit: {selectedUnit.unitName} | MP: {selectedUnit.currentMP}/{selectedUnit.maxMP} | HP: {selectedUnit.currentHP}/{selectedUnit.maxHP}");
+                    foundSomething = true;
                 }
             }
+
+            if (!foundSomething) Debug.Log($"[UI] Selected empty tile [{clickedNode.x},{clickedNode.y}].");
 
             currentPath = null;
             DrawOverlays(cellPosition);
         }
-        else if (Mouse.current.rightButton.wasPressedThisFrame && selectedUnit != null && !selectedUnit.IsAnimating())
+        else if (Mouse.current.rightButton.wasPressedThisFrame)
         {
             Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
             Vector3Int cellPosition = mainTilemap.WorldToCell(mousePosition);
-            HexNode clickedNode = hexGrid.GetNode(cellPosition.y, cellPosition.x);
+            HexNode targetNode = hexGrid.GetNode(cellPosition.y, cellPosition.x);
 
-            if (clickedNode == null) return;
+            if (targetNode == null) return;
 
-            if (!clickedNode.isLand &&
-                clickedNode.GetVision(turnManager.CurrentPlayerID) != VisionState.Unexplored) return;
-
-            if (hexGrid.IsNodeOccupied(clickedNode) &&
-                clickedNode.GetVision(turnManager.CurrentPlayerID) == VisionState.Visible)
+            Unit targetUnit = unitManager.GetUnitAtNode(targetNode);
+            City targetCity = null;
+            if (cityManager != null)
             {
-                return;
+                foreach (City c in cityManager.GetActiveCities())
+                    if (c.centerNode == targetNode)
+                        targetCity = c;
             }
 
-            int remOwner = clickedNode.GetRememberedOwner(turnManager.CurrentPlayerID);
-            if (remOwner != -1 && remOwner != turnManager.CurrentPlayerID)
+            bool isEnemyUnit = targetUnit != null && targetUnit.ownerID != turnManager.CurrentPlayerID;
+            bool isEnemyCity = targetCity != null && targetCity.ownerID != turnManager.CurrentPlayerID;
+
+            if (selectedUnit != null && !selectedUnit.IsAnimating())
             {
-                return;
+                if ((isEnemyUnit || isEnemyCity) && !selectedUnit.hasAttackedThisTurn &&
+                    selectedUnit.unitClass != UnitClass.Civilian)
+                {
+                    int enemyOwner = isEnemyUnit ? targetUnit.ownerID : targetCity.ownerID;
+                    if (playerManager != null && !playerManager.IsAtWar(turnManager.CurrentPlayerID, enemyOwner))
+                    {
+                        Debug.Log("[UI] Cannot attack in peacetime! Declare war first.");
+                        return;
+                    }
+
+                    int dist = hexGrid.GetDistance(selectedUnit.CurrentNode, targetNode);
+                    if (dist <= selectedUnit.attackRange)
+                    {
+                        ResolveUnitCombat(selectedUnit, targetUnit, targetCity);
+                        return;
+                    }
+                    else
+                    {
+                        List<HexNode> attackPositions = hexGrid.GetNodesInRange(targetNode, selectedUnit.attackRange);
+                        List<HexNode> bestPath = null;
+
+                        foreach (HexNode pos in attackPositions)
+                        {
+                            if (!pos.isLand) continue;
+                            if (hexGrid.IsNodeOccupied(pos) && pos != selectedUnit.CurrentNode) continue;
+
+                            bool isEnemyCityTile = false;
+                            if (cityManager != null)
+                            {
+                                foreach (City c in cityManager.GetActiveCities())
+                                {
+                                    if (c.centerNode == pos && c.ownerID != turnManager.CurrentPlayerID)
+                                    {
+                                        isEnemyCityTile = true;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if (isEnemyCityTile) continue;
+
+                            List<HexNode> path = pathfinder.FindPath(selectedUnit.CurrentNode, pos,
+                                turnManager.CurrentPlayerID);
+                            if (path != null)
+                            {
+                                if (bestPath == null || path.Count < bestPath.Count)
+                                {
+                                    bestPath = path;
+                                }
+                            }
+                        }
+
+                        if (bestPath != null && bestPath.Count > 0)
+                        {
+                            currentPath = bestPath;
+                            DrawOverlays(cellPosition);
+
+                            Debug.Log($"[UI] Pathing to attack position. Length: {bestPath.Count}");
+
+                            Unit capturedUnit = selectedUnit;
+                            HexNode capturedTarget = targetNode;
+
+                            capturedUnit.SetPath(bestPath, () =>
+                            {
+                                if (capturedUnit != null && !capturedUnit.hasAttackedThisTurn)
+                                {
+                                    Unit currentTargetUnit = null;
+                                    if (unitManager != null)
+                                        currentTargetUnit = unitManager.GetUnitAtNode(capturedTarget);
+
+                                    City currentTargetCity = null;
+                                    if (cityManager != null)
+                                    {
+                                        foreach (City c in cityManager.GetActiveCities())
+                                            if (c.centerNode == capturedTarget)
+                                                currentTargetCity = c;
+                                    }
+
+                                    bool hasEnemy = false;
+                                    if (currentTargetUnit != null &&
+                                        currentTargetUnit.ownerID != turnManager.CurrentPlayerID) hasEnemy = true;
+                                    if (currentTargetCity != null &&
+                                        currentTargetCity.ownerID != turnManager.CurrentPlayerID) hasEnemy = true;
+
+                                    if (hasEnemy)
+                                    {
+                                        int newDist = hexGrid.GetDistance(capturedUnit.CurrentNode, capturedTarget);
+                                        if (newDist <= capturedUnit.attackRange)
+                                        {
+                                            ResolveUnitCombat(capturedUnit, currentTargetUnit, currentTargetCity);
+                                        }
+                                    }
+                                }
+                            });
+                            return;
+                        }
+                        else
+                        {
+                            Debug.Log("[UI] No valid path to approach the target.");
+                            return;
+                        }
+                    }
+                }
+
+                if (hexGrid.IsNodeOccupied(targetNode) &&
+                    targetNode.GetVision(turnManager.CurrentPlayerID) == VisionState.Visible) return;
+
+                int remOwner = targetNode.GetRememberedOwner(turnManager.CurrentPlayerID);
+                if (remOwner != -1 && remOwner != turnManager.CurrentPlayerID)
+                {
+                    if (playerManager != null && !playerManager.IsAtWar(turnManager.CurrentPlayerID, remOwner))
+                    {
+                        Debug.Log("[UI] Cannot enter foreign territory in peacetime. Declare war first!");
+                        return;
+                    }
+                }
+
+                currentPath = pathfinder.FindPath(selectedUnit.CurrentNode, targetNode, turnManager.CurrentPlayerID);
+                DrawOverlays(cellPosition);
+
+                if (currentPath != null && currentPath.Count > 0)
+                {
+                    Debug.Log($"[UI] Path generated. Length: {currentPath.Count}");
+                    selectedUnit.SetPath(currentPath);
+                }
+                else
+                {
+                    Debug.Log("[UI] No valid path to target.");
+                }
+            }
+            else if (selectedCity != null && !selectedCity.hasAttackedThisTurn)
+            {
+                if (isEnemyUnit)
+                {
+                    int enemyOwner = targetUnit.ownerID;
+                    if (playerManager != null && !playerManager.IsAtWar(turnManager.CurrentPlayerID, enemyOwner))
+                    {
+                        Debug.Log("[UI] City cannot attack in peacetime!");
+                        return;
+                    }
+
+                    int dist = hexGrid.GetDistance(selectedCity.centerNode, targetNode);
+                    if (dist <= selectedCity.attackRange)
+                    {
+                        ResolveCityCombat(selectedCity, targetUnit);
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
+    private void ResolveUnitCombat(Unit attacker, Unit defUnit, City defCity)
+    {
+        attacker.hasAttackedThisTurn = true;
+        attacker.currentMP = 0;
+        attacker.isFortified = false;
+        attacker.isHealing = false;
+
+        float attModifier = 1.05f;
+        if (attacker.CurrentNode.terrainType == TerrainType.Mountain) attModifier += 0.10f;
+
+        float attStrength = (attacker.unitClass == UnitClass.Melee ? attacker.meleeStrength : attacker.rangedStrength) *
+                            attModifier;
+
+        if (defUnit != null)
+        {
+            City cityOnTile = null;
+            if (cityManager != null)
+            {
+                foreach (City c in cityManager.GetActiveCities())
+                    if (c.centerNode == defUnit.CurrentNode && c.ownerID == defUnit.ownerID)
+                        cityOnTile = c;
             }
 
-            currentPath = pathfinder.FindPath(selectedUnit.CurrentNode, clickedNode, turnManager.CurrentPlayerID);
-            DrawOverlays(cellPosition);
-
-            if (currentPath != null && currentPath.Count > 0)
+            if (cityOnTile != null)
             {
-                selectedUnit.SetPath(currentPath);
+                defCity = cityOnTile;
+                defUnit = null;
+                Debug.Log("[COMBAT] Unit protected by city! City takes the damage instead.");
             }
+        }
+
+        if (defUnit != null)
+        {
+            if (defUnit.unitClass == UnitClass.Civilian) defUnit.TakeDamage(999);
+            else
+            {
+                defUnit.isHealing = false;
+
+                float defModifier = 1.0f;
+                if (defUnit.isFortified) defModifier += 0.25f;
+                if (defUnit.CurrentNode.terrainType == TerrainType.Forest) defModifier += 0.15f;
+
+                float defStrength = defUnit.meleeStrength * defModifier;
+
+                float rngHit = UnityEngine.Random.Range(0.85f, 1.15f);
+                int dmgToDef = Mathf.RoundToInt(30f * (attStrength / defStrength) * rngHit);
+                defUnit.TakeDamage(dmgToDef);
+
+                if (attacker.unitClass == UnitClass.Melee && defUnit.currentHP > 0)
+                {
+                    float rngRet = UnityEngine.Random.Range(0.85f, 1.15f);
+                    int dmgToAtt = Mathf.RoundToInt(30f * (defStrength / attStrength) * rngRet);
+                    attacker.TakeDamage(dmgToAtt);
+                }
+            }
+        }
+        else if (defCity != null)
+        {
+            float rngHit = UnityEngine.Random.Range(0.85f, 1.15f);
+            int dmgToCity = Mathf.RoundToInt(30f * (attStrength / defCity.garrisonStrength) * rngHit);
+
+            int oldOwner = defCity.ownerID;
+            defCity.TakeDamage(dmgToCity, attacker.ownerID);
+
+            if (defCity.ownerID == attacker.ownerID && oldOwner != attacker.ownerID)
+            {
+                Unit garrison = null;
+                if (unitManager != null)
+                {
+                    garrison = unitManager.GetUnitAtNode(defCity.centerNode);
+                    if (garrison != null && garrison.ownerID != attacker.ownerID)
+                    {
+                        garrison.TakeDamage(9999);
+                    }
+                }
+
+                if (pathfinder != null)
+                {
+                    List<HexNode> capturePath =
+                        pathfinder.FindPath(attacker.CurrentNode, defCity.centerNode, attacker.ownerID);
+                    if (capturePath != null && capturePath.Count > 0)
+                    {
+                        attacker.currentMP += 99;
+                        attacker.SetPath(capturePath, () => { attacker.currentMP = 0; });
+                    }
+                }
+            }
+            else
+            {
+                if (attacker.unitClass == UnitClass.Melee && defCity.ownerID != attacker.ownerID)
+                {
+                    float rngRet = UnityEngine.Random.Range(0.85f, 1.15f);
+                    int dmgToAtt = Mathf.RoundToInt(30f * ((float)defCity.garrisonStrength / attStrength) * rngRet);
+                    attacker.TakeDamage(dmgToAtt);
+                }
+            }
+        }
+    }
+
+    private void ResolveCityCombat(City attacker, Unit defUnit)
+    {
+        attacker.hasAttackedThisTurn = true;
+        if (defUnit.unitClass == UnitClass.Civilian) defUnit.TakeDamage(999);
+        else
+        {
+            defUnit.isHealing = false;
+            float defModifier = 1.0f;
+            if (defUnit.isFortified) defModifier += 0.25f;
+            if (defUnit.CurrentNode.terrainType == TerrainType.Forest) defModifier += 0.15f;
+
+            float defStrength = defUnit.meleeStrength * defModifier;
+            float rngHit = UnityEngine.Random.Range(0.85f, 1.15f);
+
+            int dmgToDef = Mathf.RoundToInt(30f * ((float)attacker.garrisonStrength / defStrength) * rngHit);
+            defUnit.TakeDamage(dmgToDef);
         }
     }
 
     private void HandleHotkeys()
     {
         if (Keyboard.current == null) return;
+
+        if (Keyboard.current.oKey.wasPressedThisFrame)
+        {
+            if (playerManager != null)
+            {
+                if (playerManager.IsAtWar(0, 1)) playerManager.MakePeace(0, 1);
+                else playerManager.DeclareWar(0, 1);
+            }
+        }
+
+        if (Keyboard.current.hKey.wasPressedThisFrame)
+        {
+            if (selectedUnit != null && selectedUnit.currentMP > 0)
+            {
+                selectedUnit.isHealing = true;
+                selectedUnit.isFortified = false;
+                selectedUnit.currentMP = 0;
+                Debug.Log($"[UI] Unit {selectedUnit.unitName} is resting to heal.");
+            }
+        }
+
+        if (Keyboard.current.fKey.wasPressedThisFrame)
+        {
+            if (selectedUnit != null && !selectedUnit.IsAnimating())
+            {
+                if (selectedUnit.isSettler && cityManager != null)
+                {
+                    if (cityManager.FoundCity(selectedUnit))
+                    {
+                        unitManager.RemoveUnit(selectedUnit);
+                        selectedUnit = null;
+                        selectedNode = null;
+                        currentPath = null;
+                        DrawOverlays(new Vector3Int(-9999, -9999, -9999));
+                    }
+                }
+                else if (!selectedUnit.isSettler && selectedUnit.currentMP > 0)
+                {
+                    selectedUnit.isFortified = true;
+                    selectedUnit.isHealing = false;
+                    selectedUnit.currentMP = 0;
+                    Debug.Log($"[UI] Unit {selectedUnit.unitName} is fortified (+25% Defense).");
+                }
+            }
+        }
 
         if (Keyboard.current.enterKey.wasPressedThisFrame)
         {
@@ -160,61 +467,29 @@ public class HexInteraction : MonoBehaviour
             }
         }
 
-        if (Keyboard.current.fKey.wasPressedThisFrame)
-        {
-            if (selectedUnit != null && selectedUnit.isSettler && !selectedUnit.IsAnimating() && cityManager != null)
-            {
-                bool success = cityManager.FoundCity(selectedUnit);
-                if (success)
-                {
-                    unitManager.RemoveUnit(selectedUnit);
-                    selectedUnit = null;
-                    selectedNode = null;
-                    currentPath = null;
-                    DrawOverlays(new Vector3Int(-9999, -9999, -9999));
-                }
-            }
-        }
-
         if (playerManager != null && turnManager != null)
         {
             if (Keyboard.current.tKey.wasPressedThisFrame)
-            {
                 playerManager.SetResearch(turnManager.CurrentPlayerID, "Pottery");
-            }
-
             if (Keyboard.current.yKey.wasPressedThisFrame)
-            {
                 playerManager.SetResearch(turnManager.CurrentPlayerID, "Bronze Working");
-            }
         }
 
         if (selectedCity != null && selectedCity.ownerID == turnManager.CurrentPlayerID)
         {
             if (Keyboard.current.digit1Key.wasPressedThisFrame)
-            {
                 selectedCity.SetProject(new CityProject("Scout", ProjectType.Unit, 20));
-            }
-
             if (Keyboard.current.digit2Key.wasPressedThisFrame)
-            {
                 selectedCity.SetProject(new CityProject("Settler", ProjectType.Unit, 50));
-            }
-
             if (Keyboard.current.digit3Key.wasPressedThisFrame)
-            {
                 selectedCity.SetProject(new CityProject("Monument", ProjectType.Building, 40));
-            }
-
             if (Keyboard.current.digit4Key.wasPressedThisFrame)
-            {
-                selectedCity.SetProject(new CityProject("Granary", ProjectType.Building, 30, "Pottery"));
-            }
-
+                selectedCity.SetProject(new CityProject("Archer", ProjectType.Unit, 30, "Pottery"));
             if (Keyboard.current.digit5Key.wasPressedThisFrame)
-            {
                 selectedCity.SetProject(new CityProject("Warrior", ProjectType.Unit, 40, "Bronze Working"));
-            }
+
+            if (Keyboard.current.digit6Key.wasPressedThisFrame)
+                selectedCity.SetProject(new CityProject("Repair", ProjectType.Process, 0));
         }
     }
 
@@ -222,21 +497,30 @@ public class HexInteraction : MonoBehaviour
     {
         highlightTilemap.ClearAllTiles();
 
+        int startOffset = hexGrid.wrapWorld ? -1 : 0;
+        int endOffset = hexGrid.wrapWorld ? 1 : 0;
+        int mapWidth = hexGrid.GetWidth();
+
         if (hexGrid.GetNode(hoverPos.y, hoverPos.x) != null)
-        {
             highlightTilemap.SetTile(hoverPos, highlightTile);
-        }
 
         if (selectedNode != null)
         {
-            highlightTilemap.SetTile(new Vector3Int(selectedNode.y, selectedNode.x, 0), highlightTile);
+            for (int offset = startOffset; offset <= endOffset; offset++)
+            {
+                highlightTilemap.SetTile(new Vector3Int(selectedNode.y, selectedNode.x + (offset * mapWidth), 0),
+                    highlightTile);
+            }
         }
 
         if (currentPath != null)
         {
             foreach (HexNode node in currentPath)
             {
-                highlightTilemap.SetTile(new Vector3Int(node.y, node.x, 0), pathTile);
+                for (int offset = startOffset; offset <= endOffset; offset++)
+                {
+                    highlightTilemap.SetTile(new Vector3Int(node.y, node.x + (offset * mapWidth), 0), pathTile);
+                }
             }
         }
     }

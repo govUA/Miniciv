@@ -5,10 +5,12 @@ using System.Collections.Generic;
 public class Pathfinder : MonoBehaviour
 {
     private HexGrid grid;
+    private PlayerManager playerManager;
 
     void Awake()
     {
         grid = GetComponent<HexGrid>();
+        playerManager = Object.FindAnyObjectByType<PlayerManager>();
     }
 
     public List<HexNode> FindPath(HexNode startNode, HexNode targetNode, int playerId)
@@ -58,7 +60,10 @@ public class Pathfinder : MonoBehaviour
                     int remOwner = neighbor.GetRememberedOwner(playerId);
                     if (remOwner != -1 && remOwner != playerId)
                     {
-                        isWalkable = false;
+                        if (playerManager == null || !playerManager.IsAtWar(playerId, remOwner))
+                        {
+                            isWalkable = false;
+                        }
                     }
                 }
 

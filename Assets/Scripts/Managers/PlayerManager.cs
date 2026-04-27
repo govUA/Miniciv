@@ -10,6 +10,8 @@ public class PlayerData
     public int accumulatedResearch = 0;
     public List<string> unlockedTechs = new List<string>();
 
+    public HashSet<int> atWarWith = new HashSet<int>();
+
     public PlayerData(int id)
     {
         this.id = id;
@@ -38,6 +40,37 @@ public class PlayerManager : MonoBehaviour
     {
         if (players.ContainsKey(id)) return players[id];
         return null;
+    }
+
+    public void DeclareWar(int playerA, int playerB)
+    {
+        PlayerData pA = GetPlayer(playerA);
+        PlayerData pB = GetPlayer(playerB);
+        if (pA != null && pB != null)
+        {
+            pA.atWarWith.Add(playerB);
+            pB.atWarWith.Add(playerA);
+            Debug.Log($"[DIPLOMACY] Player {playerA} and Player {playerB} are now AT WAR!");
+        }
+    }
+
+    public void MakePeace(int playerA, int playerB)
+    {
+        PlayerData pA = GetPlayer(playerA);
+        PlayerData pB = GetPlayer(playerB);
+        if (pA != null && pB != null)
+        {
+            pA.atWarWith.Remove(playerB);
+            pB.atWarWith.Remove(playerA);
+            Debug.Log($"[DIPLOMACY] Player {playerA} and Player {playerB} made PEACE.");
+        }
+    }
+
+    public bool IsAtWar(int playerA, int playerB)
+    {
+        PlayerData pA = GetPlayer(playerA);
+        if (pA != null) return pA.atWarWith.Contains(playerB);
+        return false;
     }
 
     public void AddScience(int playerId, int amount)

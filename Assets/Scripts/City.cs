@@ -8,9 +8,16 @@ public class City : MonoBehaviour
     public string cityName;
     public int visionRange = 2;
 
+    public int maxHP = 200;
+    public int currentHP;
+    public int garrisonStrength = 15;
+    public int attackRange = 2;
+    public bool hasAttackedThisTurn = false;
+
     public int population = 1;
     public int storedFood = 0;
     public int storedProduction = 0;
+    public int storedScience = 0;
 
     public CityProject currentProject;
     public List<string> builtBuildings = new List<string>();
@@ -29,11 +36,37 @@ public class City : MonoBehaviour
         cityManager = cm;
         playerManager = pm;
 
+        currentHP = maxHP;
+
+        UpdateColor();
+    }
+
+    private void UpdateColor()
+    {
         SpriteRenderer sr = GetComponent<SpriteRenderer>();
-        if (sr != null)
+        if (sr != null) sr.color = (ownerID == 0) ? Color.blue : Color.red;
+    }
+
+    public void TakeDamage(int amount, int attackerId)
+    {
+        currentHP = Mathf.Clamp(currentHP - amount, 0, maxHP);
+        Debug.Log($"[COMBAT] City {cityName} took {amount} damage. HP: {currentHP}/{maxHP}");
+        if (currentHP <= 0)
         {
-            sr.color = (ownerID == 0) ? Color.blue : Color.red;
+            CaptureCity(attackerId);
         }
+    }
+
+    private void CaptureCity(int newOwner)
+    {
+        Debug.Log($"[COMBAT] City {cityName} captured by Player {newOwner}!");
+        ownerID = newOwner;
+        currentHP = maxHP / 2;
+        currentProject = null;
+        hasAttackedThisTurn = true;
+
+        UpdateColor();
+        if (cityManager != null) cityManager.UpdateCityOwnership(this);
     }
 
     public void SetProject(CityProject project)
@@ -54,6 +87,8 @@ public class City : MonoBehaviour
 
     public void ProcessTurn(HexGrid grid)
     {
+        hasAttackedThisTurn = false;
+
         int turnFood = 0;
         int turnProd = 0;
         int turnSci = 0;
@@ -68,10 +103,7 @@ public class City : MonoBehaviour
         storedFood += turnFood;
         storedProduction += turnProd;
 
-        if (playerManager != null && turnSci > 0)
-        {
-            playerManager.AddScience(ownerID, turnSci);
-        }
+        if (playerManager != null && turnSci > 0) playerManager.AddScience(ownerID, turnSci);
 
         int foodToGrow = population * 10 + 10;
         if (storedFood >= foodToGrow)
@@ -83,10 +115,28 @@ public class City : MonoBehaviour
 
         if (currentProject != null)
         {
-            if (storedProduction >= currentProject.cost)
+            if (currentProject.type == ProjectType.Process && currentProject.name == "Repair")
             {
-                storedProduction -= currentProject.cost;
-                FinishProject();
+                if (currentHP < maxHP)
+                {
+                    currentHP = Mathf.Clamp(currentHP + 20, 0, maxHP);
+                    Debug.Log($"[CITY] {cityName} is repairing. HP: {currentHP}/{maxHP}");
+                    if (currentHP == maxHP) currentProject = null;
+                }
+                else
+                {
+                    currentProject = null;
+                }
+            }
+            else
+            {
+                Debug.Log(
+                    $"[CITY] {cityName} producing {currentProject.name}: {storedProduction}/{currentProject.cost} Prod.");
+                if (storedProduction >= currentProject.cost)
+                {
+                    storedProduction -= currentProject.cost;
+                    FinishProject();
+                }
             }
         }
     }
@@ -98,36 +148,11 @@ public class City : MonoBehaviour
         if (currentProject.type == ProjectType.Building)
         {
             builtBuildings.Add(currentProject.name);
-
-            if (currentProject.name == "Monument")
-            {
-                if (cityManager != null) cityManager.ExpandTerritoryByOne(this);
-            }
-            else if (currentProject.name == "Granary")
-            {
-                Debug.Log($"[CITY] Granary built in {cityName}. It will boost food logic later!");
-            }
+            if (currentProject.name == "Monument" && cityManager != null) cityManager.ExpandTerritoryByOne(this);
         }
         else if (currentProject.type == ProjectType.Unit)
         {
-            if (unitManager != null)
-            {
-                Unit newUnit = unitManager.SpawnUnit(centerNode, ownerID);
-                if (newUnit != null)
-                {
-                    SpriteRenderer sr = newUnit.GetComponent<SpriteRenderer>();
-                    if (currentProject.name == "Settler")
-                    {
-                        newUnit.isSettler = true;
-                        if (sr != null) sr.color = (ownerID == 0) ? Color.cyan : new Color(1f, 0.5f, 0f);
-                    }
-                    else
-                    {
-                        newUnit.isSettler = false;
-                        if (sr != null) sr.color = (ownerID == 0) ? Color.blue : Color.red;
-                    }
-                }
-            }
+            if (unitManager != null) unitManager.SpawnUnit(centerNode, ownerID, currentProject.name);
         }
 
         currentProject = null;
@@ -136,9 +161,6 @@ public class City : MonoBehaviour
     public void SetVisibility(bool isVisible)
     {
         SpriteRenderer sr = GetComponent<SpriteRenderer>();
-        if (sr != null)
-        {
-            sr.enabled = isVisible;
-        }
+        if (sr != null) sr.enabled = isVisible;
     }
 }

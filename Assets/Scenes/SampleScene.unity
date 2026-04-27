@@ -901,7 +901,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8bc9d27c3bdb4ff29b5805484352a9f4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HexGrid
-  unitManager: {fileID: 0}
+  unitManager: {fileID: 1775689247}
 --- !u!114 &1775689246
 MonoBehaviour:
   m_ObjectHideFlags: 0

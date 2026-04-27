@@ -148,4 +148,15 @@ public class CityManager : MonoBehaviour
     }
 
     public List<City> GetActiveCities() => activeCities;
+
+    public void UpdateCityOwnership(City city)
+    {
+        foreach (HexNode n in city.territoryNodes)
+        {
+            n.ownerID = city.ownerID;
+        }
+
+        if (turnManager != null) DrawPlayerMemoryTerritory(turnManager.CurrentPlayerID);
+        if (fowManager != null) fowManager.UpdateVisionDisplay(city.ownerID);
+    }
 }
