@@ -26,7 +26,6 @@ public class Unit : MonoBehaviour
     public HexNode CurrentNode { get; private set; }
     public string unitName;
     public int ownerID;
-
     public UnitClass unitClass;
     public int maxHP = 100;
     public int currentHP;
@@ -34,23 +33,23 @@ public class Unit : MonoBehaviour
     public int rangedStrength;
     public int attackRange;
     public int visionRange = 2;
-
     public float moveSpeed = 5f;
     public int maxMP = 30;
     public int currentMP;
     public bool hasAttackedThisTurn = false;
-
     public UnitState State { get; private set; }
-    public bool isSettler => unitClass == UnitClass.Civilian && unitName == "Settler";
+    public bool isSettler => unitClass == UnitClass.Civilian && unitName.ToLower() == "settler";
     public bool isFortified = false;
     public bool isHealing = false;
-
     public SpriteRenderer factionIconRenderer;
 
     private Queue<HexNode> pathQueue = new Queue<HexNode>();
     private Tilemap tilemap;
     private TurnManager turnManager;
     private HexGrid hexGrid;
+    private TechManager techManager;
+    private PlayerManager playerManager;
+    private UnitManager unitManager;
     private bool isAnimating = false;
     private Action onDestinationReached;
 
@@ -65,67 +64,60 @@ public class Unit : MonoBehaviour
         unitName = name;
         hexGrid = grid;
 
+        techManager = UnityEngine.Object.FindAnyObjectByType<TechManager>();
+        playerManager = UnityEngine.Object.FindAnyObjectByType<PlayerManager>();
+        unitManager = UnityEngine.Object.FindAnyObjectByType<UnitManager>();
+
         currentHP = maxHP;
         currentMP = maxMP;
         State = UnitState.Idle;
 
         SpriteRenderer sr = GetComponent<SpriteRenderer>();
-        if (sr != null && mainSprite != null)
-        {
-            sr.sprite = mainSprite;
-        }
+        if (sr != null && mainSprite != null) sr.sprite = mainSprite;
 
         if (factionIconRenderer != null && iconSprite != null)
         {
             factionIconRenderer.sprite = iconSprite;
-
-            if (sr != null)
-            {
-                factionIconRenderer.sortingOrder = sr.sortingOrder + 1;
-            }
-
-            float maxBounds = Mathf.Max(iconSprite.bounds.size.x, iconSprite.bounds.size.y);
-            if (maxBounds > 0)
-            {
-                float targetSize = 0.8f;
-                float finalScale = targetSize / maxBounds;
-                factionIconRenderer.transform.localScale = new Vector3(finalScale, finalScale, 1f);
-            }
+            if (sr != null) factionIconRenderer.sortingOrder = sr.sortingOrder + 1;
         }
 
-        if (unitName == "Settler" || unitName == "Builder")
+        string n = unitName.ToLower();
+        if (n == "settler" || n == "builder")
         {
             unitClass = UnitClass.Civilian;
             meleeStrength = 0;
             rangedStrength = 0;
             attackRange = 0;
+            visionRange = 2;
         }
-        else if (unitName == "Warrior")
+        else if (n == "scout")
+        {
+            unitClass = UnitClass.Melee;
+            meleeStrength = 12;
+            rangedStrength = 0;
+            attackRange = 1;
+            visionRange = 3;
+        }
+        else if (n == "warrior")
         {
             unitClass = UnitClass.Melee;
             meleeStrength = 20;
             rangedStrength = 0;
             attackRange = 1;
+            visionRange = 2;
         }
-        else if (unitName == "Archer")
+        else if (n == "archer")
         {
             unitClass = UnitClass.Ranged;
             meleeStrength = 10;
             rangedStrength = 25;
             attackRange = 2;
-        }
-        else
-        {
-            unitClass = UnitClass.Civilian;
-            meleeStrength = 0;
-            rangedStrength = 0;
-            attackRange = 0;
+            visionRange = 2;
         }
 
-        PlayerManager pm = UnityEngine.Object.FindAnyObjectByType<PlayerManager>();
-        if (pm != null && factionIconRenderer != null)
+        if (playerManager != null && factionIconRenderer != null)
         {
-            PlayerData pd = pm.GetPlayer(ownerID);
+            PlayerData pd = playerManager.GetPlayer(ownerID);
             if (pd != null)
             {
                 Material mat = new Material(factionIconRenderer.material);
@@ -147,52 +139,37 @@ public class Unit : MonoBehaviour
     public void TakeDamage(int amount)
     {
         currentHP = Mathf.Clamp(currentHP - amount, 0, maxHP);
-        Debug.Log($"[COMBAT] {unitName} (Player {ownerID}) took {amount} damage. HP: {currentHP}/{maxHP}");
         if (currentHP <= 0) Die();
     }
 
     public void Die()
     {
-        Debug.Log($"[COMBAT] {unitName} (Player {ownerID}) died!");
         OnUnitDied?.Invoke(this);
-        UnitManager um = UnityEngine.Object.FindAnyObjectByType<UnitManager>();
-        if (um != null) um.RemoveUnit(this);
+        if (unitManager != null) unitManager.RemoveUnit(this);
     }
 
     private void HandleNewTurn()
     {
         currentMP = maxMP;
         hasAttackedThisTurn = false;
-
         if (isHealing)
         {
             int healAmount = (CurrentNode.ownerID == ownerID) ? 20 : 10;
             currentHP = Mathf.Clamp(currentHP + healAmount, 0, maxHP);
-            Debug.Log($"[UNIT] {unitName} healed for {healAmount}. HP: {currentHP}/{maxHP}");
             if (currentHP == maxHP) isHealing = false;
         }
 
-        if (pathQueue.Count > 0)
-        {
-            Debug.Log($"[UNIT] {unitName} auto-resuming movement. Remaining path: {pathQueue.Count}");
-            ProcessMovement();
-        }
-        else
-        {
-            State = UnitState.Idle;
-        }
+        if (pathQueue.Count > 0) ProcessMovement();
+        else State = UnitState.Idle;
     }
 
     public void SetPath(List<HexNode> path, Action onComplete = null)
     {
         isFortified = false;
         isHealing = false;
-
         pathQueue.Clear();
         foreach (var node in path) pathQueue.Enqueue(node);
-
         onDestinationReached = onComplete;
-
         ProcessMovement();
     }
 
@@ -210,41 +187,31 @@ public class Unit : MonoBehaviour
         while (pathQueue.Count > 0 && currentMP > 0)
         {
             HexNode nextNode = pathQueue.Peek();
+            bool isForeign = nextNode.ownerID != -1 && nextNode.ownerID != ownerID;
+            bool isAtWar = isForeign && playerManager != null && playerManager.IsAtWar(ownerID, nextNode.ownerID);
+            bool canSail = techManager != null && techManager.HasTech(ownerID, TechType.Sailing);
 
-            PlayerManager pm = UnityEngine.Object.FindAnyObjectByType<PlayerManager>();
-            bool isForeignTerritory = nextNode.ownerID != -1 && nextNode.ownerID != this.ownerID;
-            bool isAtWar = isForeignTerritory && pm != null && pm.IsAtWar(this.ownerID, nextNode.ownerID);
-
-            if (!nextNode.isLand ||
-                UnityEngine.Object.FindAnyObjectByType<UnitManager>().GetUnitAtNode(nextNode) != null ||
-                (isForeignTerritory && !isAtWar))
+            if ((!nextNode.isLand && !canSail) ||
+                (unitManager != null && unitManager.GetUnitAtNode(nextNode) != null) || (isForeign && !isAtWar))
             {
-                Debug.Log($"[UNIT] {unitName} path blocked! (Obstacle or borders)");
                 pathQueue.Clear();
-                onDestinationReached = null;
                 break;
             }
 
             int cost = (int)nextNode.movementCost;
+            if (!CurrentNode.isLand && !nextNode.isLand) cost = 10;
+            else if (CurrentNode.isLand != nextNode.isLand) cost = 20;
+
             if (currentMP >= cost)
             {
                 pathQueue.Dequeue();
                 currentMP -= cost;
-
                 int dx = nextNode.x - CurrentNode.x;
-                int width = hexGrid.GetWidth();
-                if (hexGrid.wrapWorld)
-                {
-                    if (dx > width / 2) dx -= width;
-                    else if (dx < -width / 2) dx += width;
-                }
+                if (hexGrid.wrapWorld && Mathf.Abs(dx) > hexGrid.GetWidth() / 2)
+                    dx = (dx > 0) ? dx - hexGrid.GetWidth() : dx + hexGrid.GetWidth();
 
-                Vector3Int currentVisualCell = tilemap.WorldToCell(transform.position);
-                int targetVisualX = currentVisualCell.y + dx;
-                int targetVisualY = nextNode.y;
-
-                Vector3 targetPos = tilemap.CellToWorld(new Vector3Int(targetVisualY, targetVisualX, 0));
-
+                Vector3 targetPos =
+                    tilemap.CellToWorld(new Vector3Int(nextNode.y, tilemap.WorldToCell(transform.position).y + dx, 0));
                 while (Vector3.Distance(transform.position, targetPos) > 0.05f)
                 {
                     transform.position = Vector3.MoveTowards(transform.position, targetPos, moveSpeed * Time.deltaTime);
@@ -255,22 +222,12 @@ public class Unit : MonoBehaviour
                 CurrentNode = nextNode;
                 OnUnitMoved?.Invoke(this);
             }
-            else
-            {
-                Debug.Log($"[UNIT] {unitName} out of MP. Will continue next turn.");
-                break;
-            }
+            else break;
         }
 
         isAnimating = false;
         State = pathQueue.Count > 0 ? UnitState.OutOfMovement : UnitState.Idle;
-
-        if (pathQueue.Count == 0 && onDestinationReached != null)
-        {
-            Action callback = onDestinationReached;
-            onDestinationReached = null;
-            callback.Invoke();
-        }
+        if (pathQueue.Count == 0) onDestinationReached?.Invoke();
     }
 
     public void SetVisibility(bool isVisible)

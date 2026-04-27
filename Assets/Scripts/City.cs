@@ -30,6 +30,7 @@ public class City : MonoBehaviour
     private UnitManager unitManager;
     private CityManager cityManager;
     private PlayerManager playerManager;
+    private TechManager techManager;
 
     public void Initialize(HexNode node, int playerId, string name, UnitManager um, CityManager cm, PlayerManager pm)
     {
@@ -39,6 +40,7 @@ public class City : MonoBehaviour
         unitManager = um;
         cityManager = cm;
         playerManager = pm;
+        techManager = UnityEngine.Object.FindAnyObjectByType<TechManager>();
 
         currentHP = maxHP;
 
@@ -90,10 +92,9 @@ public class City : MonoBehaviour
 
     public void SetProject(CityProject project)
     {
-        if (playerManager != null && !string.IsNullOrEmpty(project.requiredTech))
+        if (techManager != null && project.requiresTech)
         {
-            PlayerData p = playerManager.GetPlayer(ownerID);
-            if (p != null && !p.unlockedTechs.Contains(project.requiredTech))
+            if (!techManager.HasTech(ownerID, project.requiredTech))
             {
                 Debug.LogWarning($"[CITY] Cannot build {project.name}. Requires tech: {project.requiredTech}!");
                 return;
@@ -122,7 +123,10 @@ public class City : MonoBehaviour
         storedFood += turnFood;
         storedProduction += turnProd;
 
-        if (playerManager != null && turnSci > 0) playerManager.AddScience(ownerID, turnSci);
+        if (techManager != null && turnSci > 0)
+        {
+            techManager.AddScience(ownerID, turnSci);
+        }
 
         int foodToGrow = population * 10 + 10;
         if (storedFood >= foodToGrow)

@@ -6,44 +6,95 @@ public class Pathfinder : MonoBehaviour
 {
     private HexGrid grid;
     private PlayerManager playerManager;
+    private TechManager techManager;
+
+    private class PathNodeRecord
+    {
+        public HexNode Node;
+        public PathNodeRecord Parent;
+        public int gCost;
+        public int hCost;
+        public int fCost => gCost + hCost;
+
+        public PathNodeRecord(HexNode node)
+        {
+            Node = node;
+        }
+    }
 
     void Awake()
     {
         grid = GetComponent<HexGrid>();
         playerManager = Object.FindAnyObjectByType<PlayerManager>();
+        techManager = Object.FindAnyObjectByType<TechManager>();
     }
 
     public List<HexNode> FindPath(HexNode startNode, HexNode targetNode, int playerId)
     {
-        List<HexNode> openSet = new List<HexNode>();
+        Dictionary<HexNode, PathNodeRecord> nodeRecords = new Dictionary<HexNode, PathNodeRecord>();
+        List<PathNodeRecord> openSet = new List<PathNodeRecord>();
         HashSet<HexNode> closedSet = new HashSet<HexNode>();
 
-        openSet.Add(startNode);
+        PathNodeRecord startRecord = new PathNodeRecord(startNode) { gCost = 0 };
+        startRecord.hCost = GetDistance(startNode, targetNode);
+
+        nodeRecords[startNode] = startRecord;
+        openSet.Add(startRecord);
 
         while (openSet.Count > 0)
         {
-            HexNode currentNode = openSet[0];
+            PathNodeRecord currentRecord = openSet[0];
             for (int i = 1; i < openSet.Count; i++)
             {
-                if (openSet[i].fCost < currentNode.fCost ||
-                    openSet[i].fCost == currentNode.fCost && openSet[i].hCost < currentNode.hCost)
+                if (openSet[i].fCost < currentRecord.fCost ||
+                    openSet[i].fCost == currentRecord.fCost && openSet[i].hCost < currentRecord.hCost)
                 {
-                    currentNode = openSet[i];
+                    currentRecord = openSet[i];
                 }
             }
 
-            openSet.Remove(currentNode);
-            closedSet.Add(currentNode);
+            openSet.Remove(currentRecord);
+            closedSet.Add(currentRecord.Node);
 
-            if (currentNode == targetNode)
+            if (currentRecord.Node == targetNode)
             {
-                return RetracePath(startNode, targetNode);
+                return RetracePath(startRecord, currentRecord);
             }
 
-            foreach (HexNode neighbor in grid.GetNeighbors(currentNode))
+            foreach (HexNode neighbor in grid.GetNeighbors(currentRecord.Node))
             {
+                if (closedSet.Contains(neighbor)) continue;
+
                 bool isWalkable = neighbor.isLand;
                 int perceivedCost = (int)neighbor.movementCost;
+
+                bool currentIsLand = currentRecord.Node.isLand;
+                bool neighborIsLand = neighbor.isLand;
+
+                if (!currentIsLand && !neighborIsLand)
+                {
+                    if (techManager != null && techManager.HasTech(playerId, TechType.Sailing))
+                    {
+                        isWalkable = true;
+                        perceivedCost = 10;
+                    }
+                    else
+                    {
+                        isWalkable = false;
+                    }
+                }
+                else if (currentIsLand != neighborIsLand)
+                {
+                    if (techManager != null && techManager.HasTech(playerId, TechType.Sailing))
+                    {
+                        isWalkable = true;
+                        perceivedCost = 20;
+                    }
+                    else
+                    {
+                        isWalkable = false;
+                    }
+                }
 
                 if (neighbor.GetVision(playerId) == VisionState.Unexplored)
                 {
@@ -67,20 +118,24 @@ public class Pathfinder : MonoBehaviour
                     }
                 }
 
-                if (!isWalkable || closedSet.Contains(neighbor))
+                if (!isWalkable) continue;
+
+                int newMovementCostToNeighbor = currentRecord.gCost + perceivedCost;
+
+                if (!nodeRecords.TryGetValue(neighbor, out PathNodeRecord neighborRecord))
                 {
-                    continue;
+                    neighborRecord = new PathNodeRecord(neighbor);
+                    nodeRecords[neighbor] = neighborRecord;
                 }
 
-                int newMovementCostToNeighbor = currentNode.gCost + perceivedCost;
-                if (newMovementCostToNeighbor < neighbor.gCost || !openSet.Contains(neighbor))
+                if (newMovementCostToNeighbor < neighborRecord.gCost || !openSet.Contains(neighborRecord))
                 {
-                    neighbor.gCost = newMovementCostToNeighbor;
-                    neighbor.hCost = GetDistance(neighbor, targetNode);
-                    neighbor.parent = currentNode;
+                    neighborRecord.gCost = newMovementCostToNeighbor;
+                    neighborRecord.hCost = GetDistance(neighbor, targetNode);
+                    neighborRecord.Parent = currentRecord;
 
-                    if (!openSet.Contains(neighbor))
-                        openSet.Add(neighbor);
+                    if (!openSet.Contains(neighborRecord))
+                        openSet.Add(neighborRecord);
                 }
             }
         }
@@ -88,15 +143,15 @@ public class Pathfinder : MonoBehaviour
         return null;
     }
 
-    private List<HexNode> RetracePath(HexNode startNode, HexNode endNode)
+    private List<HexNode> RetracePath(PathNodeRecord startNode, PathNodeRecord endNode)
     {
         List<HexNode> path = new List<HexNode>();
-        HexNode currentNode = endNode;
+        PathNodeRecord currentNode = endNode;
 
         while (currentNode != startNode)
         {
-            path.Add(currentNode);
-            currentNode = currentNode.parent;
+            path.Add(currentNode.Node);
+            currentNode = currentNode.Parent;
         }
 
         path.Reverse();
@@ -113,7 +168,8 @@ public class Pathfinder : MonoBehaviour
         }
 
         int dy = Mathf.Abs(nodeA.y - nodeB.y);
+        int dz = Mathf.Abs(-nodeA.x - nodeA.y - (-nodeB.x - nodeB.y));
 
-        return Mathf.Max(dx, dy) * 10;
+        return Mathf.Max(dx, Mathf.Max(dy, dz)) * 10;
     }
 }

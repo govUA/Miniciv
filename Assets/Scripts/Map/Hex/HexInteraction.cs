@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Tilemaps;
 using UnityEngine.InputSystem;
 using System.Collections.Generic;
@@ -20,6 +19,7 @@ public class HexInteraction : MonoBehaviour
 
     private HexGrid hexGrid;
     private Pathfinder pathfinder;
+    private TechManager techManager;
 
     private Vector3Int previousHoverPosition = new Vector3Int(-9999, -9999, -9999);
     private HexNode selectedNode;
@@ -31,6 +31,7 @@ public class HexInteraction : MonoBehaviour
     {
         hexGrid = GetComponent<HexGrid>();
         pathfinder = GetComponent<Pathfinder>();
+        techManager = Object.FindAnyObjectByType<TechManager>();
     }
 
     void Update()
@@ -79,16 +80,9 @@ public class HexInteraction : MonoBehaviour
                             ? selectedCity.currentProject.name
                             : "None";
                         int reqFood = selectedCity.population * 10 + 10;
-                        string sciStr = "";
-                        if (playerManager != null)
-                        {
-                            PlayerData p = playerManager.GetPlayer(turnManager.CurrentPlayerID);
-                            if (p != null)
-                                sciStr = $" | Global Sci: {p.accumulatedResearch} (Target: {p.currentResearch})";
-                        }
 
                         Debug.Log(
-                            $"[UI] Selected City: {selectedCity.cityName} | Pop: {selectedCity.population} | Food: {selectedCity.storedFood}/{reqFood} | Prod: {selectedCity.storedProduction} | Project: {projStr}{sciStr}");
+                            $"[UI] Selected City: {selectedCity.cityName} | Pop: {selectedCity.population} | Food: {selectedCity.storedFood}/{reqFood} | Prod: {selectedCity.storedProduction} | Project: {projStr}");
                         foundSomething = true;
                         break;
                     }
@@ -331,13 +325,13 @@ public class HexInteraction : MonoBehaviour
 
                 float defStrength = defUnit.meleeStrength * defModifier;
 
-                float rngHit = UnityEngine.Random.Range(0.85f, 1.15f);
+                float rngHit = Random.Range(0.85f, 1.15f);
                 int dmgToDef = Mathf.RoundToInt(30f * (attStrength / defStrength) * rngHit);
                 defUnit.TakeDamage(dmgToDef);
 
                 if (attacker.unitClass == UnitClass.Melee && defUnit.currentHP > 0)
                 {
-                    float rngRet = UnityEngine.Random.Range(0.85f, 1.15f);
+                    float rngRet = Random.Range(0.85f, 1.15f);
                     int dmgToAtt = Mathf.RoundToInt(30f * (defStrength / attStrength) * rngRet);
                     attacker.TakeDamage(dmgToAtt);
                 }
@@ -345,7 +339,7 @@ public class HexInteraction : MonoBehaviour
         }
         else if (defCity != null)
         {
-            float rngHit = UnityEngine.Random.Range(0.85f, 1.15f);
+            float rngHit = Random.Range(0.85f, 1.15f);
             int dmgToCity = Mathf.RoundToInt(30f * (attStrength / defCity.garrisonStrength) * rngHit);
 
             int oldOwner = defCity.ownerID;
@@ -378,7 +372,7 @@ public class HexInteraction : MonoBehaviour
             {
                 if (attacker.unitClass == UnitClass.Melee && defCity.ownerID != attacker.ownerID)
                 {
-                    float rngRet = UnityEngine.Random.Range(0.85f, 1.15f);
+                    float rngRet = Random.Range(0.85f, 1.15f);
                     int dmgToAtt = Mathf.RoundToInt(30f * ((float)defCity.garrisonStrength / attStrength) * rngRet);
                     attacker.TakeDamage(dmgToAtt);
                 }
@@ -398,7 +392,7 @@ public class HexInteraction : MonoBehaviour
             if (defUnit.CurrentNode.terrainType == TerrainType.Forest) defModifier += 0.15f;
 
             float defStrength = defUnit.meleeStrength * defModifier;
-            float rngHit = UnityEngine.Random.Range(0.85f, 1.15f);
+            float rngHit = Random.Range(0.85f, 1.15f);
 
             int dmgToDef = Mathf.RoundToInt(30f * ((float)attacker.garrisonStrength / defStrength) * rngHit);
             defUnit.TakeDamage(dmgToDef);
@@ -467,12 +461,12 @@ public class HexInteraction : MonoBehaviour
             }
         }
 
-        if (playerManager != null && turnManager != null)
+        if (techManager != null && turnManager != null)
         {
             if (Keyboard.current.tKey.wasPressedThisFrame)
-                playerManager.SetResearch(turnManager.CurrentPlayerID, "Pottery");
+                techManager.SetResearch(turnManager.CurrentPlayerID, TechType.Pottery);
             if (Keyboard.current.yKey.wasPressedThisFrame)
-                playerManager.SetResearch(turnManager.CurrentPlayerID, "Bronze Working");
+                techManager.SetResearch(turnManager.CurrentPlayerID, TechType.BronzeWorking);
         }
 
         if (selectedCity != null && selectedCity.ownerID == turnManager.CurrentPlayerID)
@@ -484,10 +478,9 @@ public class HexInteraction : MonoBehaviour
             if (Keyboard.current.digit3Key.wasPressedThisFrame)
                 selectedCity.SetProject(new CityProject("Monument", ProjectType.Building, 40));
             if (Keyboard.current.digit4Key.wasPressedThisFrame)
-                selectedCity.SetProject(new CityProject("Archer", ProjectType.Unit, 30, "Pottery"));
+                selectedCity.SetProject(new CityProject("Archer", ProjectType.Unit, 30, TechType.Pottery));
             if (Keyboard.current.digit5Key.wasPressedThisFrame)
-                selectedCity.SetProject(new CityProject("Warrior", ProjectType.Unit, 40, "Bronze Working"));
-
+                selectedCity.SetProject(new CityProject("Warrior", ProjectType.Unit, 40, TechType.BronzeWorking));
             if (Keyboard.current.digit6Key.wasPressedThisFrame)
                 selectedCity.SetProject(new CityProject("Repair", ProjectType.Process, 0));
         }

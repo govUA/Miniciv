@@ -808,6 +808,7 @@ GameObject:
   - component: {fileID: 1775689251}
   - component: {fileID: 1775689252}
   - component: {fileID: 1775689253}
+  - component: {fileID: 1775689255}
   m_Layer: 0
   m_Name: MapGenerator
   m_TagString: Untagged
@@ -941,7 +942,7 @@ MonoBehaviour:
     iconSprite: {fileID: 8583310826363592444, guid: e61d084b1ee93b245af4d4feee493518, type: 3}
   - unitName: Scout
     mainSprite: {fileID: 150086971757272781, guid: 3a7904801a75e6a46a47dc6a69b09752, type: 3}
-    iconSprite: {fileID: 150086971757272781, guid: 61ed288de1f831b4182618cad0945247, type: 3}
+    iconSprite: {fileID: 150086971757272781, guid: 7e51d3649da1b9d4baa19b6b883c05cf, type: 3}
 --- !u!114 &1775689248
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1036,6 +1037,18 @@ MonoBehaviour:
   hexRadius: 0.427
   mergeTolerance: 0.15
   isFlatTop: 1
+--- !u!114 &1775689255
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1775689240}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 206523df42344c388d96591616dd67a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TechManager
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
