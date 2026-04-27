@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using TMPro;
+using UnityEngine.InputSystem;
 
 public class City : MonoBehaviour
 {
@@ -185,5 +186,25 @@ public class City : MonoBehaviour
     {
         SpriteRenderer sr = GetComponent<SpriteRenderer>();
         if (sr != null) sr.enabled = isVisible;
+    }
+
+    void Update()
+    {
+        if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+        {
+            Vector2 screenPosition = Mouse.current.position.ReadValue();
+            Vector2 mousePosition = Camera.main.ScreenToWorldPoint(screenPosition);
+
+            RaycastHit2D hit = Physics2D.Raycast(mousePosition, Vector2.zero);
+
+            if (hit.collider != null && hit.collider.gameObject == this.gameObject)
+            {
+                CityUIManager uiManager = FindAnyObjectByType<CityUIManager>();
+                if (uiManager != null)
+                {
+                    uiManager.OpenCityUI(this);
+                }
+            }
+        }
     }
 }
