@@ -60,6 +60,14 @@ public class TechManager : MonoBehaviour
                 }
             },
             {
+                TechType.AnimalHusbandry,
+                new TechData
+                {
+                    Tech = TechType.AnimalHusbandry, Name = "Animal Husbandry", Cost = 40,
+                    Prerequisites = new List<TechType> { TechType.Agriculture }
+                }
+            },
+            {
                 TechType.Sailing,
                 new TechData
                 {
@@ -73,6 +81,38 @@ public class TechManager : MonoBehaviour
                 {
                     Tech = TechType.Mining, Name = "Mining", Cost = 40,
                     Prerequisites = new List<TechType> { TechType.Agriculture }
+                }
+            },
+            {
+                TechType.Archery,
+                new TechData
+                {
+                    Tech = TechType.Archery, Name = "Archery", Cost = 50,
+                    Prerequisites = new List<TechType> { TechType.AnimalHusbandry }
+                }
+            },
+            {
+                TechType.BronzeWorking,
+                new TechData
+                {
+                    Tech = TechType.BronzeWorking, Name = "Bronze Working", Cost = 65,
+                    Prerequisites = new List<TechType> { TechType.Mining }
+                }
+            },
+            {
+                TechType.Masonry,
+                new TechData
+                {
+                    Tech = TechType.Masonry, Name = "Masonry", Cost = 60,
+                    Prerequisites = new List<TechType> { TechType.Mining }
+                }
+            },
+            {
+                TechType.IronWorking,
+                new TechData
+                {
+                    Tech = TechType.IronWorking, Name = "Iron Working", Cost = 100,
+                    Prerequisites = new List<TechType> { TechType.BronzeWorking }
                 }
             }
         };
@@ -128,5 +168,21 @@ public class TechManager : MonoBehaviour
     public void UnlockTech(int playerId, TechType tech)
     {
         GetState(playerId).UnlockedTechs.Add(tech);
+    }
+
+    public TechType? GetCurrentResearch(int playerId)
+    {
+        return GetState(playerId).CurrentResearch;
+    }
+
+    public int GetAccumulatedResearch(int playerId)
+    {
+        return GetState(playerId).AccumulatedResearch;
+    }
+
+    public int GetTechCost(TechType tech)
+    {
+        if (techTree.TryGetValue(tech, out TechData data)) return data.Cost;
+        return 0;
     }
 }
