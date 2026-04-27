@@ -45,6 +45,8 @@ public class Unit : MonoBehaviour
     public bool isFortified = false;
     public bool isHealing = false;
 
+    public SpriteRenderer factionIconRenderer;
+
     private Queue<HexNode> pathQueue = new Queue<HexNode>();
     private Tilemap tilemap;
     private TurnManager turnManager;
@@ -53,7 +55,7 @@ public class Unit : MonoBehaviour
     private Action onDestinationReached;
 
     public void Initialize(HexNode startNode, Vector3 worldPosition, Tilemap map, TurnManager tm, int playerId,
-        string name, HexGrid grid)
+        string name, HexGrid grid, Sprite mainSprite = null, Sprite iconSprite = null)
     {
         CurrentNode = startNode;
         transform.position = worldPosition;
@@ -66,6 +68,30 @@ public class Unit : MonoBehaviour
         currentHP = maxHP;
         currentMP = maxMP;
         State = UnitState.Idle;
+
+        SpriteRenderer sr = GetComponent<SpriteRenderer>();
+        if (sr != null && mainSprite != null)
+        {
+            sr.sprite = mainSprite;
+        }
+
+        if (factionIconRenderer != null && iconSprite != null)
+        {
+            factionIconRenderer.sprite = iconSprite;
+
+            if (sr != null)
+            {
+                factionIconRenderer.sortingOrder = sr.sortingOrder + 1;
+            }
+
+            float maxBounds = Mathf.Max(iconSprite.bounds.size.x, iconSprite.bounds.size.y);
+            if (maxBounds > 0)
+            {
+                float targetSize = 0.8f;
+                float finalScale = targetSize / maxBounds;
+                factionIconRenderer.transform.localScale = new Vector3(finalScale, finalScale, 1f);
+            }
+        }
 
         if (unitName == "Settler" || unitName == "Builder")
         {
@@ -96,13 +122,17 @@ public class Unit : MonoBehaviour
             attackRange = 0;
         }
 
-        SpriteRenderer sr = GetComponent<SpriteRenderer>();
-        if (sr != null)
+        PlayerManager pm = UnityEngine.Object.FindAnyObjectByType<PlayerManager>();
+        if (pm != null && factionIconRenderer != null)
         {
-            if (unitClass == UnitClass.Civilian)
-                sr.color = (ownerID == 0) ? Color.cyan : new Color(1f, 0.5f, 0f);
-            else
-                sr.color = (ownerID == 0) ? Color.blue : Color.red;
+            PlayerData pd = pm.GetPlayer(ownerID);
+            if (pd != null)
+            {
+                Material mat = new Material(factionIconRenderer.material);
+                mat.SetColor("_ColorWhite", pd.primaryColor);
+                mat.SetColor("_ColorBlack", pd.secondaryColor);
+                factionIconRenderer.material = mat;
+            }
         }
 
         if (turnManager != null) turnManager.OnTurnEnded += HandleNewTurn;

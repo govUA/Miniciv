@@ -6,14 +6,13 @@ using System.Collections.Generic;
 public class CityManager : MonoBehaviour
 {
     public GameObject cityPrefab;
-    public Tilemap territoryTilemap;
-    public TileBase p0TerritoryTile;
-    public TileBase p1TerritoryTile;
 
     public FogOfWarManager fowManager;
     public TurnManager turnManager;
     public UnitManager unitManager;
     public PlayerManager playerManager;
+
+    private BorderManager borderManager;
 
     private HexGrid grid;
     private List<City> activeCities = new List<City>();
@@ -21,6 +20,8 @@ public class CityManager : MonoBehaviour
     void Awake()
     {
         grid = GetComponent<HexGrid>();
+
+        borderManager = FindAnyObjectByType<BorderManager>();
     }
 
     void OnEnable()
@@ -52,7 +53,7 @@ public class CityManager : MonoBehaviour
         {
             foreach (HexNode neighbor in grid.GetNeighbors(node))
             {
-                if (neighbor.isLand && neighbor.ownerID == -1)
+                if (neighbor.ownerID == -1)
                 {
                     if (!candidates.Contains(neighbor))
                         candidates.Add(neighbor);
@@ -78,12 +79,13 @@ public class CityManager : MonoBehaviour
             bestTile.ownerID = city.ownerID;
             city.territoryNodes.Add(bestTile);
 
-            DrawPlayerMemoryTerritory(turnManager.CurrentPlayerID);
 
             if (fowManager != null)
             {
                 fowManager.UpdateVisionDisplay(city.ownerID);
             }
+
+            if (borderManager != null) borderManager.UpdateBorders();
         }
     }
 
@@ -103,6 +105,9 @@ public class CityManager : MonoBehaviour
         activeCities.Add(newCity);
 
         ClaimInitialTerritory(newCity);
+
+        if (borderManager != null) borderManager.UpdateBorders();
+
         return true;
     }
 
@@ -111,40 +116,14 @@ public class CityManager : MonoBehaviour
         List<HexNode> initial = grid.GetNodesInRange(city.centerNode, 1);
         foreach (HexNode n in initial)
         {
-            if (n.isLand && n.ownerID == -1)
+            if (n.ownerID == -1)
             {
                 n.ownerID = city.ownerID;
                 city.territoryNodes.Add(n);
             }
         }
 
-        DrawPlayerMemoryTerritory(city.ownerID);
         if (fowManager != null) fowManager.UpdateVisionDisplay(city.ownerID);
-    }
-
-    public void DrawPlayerMemoryTerritory(int playerId)
-    {
-        territoryTilemap.ClearAllTiles();
-        int startOffset = grid.wrapWorld ? -1 : 0;
-        int endOffset = grid.wrapWorld ? 1 : 0;
-
-        for (int offset = startOffset; offset <= endOffset; offset++)
-        {
-            for (int x = 0; x < grid.GetWidth(); x++)
-            {
-                for (int y = 0; y < grid.GetHeight(); y++)
-                {
-                    HexNode node = grid.GetNode(x, y);
-                    int remOwner = node.GetRememberedOwner(playerId);
-                    if (remOwner != -1)
-                    {
-                        TileBase tile = (remOwner == 0) ? p0TerritoryTile : p1TerritoryTile;
-                        int tileX = x + (offset * grid.GetWidth());
-                        territoryTilemap.SetTile(new Vector3Int(y, tileX, 0), tile);
-                    }
-                }
-            }
-        }
     }
 
     public List<City> GetActiveCities() => activeCities;
@@ -156,7 +135,8 @@ public class CityManager : MonoBehaviour
             n.ownerID = city.ownerID;
         }
 
-        if (turnManager != null) DrawPlayerMemoryTerritory(turnManager.CurrentPlayerID);
         if (fowManager != null) fowManager.UpdateVisionDisplay(city.ownerID);
+
+        if (borderManager != null) borderManager.UpdateBorders();
     }
 }

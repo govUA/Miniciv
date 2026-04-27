@@ -9,12 +9,24 @@ public class PlayerData
     public string currentResearch = "";
     public int accumulatedResearch = 0;
     public List<string> unlockedTechs = new List<string>();
-
     public HashSet<int> atWarWith = new HashSet<int>();
+
+    public Color primaryColor = Color.white;
+    public Color secondaryColor = Color.black;
 
     public PlayerData(int id)
     {
         this.id = id;
+        if (id == 0)
+        {
+            primaryColor = Color.blue;
+            secondaryColor = Color.white;
+        }
+        else
+        {
+            primaryColor = Color.red;
+            secondaryColor = Color.yellow;
+        }
     }
 }
 

@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using TMPro;
 
 public class City : MonoBehaviour
 {
@@ -23,6 +24,9 @@ public class City : MonoBehaviour
     public List<string> builtBuildings = new List<string>();
     public List<HexNode> territoryNodes = new List<HexNode>();
 
+    public TextMeshPro nameText;
+    public SpriteRenderer nameBackgroundRenderer;
+
     private UnitManager unitManager;
     private CityManager cityManager;
     private PlayerManager playerManager;
@@ -43,8 +47,23 @@ public class City : MonoBehaviour
 
     private void UpdateColor()
     {
-        SpriteRenderer sr = GetComponent<SpriteRenderer>();
-        if (sr != null) sr.color = (ownerID == 0) ? Color.blue : Color.red;
+        if (nameText != null)
+        {
+            nameText.text = cityName;
+        }
+
+        if (playerManager != null)
+        {
+            PlayerData pd = playerManager.GetPlayer(ownerID);
+            if (pd != null)
+            {
+                if (nameText != null)
+                    nameText.color = pd.primaryColor;
+
+                if (nameBackgroundRenderer != null)
+                    nameBackgroundRenderer.color = pd.secondaryColor;
+            }
+        }
     }
 
     public void TakeDamage(int amount, int attackerId)

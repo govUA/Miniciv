@@ -2,12 +2,22 @@
 using UnityEngine.Tilemaps;
 using System.Collections.Generic;
 
+[System.Serializable]
+public struct UnitVisuals
+{
+    public string unitName;
+    public Sprite mainSprite;
+    public Sprite iconSprite;
+}
+
 [RequireComponent(typeof(HexGrid))]
 public class UnitManager : MonoBehaviour
 {
     public GameObject unitPrefab;
     public Tilemap mainTilemap;
     public TurnManager turnManager;
+
+    public List<UnitVisuals> unitVisualSettings;
 
     private List<Unit> activeUnits = new List<Unit>();
     private HexGrid grid;
@@ -25,7 +35,22 @@ public class UnitManager : MonoBehaviour
         GameObject unitObj = Instantiate(unitPrefab, spawnPos, Quaternion.identity);
 
         Unit newUnit = unitObj.GetComponent<Unit>();
-        newUnit.Initialize(spawnNode, spawnPos, mainTilemap, turnManager, playerId, unitName, grid);
+
+        Sprite mainSprite = null;
+        Sprite iconSprite = null;
+
+        foreach (var setting in unitVisualSettings)
+        {
+            if (setting.unitName == unitName)
+            {
+                mainSprite = setting.mainSprite;
+                iconSprite = setting.iconSprite;
+                break;
+            }
+        }
+
+        newUnit.Initialize(spawnNode, spawnPos, mainTilemap, turnManager, playerId, unitName, grid, mainSprite,
+            iconSprite);
 
         activeUnits.Add(newUnit);
 

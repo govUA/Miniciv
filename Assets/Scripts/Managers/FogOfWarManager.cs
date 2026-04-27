@@ -149,11 +149,6 @@ public class FogOfWarManager : MonoBehaviour
             }
         }
 
-        if (cityManager != null)
-        {
-            cityManager.DrawPlayerMemoryTerritory(playerId);
-        }
-
         if (unitManager != null)
         {
             foreach (Unit unit in unitManager.GetActiveUnits())
