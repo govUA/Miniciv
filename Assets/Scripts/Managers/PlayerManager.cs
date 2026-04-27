@@ -7,6 +7,7 @@ public class PlayerData
     public HashSet<int> atWarWith = new HashSet<int>();
     public Color primaryColor = Color.white;
     public Color secondaryColor = Color.black;
+    public int gold = 10;
 
     public PlayerData(int id)
     {
