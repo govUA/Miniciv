@@ -12,9 +12,16 @@ public class CityUIManager : MonoBehaviour
     [Header("Main UI")] public GameObject cityUIPanel;
     public Button closeButton;
 
-    [Header("Left Panel: Projects")] public Transform projectListContainer;
+    [Header("Left Panel: Projects List")] public Transform projectListContainer;
     public GameObject projectButtonPrefab;
-    public TextMeshProUGUI currentProjectInfoText;
+
+    [Header("Left Panel: Current Project")]
+    public GameObject currentProjectContainer;
+
+    public Image currentProjectIcon;
+    public TextMeshProUGUI currentProjectNameText;
+    public TextMeshProUGUI currentProjectProgressText;
+    public Image currentProjectProgressBar;
 
     [Header("Right Panel: City Statistics")]
     public TextMeshProUGUI cityNameText;
@@ -74,11 +81,50 @@ public class CityUIManager : MonoBehaviour
                                 $"+{turnProd} Production\n" +
                                 $"+{turnSci} Science";
 
+        UpdateCurrentProjectUI();
+    }
+
+    private void UpdateCurrentProjectUI()
+    {
         if (currentCity.currentProject != null)
-            currentProjectInfoText.text =
-                $"Current Project: {currentCity.currentProject.name} ({currentCity.storedProduction}/{currentCity.currentProject.cost})";
+        {
+            currentProjectContainer.SetActive(true);
+            CityProject proj = currentCity.currentProject;
+
+            currentProjectNameText.text = proj.name;
+
+            if (proj.type == ProjectType.Process)
+            {
+                currentProjectProgressText.text = "Active Process";
+                if (currentProjectProgressBar != null) currentProjectProgressBar.fillAmount = 1f;
+            }
+            else
+            {
+                currentProjectProgressText.text = $"{currentCity.storedProduction} / {proj.cost} Prod.";
+                if (currentProjectProgressBar != null && proj.cost > 0)
+                {
+                    currentProjectProgressBar.fillAmount = (float)currentCity.storedProduction / proj.cost;
+                }
+            }
+
+            string folder = proj.type switch
+            {
+                ProjectType.Building => "Icons/Buildings",
+                ProjectType.Unit => "Icons/Units",
+                ProjectType.Process => "Icons/Projects",
+                _ => "Icons"
+            };
+
+            Sprite loadedIcon = Resources.Load<Sprite>($"{folder}/{proj.name}");
+            if (loadedIcon != null && currentProjectIcon != null)
+            {
+                currentProjectIcon.sprite = loadedIcon;
+            }
+        }
         else
-            currentProjectInfoText.text = "Current Project: None";
+        {
+            currentProjectContainer.SetActive(false);
+        }
     }
 
     private void PopulateProjects()
@@ -91,6 +137,8 @@ public class CityUIManager : MonoBehaviour
         List<CityProject> availableProjects = new List<CityProject>
         {
             new CityProject("Warrior", ProjectType.Unit, 40),
+            new CityProject("Archer", ProjectType.Unit, 40),
+            new CityProject("Scout", ProjectType.Unit, 20),
             new CityProject("Settler", ProjectType.Unit, 80),
             new CityProject("Monument", ProjectType.Building, 60),
             new CityProject("Repair", ProjectType.Process, 0)
@@ -103,7 +151,22 @@ public class CityUIManager : MonoBehaviour
 
             btnText.text = proj.type == ProjectType.Process
                 ? proj.name
-                : $"{proj.name} ({proj.cost} Prod.)";
+                : $"{proj.name}\n<size=80%>{proj.cost} Prod.</size>";
+
+            Image projectIcon = btnObj.transform.Find("Icon")?.GetComponent<Image>();
+            if (projectIcon != null)
+            {
+                string folder = proj.type switch
+                {
+                    ProjectType.Building => "Icons/Buildings",
+                    ProjectType.Unit => "Icons/Units",
+                    ProjectType.Process => "Icons/Projects",
+                    _ => "Icons"
+                };
+
+                Sprite loadedIcon = Resources.Load<Sprite>($"{folder}/{proj.name}");
+                if (loadedIcon != null) projectIcon.sprite = loadedIcon;
+            }
 
             Button button = btnObj.GetComponent<Button>();
             button.onClick.AddListener(() => OnProjectSelected(proj));

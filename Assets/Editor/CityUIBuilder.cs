@@ -74,9 +74,6 @@ public class CityUIBuilder : EditorWindow
             "Accumulated:\nFood: 0\nProduction: 0", 20);
         TextMeshProUGUI turnText =
             CreateText("PerTurnStatsText", rightPanel.transform, "Yield (per turn):\n+0 Food", 20);
-        TextMeshProUGUI projInfoText =
-            CreateText("CurrentProjectText", rightPanel.transform, "Current project: None", 20);
-        projInfoText.color = new Color(1f, 0.8f, 0.2f);
 
         GameObject btnTemplate = CreateUIObject("ProjectButtonTemplate", null);
         btnTemplate.AddComponent<Image>().color = new Color(0.25f, 0.25f, 0.25f, 1f);
@@ -96,7 +93,6 @@ public class CityUIBuilder : EditorWindow
         uiManager.populationText = popText;
         uiManager.accumulatedStatsText = accumText;
         uiManager.perTurnStatsText = turnText;
-        uiManager.currentProjectInfoText = projInfoText;
 
         Selection.activeGameObject = canvasObj;
         Debug.Log("<color=green>City UI successfully generated and connected!</color>");
