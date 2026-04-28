@@ -109,7 +109,29 @@ public class CityManager : MonoBehaviour
         GameObject cityObj = Instantiate(cityPrefab, spawnPos, Quaternion.identity);
         City newCity = cityObj.GetComponent<City>();
 
-        newCity.Initialize(node, settler.ownerID, "City " + (activeCities.Count + 1), unitManager, this, playerManager);
+        string newCityName = "City " + (activeCities.Count + 1);
+        PlayerData pd = playerManager.GetPlayer(settler.ownerID);
+
+        if (pd != null && pd.civilization != null && pd.civilization.cityNames != null &&
+            pd.civilization.cityNames.Count > 0)
+        {
+            int playerCityCount = 0;
+            foreach (City c in activeCities)
+            {
+                if (c.ownerID == settler.ownerID) playerCityCount++;
+            }
+
+            if (playerCityCount < pd.civilization.cityNames.Count)
+            {
+                newCityName = pd.civilization.cityNames[playerCityCount];
+            }
+            else
+            {
+                newCityName = pd.civilization.cityNames[0] + " " + (playerCityCount + 1);
+            }
+        }
+
+        newCity.Initialize(node, settler.ownerID, newCityName, unitManager, this, playerManager);
 
         node.hasCity = true;
         activeCities.Add(newCity);

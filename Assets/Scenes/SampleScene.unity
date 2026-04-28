@@ -4822,6 +4822,7 @@ GameObject:
   - component: {fileID: 1775689256}
   - component: {fileID: 1775689257}
   - component: {fileID: 1775689258}
+  - component: {fileID: 1775689259}
   m_Layer: 0
   m_Name: MapGenerator
   m_TagString: Untagged
@@ -5032,6 +5033,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 25f98f3fca7f4057bacb8c39ae563620, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerManager
+  civilizationManager: {fileID: 1775689259}
 --- !u!114 &1775689253
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5110,6 +5112,118 @@ MonoBehaviour:
   unitManager: {fileID: 1775689247}
   playerManager: {fileID: 1775689252}
   maxTurns: 100
+--- !u!114 &1775689259
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1775689240}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 13885442770e42e3b82bae4a862962ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CivilizationManager
+  jsonFile: {fileID: 4900000, guid: 41fe02e267fa44caa71fc6dbbbcc8540, type: 3}
+  availableCivilizations:
+  - civName: 
+    leaderName: 
+    uniqueUnit: 
+    uniqueBuilding: 
+    primaryColorHex: 
+    secondaryColorHex: 
+    cityNames: []
+  - civName: 
+    leaderName: 
+    uniqueUnit: 
+    uniqueBuilding: 
+    primaryColorHex: 
+    secondaryColorHex: 
+    cityNames: []
+  - civName: 
+    leaderName: 
+    uniqueUnit: 
+    uniqueBuilding: 
+    primaryColorHex: 
+    secondaryColorHex: 
+    cityNames: []
+  - civName: 
+    leaderName: 
+    uniqueUnit: 
+    uniqueBuilding: 
+    primaryColorHex: 
+    secondaryColorHex: 
+    cityNames: []
+  - civName: 
+    leaderName: 
+    uniqueUnit: 
+    uniqueBuilding: 
+    primaryColorHex: 
+    secondaryColorHex: 
+    cityNames: []
+  - civName: 
+    leaderName: 
+    uniqueUnit: 
+    uniqueBuilding: 
+    primaryColorHex: 
+    secondaryColorHex: 
+    cityNames: []
+  - civName: 
+    leaderName: 
+    uniqueUnit: 
+    uniqueBuilding: 
+    primaryColorHex: 
+    secondaryColorHex: 
+    cityNames: []
+  - civName: 
+    leaderName: 
+    uniqueUnit: 
+    uniqueBuilding: 
+    primaryColorHex: 
+    secondaryColorHex: 
+    cityNames: []
+  - civName: 
+    leaderName: 
+    uniqueUnit: 
+    uniqueBuilding: 
+    primaryColorHex: 
+    secondaryColorHex: 
+    cityNames: []
+  - civName: 
+    leaderName: 
+    uniqueUnit: 
+    uniqueBuilding: 
+    primaryColorHex: 
+    secondaryColorHex: 
+    cityNames: []
+  - civName: 
+    leaderName: 
+    uniqueUnit: 
+    uniqueBuilding: 
+    primaryColorHex: 
+    secondaryColorHex: 
+    cityNames: []
+  - civName: 
+    leaderName: 
+    uniqueUnit: 
+    uniqueBuilding: 
+    primaryColorHex: 
+    secondaryColorHex: 
+    cityNames: []
+  - civName: 
+    leaderName: 
+    uniqueUnit: 
+    uniqueBuilding: 
+    primaryColorHex: 
+    secondaryColorHex: 
+    cityNames: []
+  - civName: 
+    leaderName: 
+    uniqueUnit: 
+    uniqueBuilding: 
+    primaryColorHex: 
+    secondaryColorHex: 
+    cityNames: []
 --- !u!1 &1822924926
 GameObject:
   m_ObjectHideFlags: 0

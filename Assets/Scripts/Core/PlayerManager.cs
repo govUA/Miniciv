@@ -9,34 +9,68 @@ public class PlayerData
     public Color primaryColor = Color.white;
     public Color secondaryColor = Color.black;
     public int gold = 10;
+    public CivilizationData civilization;
 
-    public PlayerData(int id, bool isAI = false)
+    public PlayerData(int id, bool isAI = false, CivilizationData civ = null)
     {
         this.id = id;
         this.isAI = isAI;
-        if (id == 0)
+        this.civilization = civ;
+        if (civ != null)
         {
-            primaryColor = Color.blue;
-            secondaryColor = Color.white;
+            if (ColorUtility.TryParseHtmlString(civ.primaryColorHex, out Color pColor))
+                primaryColor = pColor;
+            else
+                primaryColor = Color.blue;
+
+            if (ColorUtility.TryParseHtmlString(civ.secondaryColorHex, out Color sColor))
+                secondaryColor = sColor;
+            else
+                secondaryColor = Color.white;
         }
         else
         {
-            primaryColor = Color.red;
-            secondaryColor = Color.yellow;
+            if (id == 0)
+            {
+                primaryColor = Color.blue;
+                secondaryColor = Color.white;
+            }
+            else
+            {
+                primaryColor = Color.red;
+                secondaryColor = Color.yellow;
+            }
         }
     }
 }
 
 public class PlayerManager : MonoBehaviour
 {
+    public CivilizationManager civilizationManager;
     private Dictionary<int, PlayerData> players = new Dictionary<int, PlayerData>();
 
     public void InitializePlayers(int count)
     {
+        List<CivilizationData> assignedCivs = new List<CivilizationData>();
         for (int i = 0; i < count; i++)
         {
             bool isAI = (i > 0);
-            players[i] = new PlayerData(i, isAI);
+            CivilizationData assignedCiv = null;
+
+            if (civilizationManager != null)
+            {
+                assignedCiv = civilizationManager.AssignRandomCivilization(assignedCivs);
+                if (assignedCiv != null)
+                {
+                    assignedCivs.Add(assignedCiv);
+                }
+            }
+
+            players[i] = new PlayerData(i, isAI, assignedCiv);
+
+            string civName = assignedCiv != null ? assignedCiv.civName : "Unknown";
+            string leader = assignedCiv != null ? assignedCiv.leaderName : "Unknown";
+            Debug.Log($"[PLAYER] Player {i} initialized as {civName} (Leader: {leader})");
         }
     }
 
