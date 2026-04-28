@@ -52,7 +52,7 @@ public class AIManager : MonoBehaviour
 
             if (targetNode != null && targetNode != unit.CurrentNode)
             {
-                List<HexNode> path = pathfinder.FindPath(unit.CurrentNode, targetNode, playerId);
+                List<HexNode> path = pathfinder.FindPath(unit, targetNode);
 
                 if (path != null && path.Count > 0)
                 {

@@ -153,7 +153,16 @@ public class HexInteraction : MonoBehaviour
                         foreach (HexNode pos in attackPositions)
                         {
                             if (!pos.isLand) continue;
-                            if (hexGrid.IsNodeOccupied(pos) && pos != selectedUnit.CurrentNode) continue;
+
+                            bool canStand = true;
+                            foreach (Unit u in unitManager.GetUnitsAtNode(pos))
+                            {
+                                if (u.ownerID != turnManager.CurrentPlayerID) canStand = false;
+                                else if ((u.unitClass == UnitClass.Civilian) ==
+                                         (selectedUnit.unitClass == UnitClass.Civilian)) canStand = false;
+                            }
+
+                            if (!canStand && pos != selectedUnit.CurrentNode) continue;
 
                             bool isEnemyCityTile = false;
                             if (cityManager != null)
@@ -170,8 +179,7 @@ public class HexInteraction : MonoBehaviour
 
                             if (isEnemyCityTile) continue;
 
-                            List<HexNode> path = pathfinder.FindPath(selectedUnit.CurrentNode, pos,
-                                turnManager.CurrentPlayerID);
+                            List<HexNode> path = pathfinder.FindPath(selectedUnit, pos);
                             if (path != null)
                             {
                                 if (bestPath == null || path.Count < bestPath.Count)
@@ -233,8 +241,25 @@ public class HexInteraction : MonoBehaviour
                     }
                 }
 
-                if (hexGrid.IsNodeOccupied(targetNode) &&
-                    targetNode.GetVision(turnManager.CurrentPlayerID) == VisionState.Visible) return;
+                bool isTargetBlocked = false;
+                if (targetNode.GetVision(turnManager.CurrentPlayerID) == VisionState.Visible)
+                {
+                    foreach (Unit u in unitManager.GetActiveUnits())
+                    {
+                        if (u == selectedUnit) continue;
+
+                        if (u.ownerID != turnManager.CurrentPlayerID)
+                        {
+                            if (u.CurrentNode == targetNode) isTargetBlocked = true;
+                        }
+                        else if ((u.unitClass == UnitClass.Civilian) == (selectedUnit.unitClass == UnitClass.Civilian))
+                        {
+                            if (u.GetExpectedEndTurnNode() == targetNode) isTargetBlocked = true;
+                        }
+                    }
+                }
+
+                if (isTargetBlocked) return;
 
                 int remOwner = targetNode.GetRememberedOwner(turnManager.CurrentPlayerID);
                 if (remOwner != -1 && remOwner != turnManager.CurrentPlayerID)
@@ -246,7 +271,7 @@ public class HexInteraction : MonoBehaviour
                     }
                 }
 
-                currentPath = pathfinder.FindPath(selectedUnit.CurrentNode, targetNode, turnManager.CurrentPlayerID);
+                currentPath = pathfinder.FindPath(selectedUnit, targetNode);
                 DrawOverlays(cellPosition);
 
                 if (currentPath != null && currentPath.Count > 0)
@@ -360,7 +385,7 @@ public class HexInteraction : MonoBehaviour
                 if (pathfinder != null)
                 {
                     List<HexNode> capturePath =
-                        pathfinder.FindPath(attacker.CurrentNode, defCity.centerNode, attacker.ownerID);
+                        pathfinder.FindPath(attacker, defCity.centerNode);
                     if (capturePath != null && capturePath.Count > 0)
                     {
                         attacker.currentMP += 99;

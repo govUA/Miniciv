@@ -191,13 +191,28 @@ public class Unit : MonoBehaviour
 
         while (pathQueue.Count > 0 && currentMP > 0)
         {
+            if (!CanReachSafeTileThisTurn())
+            {
+                pathQueue.Clear();
+                break;
+            }
+
             HexNode nextNode = pathQueue.Peek();
+
+            bool hasEnemy = false;
+            if (unitManager != null)
+            {
+                foreach (Unit u in unitManager.GetUnitsAtNode(nextNode))
+                {
+                    if (u.ownerID != ownerID) hasEnemy = true;
+                }
+            }
+
             bool isForeign = nextNode.ownerID != -1 && nextNode.ownerID != ownerID;
             bool isAtWar = isForeign && playerManager != null && playerManager.IsAtWar(ownerID, nextNode.ownerID);
             bool canSail = techManager != null && techManager.HasTech(ownerID, TechType.Sailing);
 
-            if ((!nextNode.isLand && !canSail) ||
-                (unitManager != null && unitManager.GetUnitAtNode(nextNode) != null) || (isForeign && !isAtWar))
+            if ((!nextNode.isLand && !canSail) || hasEnemy || (isForeign && !isAtWar))
             {
                 pathQueue.Clear();
                 break;
@@ -256,7 +271,32 @@ public class Unit : MonoBehaviour
 
         while (pathQueue.Count > 0 && currentMP > 0)
         {
+            if (!CanReachSafeTileThisTurn())
+            {
+                pathQueue.Clear();
+                break;
+            }
+
             HexNode nextNode = pathQueue.Peek();
+
+            bool hasEnemy = false;
+            if (unitManager != null)
+            {
+                foreach (Unit u in unitManager.GetUnitsAtNode(nextNode))
+                {
+                    if (u.ownerID != ownerID) hasEnemy = true;
+                }
+            }
+
+            bool isForeign = nextNode.ownerID != -1 && nextNode.ownerID != ownerID;
+            bool isAtWar = isForeign && playerManager != null && playerManager.IsAtWar(ownerID, nextNode.ownerID);
+            bool canSail = techManager != null && techManager.HasTech(ownerID, TechType.Sailing);
+
+            if ((!nextNode.isLand && !canSail) || hasEnemy || (isForeign && !isAtWar))
+            {
+                pathQueue.Clear();
+                break;
+            }
 
             int cost = (int)nextNode.movementCost;
             if (CurrentNode.isLand && !nextNode.isLand) cost = 10;
@@ -294,5 +334,88 @@ public class Unit : MonoBehaviour
         isAnimating = false;
         State = pathQueue.Count > 0 ? UnitState.OutOfMovement : UnitState.Idle;
         if (pathQueue.Count == 0) onDestinationReached?.Invoke();
+    }
+
+    private bool CanReachSafeTileThisTurn()
+    {
+        int simulatedMP = currentMP;
+        HexNode simCurrentNode = CurrentNode;
+
+        foreach (HexNode node in pathQueue)
+        {
+            int cost = (int)node.movementCost;
+            if (!simCurrentNode.isLand && !node.isLand) cost = 10;
+            else if (simCurrentNode.isLand != node.isLand) cost = 20;
+
+            if (simulatedMP >= cost)
+            {
+                simulatedMP -= cost;
+                simCurrentNode = node;
+
+                bool hasSameTypeFriendly = false;
+                bool hasEnemy = false;
+
+                if (unitManager != null)
+                {
+                    foreach (Unit u in unitManager.GetActiveUnits())
+                    {
+                        if (u == this) continue;
+
+                        if (u.ownerID != ownerID)
+                        {
+                            if (u.CurrentNode == node && node.GetVision(ownerID) == VisionState.Visible)
+                                hasEnemy = true;
+                        }
+                        else if ((u.unitClass == UnitClass.Civilian) == (unitClass == UnitClass.Civilian))
+                        {
+                            if (u.GetExpectedEndTurnNode() == node)
+                            {
+                                hasSameTypeFriendly = true;
+                            }
+                        }
+                    }
+                }
+
+                if (hasEnemy) return false;
+
+                if (!hasSameTypeFriendly)
+                {
+                    return true;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        return false;
+    }
+
+    public HexNode GetExpectedEndTurnNode()
+    {
+        if (pathQueue == null || pathQueue.Count == 0) return CurrentNode;
+
+        int simulatedMP = currentMP;
+        HexNode simNode = CurrentNode;
+
+        foreach (HexNode node in pathQueue)
+        {
+            int cost = (int)node.movementCost;
+            if (!simNode.isLand && !node.isLand) cost = 10;
+            else if (simNode.isLand != node.isLand) cost = 20;
+
+            if (simulatedMP >= cost)
+            {
+                simulatedMP -= cost;
+                simNode = node;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        return simNode;
     }
 }

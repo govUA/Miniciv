@@ -7,6 +7,8 @@ public class Pathfinder : MonoBehaviour
     private HexGrid grid;
     private PlayerManager playerManager;
     private TechManager techManager;
+    private UnitManager unitManager;
+
 
     private class PathNodeRecord
     {
@@ -27,10 +29,39 @@ public class Pathfinder : MonoBehaviour
         grid = GetComponent<HexGrid>();
         playerManager = Object.FindAnyObjectByType<PlayerManager>();
         techManager = Object.FindAnyObjectByType<TechManager>();
+        unitManager = Object.FindAnyObjectByType<UnitManager>();
     }
 
-    public List<HexNode> FindPath(HexNode startNode, HexNode targetNode, int playerId)
+    public List<HexNode> FindPath(Unit movingUnit, HexNode targetNode)
     {
+        int playerId = movingUnit.ownerID;
+        HexNode startNode = movingUnit.CurrentNode;
+
+        HashSet<HexNode> claimedFriendlyNodes = new HashSet<HexNode>();
+        HashSet<HexNode> enemyNodes = new HashSet<HexNode>();
+
+        if (unitManager != null)
+        {
+            foreach (Unit u in unitManager.GetActiveUnits())
+            {
+                if (u == movingUnit) continue;
+
+                if (u.ownerID != playerId)
+                {
+                    enemyNodes.Add(u.CurrentNode);
+                }
+                else
+                {
+                    bool isMovingCiv = movingUnit.unitClass == UnitClass.Civilian;
+                    bool isTargetCiv = u.unitClass == UnitClass.Civilian;
+                    if (isMovingCiv == isTargetCiv)
+                    {
+                        claimedFriendlyNodes.Add(u.GetExpectedEndTurnNode());
+                    }
+                }
+            }
+        }
+
         Dictionary<HexNode, PathNodeRecord> nodeRecords = new Dictionary<HexNode, PathNodeRecord>();
         List<PathNodeRecord> openSet = new List<PathNodeRecord>();
         HashSet<HexNode> closedSet = new HashSet<HexNode>();
@@ -103,7 +134,14 @@ public class Pathfinder : MonoBehaviour
                 }
                 else
                 {
-                    if (grid.IsNodeOccupied(neighbor) && neighbor.GetVision(playerId) == VisionState.Visible)
+                    bool hasEnemy = enemyNodes.Contains(neighbor);
+                    bool hasSameTypeFriendly = claimedFriendlyNodes.Contains(neighbor);
+
+                    if (hasEnemy && neighbor.GetVision(playerId) == VisionState.Visible)
+                    {
+                        isWalkable = false;
+                    }
+                    else if (hasSameTypeFriendly && neighbor == targetNode)
                     {
                         isWalkable = false;
                     }

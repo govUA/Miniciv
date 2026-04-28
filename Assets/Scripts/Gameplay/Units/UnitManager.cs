@@ -69,10 +69,30 @@ public class UnitManager : MonoBehaviour
 
     public Unit GetUnitAtNode(HexNode node)
     {
+        Unit foundCiv = null;
         foreach (Unit u in activeUnits)
+        {
             if (u.CurrentNode == node)
-                return u;
-        return null;
+            {
+                if (u.unitClass != UnitClass.Civilian)
+                    return u;
+                foundCiv = u;
+            }
+        }
+
+        return foundCiv;
+    }
+
+    public List<Unit> GetUnitsAtNode(HexNode node)
+    {
+        List<Unit> units = new List<Unit>();
+        foreach (Unit u in activeUnits)
+        {
+            if (u.CurrentNode == node)
+                units.Add(u);
+        }
+
+        return units;
     }
 
     public List<Unit> GetActiveUnits() => activeUnits;
