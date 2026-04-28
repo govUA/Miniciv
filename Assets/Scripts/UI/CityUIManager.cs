@@ -1,10 +1,14 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System;
 using System.Collections.Generic;
 
 public class CityUIManager : MonoBehaviour
 {
+    public static event Action OnCityUIOpened;
+    public static event Action OnCityUIClosed;
+
     [Header("Main UI")] public GameObject cityUIPanel;
     public Button closeButton;
 
@@ -33,12 +37,16 @@ public class CityUIManager : MonoBehaviour
         cityUIPanel.SetActive(true);
         UpdateCityStats();
         PopulateProjects();
+
+        OnCityUIOpened?.Invoke();
     }
 
     public void CloseCityUI()
     {
         cityUIPanel.SetActive(false);
         currentCity = null;
+
+        OnCityUIClosed?.Invoke();
     }
 
     private void UpdateCityStats()

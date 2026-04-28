@@ -6,6 +6,9 @@ using System.Collections.Generic;
 
 public class MainHUDManager : MonoBehaviour
 {
+    [Header("UI Panels")] [Tooltip("Link a HUD panel here, so that it disappears with city UI opening")]
+    public GameObject hudContentPanel;
+
     [Header("Top Bar Elements")] public TextMeshProUGUI goldText;
     public TextMeshProUGUI scienceText;
     public TextMeshProUGUI diplomacyText;
@@ -17,14 +20,28 @@ public class MainHUDManager : MonoBehaviour
     private EconomyManager economyManager;
     private TechManager techManager;
     private TurnManager turnManager;
+    private PlayerManager playerManager;
 
     private List<TechType> displayedTechs = new List<TechType>();
+
+    private void OnEnable()
+    {
+        CityUIManager.OnCityUIOpened += HideHUD;
+        CityUIManager.OnCityUIClosed += ShowHUD;
+    }
+
+    private void OnDisable()
+    {
+        CityUIManager.OnCityUIOpened -= HideHUD;
+        CityUIManager.OnCityUIClosed -= ShowHUD;
+    }
 
     void Start()
     {
         economyManager = FindAnyObjectByType<EconomyManager>();
         techManager = FindAnyObjectByType<TechManager>();
         turnManager = FindAnyObjectByType<TurnManager>();
+        playerManager = FindAnyObjectByType<PlayerManager>();
 
         if (nextTurnButton != null && turnManager != null)
         {
@@ -54,9 +71,17 @@ public class MainHUDManager : MonoBehaviour
         if (turnManager == null) return;
         int playerId = turnManager.CurrentPlayerID;
 
-        if (economyManager != null)
+        if (economyManager != null && playerManager != null)
         {
-            goldText.text = $"💰 {economyManager.GetIncome(playerId)}";
+            var data = playerManager.GetPlayer(playerId);
+            if (data != null)
+            {
+                int currentGold = data.gold;
+                int income = economyManager.GetIncome(playerId);
+                string sign = income >= 0 ? "+" : "";
+
+                goldText.text = $"💰 {currentGold} ({sign}{income})";
+            }
         }
 
         if (techManager != null)
@@ -67,6 +92,22 @@ public class MainHUDManager : MonoBehaviour
 
         diplomacyText.text = "🤝 Diplomacy";
         turnText.text = $"TURN: {turnManager.CurrentTurn}";
+    }
+
+    private void HideHUD()
+    {
+        if (hudContentPanel != null)
+        {
+            hudContentPanel.SetActive(false);
+        }
+    }
+
+    private void ShowHUD()
+    {
+        if (hudContentPanel != null)
+        {
+            hudContentPanel.SetActive(true);
+        }
     }
 
     public void RefreshTechDropdown(int playerId)
