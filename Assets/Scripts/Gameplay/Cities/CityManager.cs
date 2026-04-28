@@ -95,6 +95,16 @@ public class CityManager : MonoBehaviour
         HexNode node = settler.CurrentNode;
         if (node.ownerID != -1) return false;
 
+        foreach (City city in activeCities)
+        {
+            if (grid.GetDistance(node, city.centerNode) <= 3)
+            {
+                Debug.Log(
+                    $"[CITY] Impossible to found a city: too close to {city.cityName}. At least 3 free tiles are needed.");
+                return false;
+            }
+        }
+
         Vector3 spawnPos = settler.transform.position;
         GameObject cityObj = Instantiate(cityPrefab, spawnPos, Quaternion.identity);
         City newCity = cityObj.GetComponent<City>();
