@@ -160,16 +160,6 @@ public class Pathfinder : MonoBehaviour
 
     private int GetDistance(HexNode nodeA, HexNode nodeB)
     {
-        int dx = Mathf.Abs(nodeA.x - nodeB.x);
-
-        if (grid.wrapWorld && dx > grid.GetWidth() / 2)
-        {
-            dx = grid.GetWidth() - dx;
-        }
-
-        int dy = Mathf.Abs(nodeA.y - nodeB.y);
-        int dz = Mathf.Abs(-nodeA.x - nodeA.y - (-nodeB.x - nodeB.y));
-
-        return Mathf.Max(dx, Mathf.Max(dy, dz)) * 10;
+        return grid.GetDistance(nodeA, nodeB) * 10;
     }
 }

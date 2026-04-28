@@ -258,7 +258,7 @@ public class Unit : MonoBehaviour
         {
             HexNode nextNode = pathQueue.Peek();
 
-            int cost = 10;
+            int cost = (int)nextNode.movementCost;
             if (CurrentNode.isLand && !nextNode.isLand) cost = 10;
             else if (CurrentNode.isLand != nextNode.isLand) cost = 20;
 
