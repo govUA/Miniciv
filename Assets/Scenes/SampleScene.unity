@@ -4960,7 +4960,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e3a6ca34a68d4eff9edd19e49b0ea798, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TurnManager
-  TotalPlayers: 2
+  TotalPlayers: 4
 --- !u!114 &1775689249
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -108,6 +108,8 @@ public class UnitManager : MonoBehaviour
 
         activeUnits.Add(newUnit);
 
+        UpdateUnitOffsets(spawnNode);
+
         Debug.Log($"[UNIT] Spawned {unitName} for Player {playerId} at [{spawnNode.x},{spawnNode.y}]");
         return newUnit;
     }
@@ -116,8 +118,10 @@ public class UnitManager : MonoBehaviour
     {
         if (activeUnits.Contains(unit))
         {
+            HexNode node = unit.CurrentNode;
             activeUnits.Remove(unit);
             Destroy(unit.gameObject);
+            UpdateUnitOffsets(node);
         }
     }
 
@@ -150,4 +154,46 @@ public class UnitManager : MonoBehaviour
     }
 
     public List<Unit> GetActiveUnits() => activeUnits;
+
+    void OnEnable()
+    {
+        Unit.OnUnitMoved += HandleUnitMoved;
+    }
+
+    void OnDisable()
+    {
+        Unit.OnUnitMoved -= HandleUnitMoved;
+    }
+
+    private void HandleUnitMoved(Unit unit)
+    {
+        UpdateUnitOffsets(unit.previousNode);
+        UpdateUnitOffsets(unit.CurrentNode);
+    }
+
+    public void UpdateUnitOffsets(HexNode node)
+    {
+        if (node == null) return;
+        List<Unit> unitsOnNode = GetUnitsAtNode(node);
+        Vector3 centerPos = mainTilemap.CellToWorld(new Vector3Int(node.y, node.x, 0));
+
+        if (unitsOnNode.Count == 1)
+        {
+            if (!unitsOnNode[0].IsAnimating())
+                unitsOnNode[0].transform.position = centerPos;
+        }
+        else if (unitsOnNode.Count > 1)
+        {
+            foreach (Unit u in unitsOnNode)
+            {
+                if (!u.IsAnimating())
+                {
+                    if (u.unitClass == UnitClass.Civilian)
+                        u.transform.position = centerPos + new Vector3(-0.25f, 0, 0);
+                    else
+                        u.transform.position = centerPos + new Vector3(0.25f, 0, 0);
+                }
+            }
+        }
+    }
 }

@@ -91,7 +91,27 @@ public class HexInteraction : MonoBehaviour
 
             if (unitManager != null && turnManager != null)
             {
-                Unit clickedUnit = unitManager.GetUnitAtNode(clickedNode);
+                Unit clickedUnit = null;
+                List<Unit> unitsAtTile = unitManager.GetUnitsAtNode(clickedNode);
+
+                if (unitsAtTile.Count == 1)
+                {
+                    clickedUnit = unitsAtTile[0];
+                }
+                else if (unitsAtTile.Count > 1)
+                {
+                    float minDistance = float.MaxValue;
+                    foreach (Unit u in unitsAtTile)
+                    {
+                        float dist = Vector2.Distance(mousePosition, u.transform.position);
+                        if (dist < minDistance)
+                        {
+                            minDistance = dist;
+                            clickedUnit = u;
+                        }
+                    }
+                }
+
                 if (clickedUnit != null && clickedUnit.ownerID == turnManager.CurrentPlayerID)
                 {
                     selectedUnit = clickedUnit;

@@ -24,6 +24,7 @@ public class Unit : MonoBehaviour
     public static event Action<Unit> OnUnitDied;
 
     public HexNode CurrentNode { get; private set; }
+    public HexNode previousNode { get; private set; }
     public string unitName;
     public int ownerID;
     public UnitClass unitClass;
@@ -58,6 +59,7 @@ public class Unit : MonoBehaviour
         UnitDataModel data, HexGrid grid, Sprite mainSprite = null, Sprite iconSprite = null)
     {
         CurrentNode = startNode;
+        previousNode = startNode;
         transform.position = worldPosition;
         tilemap = map;
         turnManager = tm;
@@ -217,6 +219,7 @@ public class Unit : MonoBehaviour
                 }
 
                 transform.position = targetPos;
+                previousNode = CurrentNode;
                 CurrentNode = nextNode;
                 OnUnitMoved?.Invoke(this);
             }
@@ -299,6 +302,7 @@ public class Unit : MonoBehaviour
                 }
 
                 transform.position = targetPos;
+                previousNode = CurrentNode;
                 CurrentNode = nextNode;
                 OnUnitMoved?.Invoke(this);
             }
