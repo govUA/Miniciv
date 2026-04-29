@@ -11,6 +11,9 @@ public class AIUnitController : MonoBehaviour
         if (unitManager == null) unitManager = FindObjectOfType<UnitManager>();
         if (cityManager == null) cityManager = FindObjectOfType<CityManager>();
 
+        TechManager techManager = FindObjectOfType<TechManager>();
+        bool canSail = techManager != null && techManager.HasTech(playerId, "Sailing");
+
         List<Unit> allUnits = new List<Unit>(unitManager.GetActiveUnits());
         Pathfinder pathfinder = FindObjectOfType<Pathfinder>();
         HexGrid grid = FindObjectOfType<HexGrid>();
@@ -21,7 +24,7 @@ public class AIUnitController : MonoBehaviour
 
             if (unit.ownerID != playerId || unit.State != UnitState.Idle || unit.currentMP <= 0) continue;
 
-            HexNode targetNode = EvaluateBestDestination(unit, grid);
+            HexNode targetNode = EvaluateBestDestination(unit, grid, canSail);
 
             if (targetNode != null)
             {
@@ -33,6 +36,11 @@ public class AIUnitController : MonoBehaviour
                         {
                             unitManager.RemoveUnit(unit);
                         }
+                    }
+                    else
+                    {
+                        unit.isFortified = true;
+                        unit.currentMP = 0;
                     }
                 }
                 else
@@ -48,7 +56,7 @@ public class AIUnitController : MonoBehaviour
         }
     }
 
-    private HexNode EvaluateBestDestination(Unit unit, HexGrid grid)
+    private HexNode EvaluateBestDestination(Unit unit, HexGrid grid, bool canSail)
     {
         HexNode bestNode = null;
         float highestUtility = -1000f;
@@ -59,7 +67,28 @@ public class AIUnitController : MonoBehaviour
             {
                 HexNode node = grid.GetNode(x, y);
 
-                if (node == null || !node.isLand) continue;
+                if (node == null) continue;
+
+                if (!node.isLand)
+                {
+                    if (unit.isSettler || !canSail) continue;
+                }
+
+                bool isOccupiedBySameType = false;
+                if (unitManager != null)
+                {
+                    foreach (Unit u in unitManager.GetUnitsAtNode(node))
+                    {
+                        if (u != unit && u.ownerID == unit.ownerID &&
+                            (u.unitClass == UnitClass.Civilian) == (unit.unitClass == UnitClass.Civilian))
+                        {
+                            isOccupiedBySameType = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (isOccupiedBySameType) continue;
 
                 float utility = 0f;
 
@@ -69,7 +98,7 @@ public class AIUnitController : MonoBehaviour
                 }
                 else
                 {
-                    utility = Random.Range(0.1f, 0.5f);
+                    utility = EvaluateScoutTile(unit, node, grid);
                 }
 
                 if (utility > highestUtility)
@@ -81,6 +110,44 @@ public class AIUnitController : MonoBehaviour
         }
 
         return bestNode ?? unit.CurrentNode;
+    }
+
+    private float EvaluateScoutTile(Unit unit, HexNode candidateNode, HexGrid grid)
+    {
+        float score = 0f;
+        VisionState vision = candidateNode.GetVision(unit.ownerID);
+
+        if (vision == VisionState.Unexplored)
+        {
+            score += 500f;
+        }
+        else if (vision == VisionState.Explored)
+        {
+            score += 50f;
+        }
+
+        if (cityManager != null)
+        {
+            float minDistToCity = 999f;
+            foreach (City c in cityManager.GetActiveCities())
+            {
+                if (c.ownerID == unit.ownerID)
+                {
+                    float d = grid.GetDistance(candidateNode, c.centerNode);
+                    if (d < minDistToCity) minDistToCity = d;
+                }
+            }
+
+            if (minDistToCity == 0) score += 200f;
+            else if (minDistToCity <= 2) score += 150f;
+            else score += (50f / (minDistToCity + 1f));
+        }
+
+        int distance = grid.GetDistance(unit.CurrentNode, candidateNode);
+        float distanceScore = 100f / (distance + 1f);
+        float randomBonus = Random.Range(0f, 10f);
+
+        return score + distanceScore + randomBonus;
     }
 
     private float EvaluateSettlerTile(Unit settler, HexNode candidateNode, HexGrid grid)

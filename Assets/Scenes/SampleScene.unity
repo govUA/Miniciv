@@ -4862,11 +4862,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5d0ddf40c790c0b428d8f3a2da2e828a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MapGenerator
-  currentMapType: 2
-  mapSize: 2
+  currentMapType: 3
+  mapSize: 0
   seaLevel: 1
-  mapWidth: 102
-  mapHeight: 64
+  mapWidth: 52
+  mapHeight: 32
   wrapWorld: 1
   seed: 
   useRandomSeed: 1
