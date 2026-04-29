@@ -57,19 +57,34 @@ public class Unit : MonoBehaviour
     public event Action onDestinationReached;
 
     public void Initialize(HexNode startNode, Vector3 worldPosition, Tilemap map, TurnManager tm, int playerId,
-        string name, HexGrid grid, Sprite mainSprite = null, Sprite iconSprite = null)
+        UnitDataModel data, HexGrid grid, Sprite mainSprite = null, Sprite iconSprite = null)
     {
         CurrentNode = startNode;
         transform.position = worldPosition;
         tilemap = map;
         turnManager = tm;
         ownerID = playerId;
-        unitName = name;
+        unitName = data.name;
         hexGrid = grid;
 
         techManager = UnityEngine.Object.FindAnyObjectByType<TechManager>();
         playerManager = UnityEngine.Object.FindAnyObjectByType<PlayerManager>();
         unitManager = UnityEngine.Object.FindAnyObjectByType<UnitManager>();
+
+        if (System.Enum.TryParse(data.unitClass, out UnitClass parsedClass))
+        {
+            unitClass = parsedClass;
+        }
+        else
+        {
+            unitClass = UnitClass.Melee;
+        }
+
+        meleeStrength = data.meleeStrength;
+        rangedStrength = data.rangedStrength;
+        attackRange = data.attackRange;
+        visionRange = data.visionRange;
+        maxMP = data.maxMP;
 
         currentHP = maxHP;
         currentMP = maxMP;
@@ -84,40 +99,6 @@ public class Unit : MonoBehaviour
         {
             factionIconRenderer.sprite = iconSprite;
             if (sr != null) factionIconRenderer.sortingOrder = sr.sortingOrder + 1;
-        }
-
-        string n = unitName.ToLower();
-        if (n == "settler" || n == "builder")
-        {
-            unitClass = UnitClass.Civilian;
-            meleeStrength = 0;
-            rangedStrength = 0;
-            attackRange = 0;
-            visionRange = 2;
-        }
-        else if (n == "scout")
-        {
-            unitClass = UnitClass.Melee;
-            meleeStrength = 12;
-            rangedStrength = 0;
-            attackRange = 1;
-            visionRange = 3;
-        }
-        else if (n == "warrior")
-        {
-            unitClass = UnitClass.Melee;
-            meleeStrength = 20;
-            rangedStrength = 0;
-            attackRange = 1;
-            visionRange = 2;
-        }
-        else if (n == "archer")
-        {
-            unitClass = UnitClass.Ranged;
-            meleeStrength = 10;
-            rangedStrength = 25;
-            attackRange = 2;
-            visionRange = 2;
         }
 
         if (playerManager != null && factionIconRenderer != null)

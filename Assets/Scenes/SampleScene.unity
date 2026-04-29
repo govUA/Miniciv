@@ -4941,6 +4941,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e436897c5f6f4bda946e322bcefdd8b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UnitManager
+  unitsJsonFile: {fileID: 4900000, guid: f5185f6c261d4fd9b638690ddbfd0733, type: 3}
   unitPrefab: {fileID: 1295048493016411481, guid: 2fc410157e648fc4f9d03715ec354dac, type: 3}
   mainTilemap: {fileID: 1552112338}
   turnManager: {fileID: 1775689248}
@@ -4957,6 +4958,15 @@ MonoBehaviour:
   - unitName: Scout
     mainSprite: {fileID: 150086971757272781, guid: 3a7904801a75e6a46a47dc6a69b09752, type: 3}
     iconSprite: {fileID: 150086971757272781, guid: 7e51d3649da1b9d4baa19b6b883c05cf, type: 3}
+  - unitName: Spearman
+    mainSprite: {fileID: 3973588016999555590, guid: ef4943e3bb029364db06e7c037f4bee5, type: 3}
+    iconSprite: {fileID: 3973588016999555590, guid: bdeeeaf9be934f54eb0aa716d6bd4670, type: 3}
+  - unitName: Swordsman
+    mainSprite: {fileID: 3613407544420638092, guid: 668b7c6eddbf71941b568dccf842b1e3, type: 3}
+    iconSprite: {fileID: 3613407544420638092, guid: 390c765c273850e4a973096894ef7194, type: 3}
+  - unitName: Chariot Archer
+    mainSprite: {fileID: 7326393790635081824, guid: 0308048d1fa441d40a870fe690192b38, type: 3}
+    iconSprite: {fileID: 7326393790635081824, guid: 973c0a5f144ac3046bdafeb22be23701, type: 3}
 --- !u!114 &1775689248
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -1,0 +1,81 @@
+﻿{
+  "units": [
+    {
+      "name": "Settler",
+      "unitClass": "Civilian",
+      "cost": 80,
+      "meleeStrength": 0,
+      "rangedStrength": 0,
+      "attackRange": 0,
+      "visionRange": 2,
+      "maxMP": 30,
+      "requiredTech": ""
+    },
+    {
+      "name": "Scout",
+      "unitClass": "Melee",
+      "cost": 20,
+      "meleeStrength": 12,
+      "rangedStrength": 0,
+      "attackRange": 1,
+      "visionRange": 3,
+      "maxMP": 30,
+      "requiredTech": ""
+    },
+    {
+      "name": "Warrior",
+      "unitClass": "Melee",
+      "cost": 40,
+      "meleeStrength": 20,
+      "rangedStrength": 0,
+      "attackRange": 1,
+      "visionRange": 2,
+      "maxMP": 30,
+      "requiredTech": ""
+    },
+    {
+      "name": "Archer",
+      "unitClass": "Ranged",
+      "cost": 40,
+      "meleeStrength": 10,
+      "rangedStrength": 25,
+      "attackRange": 2,
+      "visionRange": 2,
+      "maxMP": 30,
+      "requiredTech": "Archery"
+    },
+    {
+      "name": "Spearman",
+      "unitClass": "Melee",
+      "cost": 50,
+      "meleeStrength": 25,
+      "rangedStrength": 0,
+      "attackRange": 1,
+      "visionRange": 2,
+      "maxMP": 30,
+      "requiredTech": "Bronze Working"
+    },
+    {
+      "name": "Swordsman",
+      "unitClass": "Melee",
+      "cost": 60,
+      "meleeStrength": 35,
+      "rangedStrength": 0,
+      "attackRange": 1,
+      "visionRange": 2,
+      "maxMP": 30,
+      "requiredTech": "Iron Working"
+    },
+    {
+      "name": "Chariot Archer",
+      "unitClass": "Ranged",
+      "cost": 50,
+      "meleeStrength": 10,
+      "rangedStrength": 30,
+      "attackRange": 2,
+      "visionRange": 2,
+      "maxMP": 40,
+      "requiredTech": "The Wheel"
+    }
+  ]
+}

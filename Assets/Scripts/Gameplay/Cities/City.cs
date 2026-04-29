@@ -93,7 +93,7 @@ public class City : MonoBehaviour
 
     public void SetProject(CityProject project)
     {
-        if (techManager != null && project.requiresTech)
+        if (techManager != null && project.requiresTech && !string.IsNullOrEmpty(project.requiredTech))
         {
             if (!techManager.HasTech(ownerID, project.requiredTech))
             {

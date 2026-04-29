@@ -67,7 +67,7 @@
       "cost": 65,
       "isRepeatable": false,
       "prerequisites": [
-        "AnimalHusbandry"
+        "Animal Husbandry"
       ]
     },
     {
@@ -75,7 +75,7 @@
       "cost": 65,
       "isRepeatable": false,
       "prerequisites": [
-        "AnimalHusbandry",
+        "Animal Husbandry",
         "Archery"
       ]
     },
@@ -100,7 +100,7 @@
       "cost": 100,
       "isRepeatable": false,
       "prerequisites": [
-        "BronzeWorking"
+        "Bronze Working"
       ]
     },
     {
@@ -112,10 +112,9 @@
         "Calendar",
         "Writing",
         "Trapping",
-        "TheWheel",
+        "The Wheel",
         "Masonry",
-        "BronzeWorking",
-        "IronWorking"
+        "Iron Working"
       ]
     }
   ]

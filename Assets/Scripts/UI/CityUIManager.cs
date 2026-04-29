@@ -109,10 +109,10 @@ public class CityUIManager : MonoBehaviour
 
             string folder = proj.type switch
             {
-                ProjectType.Building => "Icons/Buildings",
-                ProjectType.Unit => "Icons/Units",
-                ProjectType.Process => "Icons/Projects",
-                _ => "Icons"
+                ProjectType.Building => "Icons/Projects/Buildings",
+                ProjectType.Unit => "Icons/Projects/Units",
+                ProjectType.Process => "Icons/Projects/Projects",
+                _ => "Icons/Projects"
             };
 
             Sprite loadedIcon = Resources.Load<Sprite>($"{folder}/{proj.name}");
@@ -134,15 +134,36 @@ public class CityUIManager : MonoBehaviour
             Destroy(child.gameObject);
         }
 
-        List<CityProject> availableProjects = new List<CityProject>
+        List<CityProject> availableProjects = new List<CityProject>();
+
+        UnitManager unitManager = FindAnyObjectByType<UnitManager>();
+        TechManager techManager = FindAnyObjectByType<TechManager>();
+
+        if (unitManager != null && currentCity != null)
         {
-            new CityProject("Warrior", ProjectType.Unit, 40),
-            new CityProject("Archer", ProjectType.Unit, 40),
-            new CityProject("Scout", ProjectType.Unit, 20),
-            new CityProject("Settler", ProjectType.Unit, 80),
-            new CityProject("Monument", ProjectType.Building, 60),
-            new CityProject("Repair", ProjectType.Process, 0)
-        };
+            foreach (var kvp in unitManager.unitDatabaseDict)
+            {
+                UnitDataModel unitData = kvp.Value;
+                bool canBuild = true;
+
+                if (!string.IsNullOrEmpty(unitData.requiredTech))
+                {
+                    if (techManager == null || !techManager.HasTech(currentCity.ownerID, unitData.requiredTech))
+                    {
+                        canBuild = false;
+                    }
+                }
+
+                if (canBuild)
+                {
+                    availableProjects.Add(new CityProject(unitData.name, ProjectType.Unit, unitData.cost,
+                        unitData.requiredTech));
+                }
+            }
+        }
+
+        availableProjects.Add(new CityProject("Monument", ProjectType.Building, 60));
+        availableProjects.Add(new CityProject("Repair", ProjectType.Process, 0));
 
         foreach (CityProject proj in availableProjects)
         {
@@ -158,10 +179,10 @@ public class CityUIManager : MonoBehaviour
             {
                 string folder = proj.type switch
                 {
-                    ProjectType.Building => "Icons/Buildings",
-                    ProjectType.Unit => "Icons/Units",
-                    ProjectType.Process => "Icons/Projects",
-                    _ => "Icons"
+                    ProjectType.Building => "Icons/Projects/Buildings",
+                    ProjectType.Unit => "Icons/Projects/Units",
+                    ProjectType.Process => "Icons/Projects/Projects",
+                    _ => "Icons/Projects"
                 };
 
                 Sprite loadedIcon = Resources.Load<Sprite>($"{folder}/{proj.name}");

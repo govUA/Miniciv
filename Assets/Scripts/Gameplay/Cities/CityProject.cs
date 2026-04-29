@@ -26,7 +26,7 @@ public class CityProject
         this.name = name;
         this.type = type;
         this.cost = cost;
-        this.requiresTech = true;
+        this.requiresTech = !string.IsNullOrEmpty(requiredTech);
         this.requiredTech = requiredTech;
     }
 }

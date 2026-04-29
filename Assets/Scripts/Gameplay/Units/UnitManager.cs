@@ -3,6 +3,29 @@ using UnityEngine.Tilemaps;
 using System.Collections.Generic;
 
 [System.Serializable]
+public class UnitDataModel
+{
+    public string name;
+    public string unitClass;
+    public int cost;
+    public int meleeStrength;
+    public int rangedStrength;
+    public int attackRange;
+    public int visionRange;
+    public int maxMP;
+    public string requiredTech;
+
+    [System.NonSerialized] public Sprite mainSprite;
+    [System.NonSerialized] public Sprite iconSprite;
+}
+
+[System.Serializable]
+public class UnitDatabase
+{
+    public List<UnitDataModel> units;
+}
+
+[System.Serializable]
 public struct UnitVisuals
 {
     public string unitName;
@@ -13,11 +36,12 @@ public struct UnitVisuals
 [RequireComponent(typeof(HexGrid))]
 public class UnitManager : MonoBehaviour
 {
-    public GameObject unitPrefab;
+    [Header("Data")] public TextAsset unitsJsonFile;
+    public Dictionary<string, UnitDataModel> unitDatabaseDict = new Dictionary<string, UnitDataModel>();
+
+    [Header("Settings")] public GameObject unitPrefab;
     public Tilemap mainTilemap;
     public TurnManager turnManager;
-
-    public List<UnitVisuals> unitVisualSettings;
 
     private List<Unit> activeUnits = new List<Unit>();
     private HexGrid grid;
@@ -25,32 +49,62 @@ public class UnitManager : MonoBehaviour
     void Awake()
     {
         grid = GetComponent<HexGrid>();
+        LoadUnitDatabase();
+    }
+
+    private void LoadUnitDatabase()
+    {
+        if (unitsJsonFile == null)
+        {
+            Debug.LogError("[UnitManager] JSON file with units not found!");
+            return;
+        }
+
+        UnitDatabase db = JsonUtility.FromJson<UnitDatabase>(unitsJsonFile.text);
+        if (db != null && db.units != null)
+        {
+            foreach (var unit in db.units)
+            {
+                unit.mainSprite = Resources.Load<Sprite>($"Sprites/Units/{unit.name}");
+                unit.iconSprite = Resources.Load<Sprite>($"Icons/Units/{unit.name}");
+
+                if (unit.mainSprite == null)
+                    Debug.LogWarning($"[UnitManager] Unit sprite not found for: {unit.name}");
+
+                unitDatabaseDict[unit.name] = unit;
+            }
+
+            Debug.Log($"[UnitManager] Unit database loaded. Visuals linked automatically.");
+        }
     }
 
     public Unit SpawnUnit(HexNode spawnNode, int playerId, string unitName = "Settler")
     {
         if (spawnNode == null || !spawnNode.isLand || unitPrefab == null || turnManager == null) return null;
 
+        if (!unitDatabaseDict.ContainsKey(unitName))
+        {
+            Debug.LogError($"[UnitManager] Unit {unitName} not found in the database!");
+            return null;
+        }
+
+        UnitDataModel unitData = unitDatabaseDict[unitName];
         Vector3 spawnPos = mainTilemap.CellToWorld(new Vector3Int(spawnNode.y, spawnNode.x, 0));
         GameObject unitObj = Instantiate(unitPrefab, spawnPos, Quaternion.identity);
 
         Unit newUnit = unitObj.GetComponent<Unit>();
 
-        Sprite mainSprite = null;
-        Sprite iconSprite = null;
-
-        foreach (var setting in unitVisualSettings)
-        {
-            if (setting.unitName == unitName)
-            {
-                mainSprite = setting.mainSprite;
-                iconSprite = setting.iconSprite;
-                break;
-            }
-        }
-
-        newUnit.Initialize(spawnNode, spawnPos, mainTilemap, turnManager, playerId, unitName, grid, mainSprite,
-            iconSprite);
+        newUnit.Initialize(
+            spawnNode,
+            spawnPos,
+            mainTilemap,
+            turnManager,
+            playerId,
+            unitData,
+            grid,
+            unitData.mainSprite,
+            unitData.iconSprite
+        );
 
         activeUnits.Add(newUnit);
 
