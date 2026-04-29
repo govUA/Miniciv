@@ -71,7 +71,10 @@ public class CityUIManager : MonoBehaviour
                                     $"Culture: {currentCity.storedCulture} / {cultureThreshold}\n" +
                                     $"Health: {currentCity.currentHP}/{currentCity.maxHP}";
 
-        int turnFood = 0, turnProd = 0, turnSci = 0;
+        int turnFood = 1, turnProd = 1, turnSci = 1;
+        int turnCulture = 1;
+        int militaryProdBonus = 0;
+
         foreach (var node in currentCity.territoryNodes)
         {
             turnFood += node.foodYield;
@@ -79,9 +82,7 @@ public class CityUIManager : MonoBehaviour
             turnSci += node.sciYield;
         }
 
-        int buildingCulture = 0;
         CityManager cityManager = FindAnyObjectByType<CityManager>();
-
         if (cityManager != null)
         {
             foreach (string buildingName in currentCity.builtBuildings)
@@ -92,9 +93,13 @@ public class CityUIManager : MonoBehaviour
                     {
                         foreach (var effect in bData.effects)
                         {
-                            if (effect.type == "Culture")
+                            switch (effect.type)
                             {
-                                buildingCulture += effect.amount;
+                                case "Food": turnFood += effect.amount; break;
+                                case "Production": turnProd += effect.amount; break;
+                                case "Science": turnSci += effect.amount; break;
+                                case "Culture": turnCulture += effect.amount; break;
+                                case "MilitaryProdBonus": militaryProdBonus += effect.amount; break;
                             }
                         }
                     }
@@ -102,12 +107,25 @@ public class CityUIManager : MonoBehaviour
             }
         }
 
-        int turnCulture = 1;
-        turnCulture += buildingCulture;
+        int displayedProd = turnProd;
+        if (militaryProdBonus > 0 && currentCity.currentProject != null &&
+            currentCity.currentProject.type == ProjectType.Unit)
+        {
+            UnitManager uManager = FindAnyObjectByType<UnitManager>();
+            if (uManager != null &&
+                uManager.unitDatabaseDict.TryGetValue(currentCity.currentProject.name, out UnitDataModel uData))
+            {
+                if (uData.unitClass != "Civilian")
+                {
+                    float multiplier = 1f + (militaryProdBonus / 100f);
+                    displayedProd = Mathf.RoundToInt(turnProd * multiplier);
+                }
+            }
+        }
 
         perTurnStatsText.text = $"Yield (per turn):\n" +
                                 $"+{turnFood} Food\n" +
-                                $"+{turnProd} Production\n" +
+                                $"+{displayedProd} Production\n" +
                                 $"+{turnSci} Science\n" +
                                 $"+{turnCulture} Culture";
 

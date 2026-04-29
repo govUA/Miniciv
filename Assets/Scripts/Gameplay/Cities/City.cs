@@ -113,9 +113,10 @@ public class City : MonoBehaviour
     {
         hasAttackedThisTurn = false;
 
-        int turnFood = 0;
-        int turnProd = 0;
-        int turnSci = 0;
+        int turnFood = 1;
+        int turnProd = 1;
+        int turnSci = 1;
+        int turnCulture = 1;
 
         foreach (HexNode node in territoryNodes)
         {
@@ -124,8 +125,51 @@ public class City : MonoBehaviour
             turnSci += node.sciYield;
         }
 
+        int militaryProdBonus = 0;
+
+        foreach (string buildingName in builtBuildings)
+        {
+            if (cityManager != null &&
+                cityManager.buildingDatabaseDict.TryGetValue(buildingName, out BuildingDataModel bData))
+            {
+                if (bData.effects != null)
+                {
+                    foreach (var effect in bData.effects)
+                    {
+                        switch (effect.type)
+                        {
+                            case "Food": turnFood += effect.amount; break;
+                            case "Production": turnProd += effect.amount; break;
+                            case "Science": turnSci += effect.amount; break;
+                            case "Culture": turnCulture += effect.amount; break;
+                            case "MilitaryProdBonus":
+                                militaryProdBonus += effect.amount; break;
+                        }
+                    }
+                }
+            }
+        }
+
+        int finalTurnProd = turnProd;
+        if (militaryProdBonus > 0 && currentProject != null && currentProject.type == ProjectType.Unit)
+        {
+            if (unitManager != null &&
+                unitManager.unitDatabaseDict.TryGetValue(currentProject.name, out UnitDataModel uData))
+            {
+                if (uData.unitClass != "Civilian")
+                {
+                    float multiplier = 1f + (militaryProdBonus / 100f);
+                    finalTurnProd = Mathf.RoundToInt(turnProd * multiplier);
+                    Debug.Log(
+                        $"[CITY] {cityName} застосовує бонус {militaryProdBonus}% до виробництва. Base: {turnProd}, Final: {finalTurnProd}");
+                }
+            }
+        }
+
         storedFood += turnFood;
-        storedProduction += turnProd;
+        storedProduction += finalTurnProd;
+        storedCulture += turnCulture;
+
 
         if (techManager != null && turnSci > 0)
         {
@@ -139,31 +183,6 @@ public class City : MonoBehaviour
             population++;
             Debug.Log($"[CITY] {cityName} grew! Population is now {population}.");
         }
-
-        int buildingCulture = 0;
-
-        foreach (string buildingName in builtBuildings)
-        {
-            if (cityManager != null &&
-                cityManager.buildingDatabaseDict.TryGetValue(buildingName, out BuildingDataModel bData))
-            {
-                if (bData.effects != null)
-                {
-                    foreach (var effect in bData.effects)
-                    {
-                        if (effect.type == "Culture")
-                        {
-                            buildingCulture += effect.amount;
-                        }
-                    }
-                }
-            }
-        }
-
-        int turnCulture = 1;
-        turnCulture += buildingCulture;
-
-        storedCulture += turnCulture;
 
         int cultureThreshold = 10 + (int)(Mathf.Pow(borderExpansions, 1.5f) * 10);
 
@@ -215,6 +234,26 @@ public class City : MonoBehaviour
         if (currentProject.type == ProjectType.Building)
         {
             builtBuildings.Add(currentProject.name);
+
+            if (cityManager != null &&
+                cityManager.buildingDatabaseDict.TryGetValue(currentProject.name, out BuildingDataModel bData))
+            {
+                if (bData.effects != null)
+                {
+                    foreach (var effect in bData.effects)
+                    {
+                        if (effect.type == "MaxHP")
+                        {
+                            maxHP += effect.amount;
+                            currentHP += effect.amount;
+                        }
+                        else if (effect.type == "Garrison")
+                        {
+                            garrisonStrength += effect.amount;
+                        }
+                    }
+                }
+            }
         }
         else if (currentProject.type == ProjectType.Unit)
         {

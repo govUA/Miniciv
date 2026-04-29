@@ -15,31 +15,64 @@
       "name": "Granary",
       "cost": 60,
       "requiredTech": "Pottery",
-      "effects": []
+      "effects": [
+        {
+          "type": "Food",
+          "amount": 2
+        }
+      ]
     },
     {
       "name": "Library",
       "cost": 90,
       "requiredTech": "Writing",
-      "effects": []
+      "effects": [
+        {
+          "type": "Science",
+          "amount": 2
+        }
+      ]
     },
     {
       "name": "Water Mill",
       "cost": 75,
       "requiredTech": "The Wheel",
-      "effects": []
+      "effects": [
+        {
+          "type": "Food",
+          "amount": 1
+        },
+        {
+          "type": "Production",
+          "amount": 1
+        }
+      ]
     },
     {
       "name": "Walls",
       "cost": 75,
       "requiredTech": "Masonry",
-      "effects": []
+      "effects": [
+        {
+          "type": "MaxHP",
+          "amount": 50
+        },
+        {
+          "type": "Garrison",
+          "amount": 5
+        }
+      ]
     },
     {
       "name": "Barracks",
       "cost": 75,
       "requiredTech": "Bronze Working",
-      "effects": []
+      "effects": [
+        {
+          "type": "MilitaryProdBonus",
+          "amount": 15
+        }
+      ]
     }
   ]
 }
