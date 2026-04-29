@@ -104,7 +104,7 @@ public class Pathfinder : MonoBehaviour
 
                 if (!currentIsLand && !neighborIsLand)
                 {
-                    if (techManager != null && techManager.HasTech(playerId, TechType.Sailing))
+                    if (techManager != null && techManager.HasTech(playerId, "Sailing"))
                     {
                         isWalkable = true;
                         perceivedCost = 10;
@@ -116,7 +116,7 @@ public class Pathfinder : MonoBehaviour
                 }
                 else if (currentIsLand != neighborIsLand)
                 {
-                    if (techManager != null && techManager.HasTech(playerId, TechType.Sailing))
+                    if (techManager != null && techManager.HasTech(playerId, "Sailing"))
                     {
                         isWalkable = true;
                         perceivedCost = 20;

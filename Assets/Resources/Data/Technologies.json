@@ -1,0 +1,122 @@
+﻿{
+  "technologies": [
+    {
+      "name": "Agriculture",
+      "cost": 0,
+      "isRepeatable": false,
+      "prerequisites": []
+    },
+    {
+      "name": "Pottery",
+      "cost": 40,
+      "isRepeatable": false,
+      "prerequisites": [
+        "Agriculture"
+      ]
+    },
+    {
+      "name": "Animal Husbandry",
+      "cost": 40,
+      "isRepeatable": false,
+      "prerequisites": [
+        "Agriculture"
+      ]
+    },
+    {
+      "name": "Archery",
+      "cost": 45,
+      "isRepeatable": false,
+      "prerequisites": [
+        "Agriculture"
+      ]
+    },
+    {
+      "name": "Mining",
+      "cost": 40,
+      "isRepeatable": false,
+      "prerequisites": [
+        "Agriculture"
+      ]
+    },
+    {
+      "name": "Sailing",
+      "cost": 65,
+      "isRepeatable": false,
+      "prerequisites": [
+        "Pottery"
+      ]
+    },
+    {
+      "name": "Calendar",
+      "cost": 60,
+      "isRepeatable": false,
+      "prerequisites": [
+        "Pottery"
+      ]
+    },
+    {
+      "name": "Writing",
+      "cost": 60,
+      "isRepeatable": false,
+      "prerequisites": [
+        "Pottery"
+      ]
+    },
+    {
+      "name": "Trapping",
+      "cost": 65,
+      "isRepeatable": false,
+      "prerequisites": [
+        "AnimalHusbandry"
+      ]
+    },
+    {
+      "name": "The Wheel",
+      "cost": 65,
+      "isRepeatable": false,
+      "prerequisites": [
+        "AnimalHusbandry",
+        "Archery"
+      ]
+    },
+    {
+      "name": "Masonry",
+      "cost": 60,
+      "isRepeatable": false,
+      "prerequisites": [
+        "Mining"
+      ]
+    },
+    {
+      "name": "Bronze Working",
+      "cost": 65,
+      "isRepeatable": false,
+      "prerequisites": [
+        "Mining"
+      ]
+    },
+    {
+      "name": "Iron Working",
+      "cost": 100,
+      "isRepeatable": false,
+      "prerequisites": [
+        "BronzeWorking"
+      ]
+    },
+    {
+      "name": "Future Tech",
+      "cost": 500,
+      "isRepeatable": true,
+      "prerequisites": [
+        "Sailing",
+        "Calendar",
+        "Writing",
+        "Trapping",
+        "TheWheel",
+        "Masonry",
+        "BronzeWorking",
+        "IronWorking"
+      ]
+    }
+  ]
+}

@@ -22,7 +22,7 @@ public class MainHUDManager : MonoBehaviour
     private TurnManager turnManager;
     private PlayerManager playerManager;
 
-    private List<TechType> displayedTechs = new List<TechType>();
+    private List<string> displayedTechs = new List<string>();
 
     private void OnEnable()
     {
@@ -120,21 +120,22 @@ public class MainHUDManager : MonoBehaviour
         List<string> options = new List<string>();
         options.Add("--- Select Research ---");
 
-        foreach (TechType tech in Enum.GetValues(typeof(TechType)))
+        List<string> allTechIds = techManager.GetAllTechIds();
+        foreach (string techId in allTechIds)
         {
-            if (techManager.CanResearch(playerId, tech) && !techManager.HasTech(playerId, tech))
+            if (techManager.CanResearch(playerId, techId))
             {
-                options.Add(tech.ToString());
-                displayedTechs.Add(tech);
+                options.Add(techManager.GetTechName(techId));
+                displayedTechs.Add(techId);
             }
         }
 
         techDropdown.AddOptions(options);
 
-        TechType? current = techManager.GetCurrentResearch(playerId);
-        if (current.HasValue)
+        string current = techManager.GetCurrentResearch(playerId);
+        if (!string.IsNullOrEmpty(current))
         {
-            int index = displayedTechs.IndexOf(current.Value);
+            int index = displayedTechs.IndexOf(current);
             techDropdown.SetValueWithoutNotify(index + 1);
         }
     }
@@ -144,7 +145,7 @@ public class MainHUDManager : MonoBehaviour
         if (index == 0) return;
 
         int playerId = turnManager.CurrentPlayerID;
-        TechType selectedTech = displayedTechs[index - 1];
+        string selectedTech = displayedTechs[index - 1];
 
         techManager.SetResearch(playerId, selectedTech);
         Debug.Log($"[HUD] Research started: {selectedTech}");

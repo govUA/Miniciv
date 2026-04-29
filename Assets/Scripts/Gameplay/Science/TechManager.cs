@@ -1,38 +1,48 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
-public enum TechType
+[Serializable]
+public class TechDataModel
 {
-    Agriculture,
-    Pottery,
-    AnimalHusbandry,
-    Sailing,
-    Mining,
-    Archery,
-    BronzeWorking,
-    Masonry,
-    IronWorking
+    public string name;
+    public int cost;
+    public bool isRepeatable;
+    public List<string> prerequisites;
+}
+
+[Serializable]
+public class TechDatabase
+{
+    public List<TechDataModel> technologies;
 }
 
 public class TechManager : MonoBehaviour
 {
+    [Tooltip("Link Technologies.json file")]
+    public TextAsset techJsonFile;
+
     public class TechData
     {
-        public TechType Tech;
         public string Name;
         public int Cost;
-        public List<TechType> Prerequisites;
+        public bool IsRepeatable;
+        public List<string> Prerequisites;
     }
 
     private class PlayerResearchState
     {
-        public TechType? CurrentResearch = null;
+        public string CurrentResearch = null;
         public int AccumulatedResearch = 0;
-        public HashSet<TechType> UnlockedTechs = new HashSet<TechType>();
+        public HashSet<string> UnlockedTechs = new HashSet<string>();
+        public Dictionary<string, int> TechCompletions = new Dictionary<string, int>();
     }
 
-    private Dictionary<TechType, TechData> techTree;
+    private Dictionary<string, TechData> techTree;
     private Dictionary<int, PlayerResearchState> playerStates;
+
+    public event Action<int, string, int> OnRepeatableTechCompleted;
 
     void Awake()
     {
@@ -42,98 +52,61 @@ public class TechManager : MonoBehaviour
 
     private void InitializeTechTree()
     {
-        techTree = new Dictionary<TechType, TechData>
+        techTree = new Dictionary<string, TechData>();
+
+        if (techJsonFile == null)
         {
+            Debug.LogError("[TechManager] JSON file with these technologies was not found!");
+            return;
+        }
+
+        TechDatabase db = JsonUtility.FromJson<TechDatabase>(techJsonFile.text);
+        if (db == null || db.technologies == null) return;
+
+        foreach (var t in db.technologies)
+        {
+            TechData data = new TechData
             {
-                TechType.Agriculture,
-                new TechData
-                {
-                    Tech = TechType.Agriculture, Name = "Agriculture", Cost = 20, Prerequisites = new List<TechType>()
-                }
-            },
-            {
-                TechType.Pottery,
-                new TechData
-                {
-                    Tech = TechType.Pottery, Name = "Pottery", Cost = 40,
-                    Prerequisites = new List<TechType> { TechType.Agriculture }
-                }
-            },
-            {
-                TechType.AnimalHusbandry,
-                new TechData
-                {
-                    Tech = TechType.AnimalHusbandry, Name = "Animal Husbandry", Cost = 40,
-                    Prerequisites = new List<TechType> { TechType.Agriculture }
-                }
-            },
-            {
-                TechType.Sailing,
-                new TechData
-                {
-                    Tech = TechType.Sailing, Name = "Sailing", Cost = 65,
-                    Prerequisites = new List<TechType> { TechType.Pottery }
-                }
-            },
-            {
-                TechType.Mining,
-                new TechData
-                {
-                    Tech = TechType.Mining, Name = "Mining", Cost = 40,
-                    Prerequisites = new List<TechType> { TechType.Agriculture }
-                }
-            },
-            {
-                TechType.Archery,
-                new TechData
-                {
-                    Tech = TechType.Archery, Name = "Archery", Cost = 50,
-                    Prerequisites = new List<TechType> { TechType.AnimalHusbandry }
-                }
-            },
-            {
-                TechType.BronzeWorking,
-                new TechData
-                {
-                    Tech = TechType.BronzeWorking, Name = "Bronze Working", Cost = 65,
-                    Prerequisites = new List<TechType> { TechType.Mining }
-                }
-            },
-            {
-                TechType.Masonry,
-                new TechData
-                {
-                    Tech = TechType.Masonry, Name = "Masonry", Cost = 60,
-                    Prerequisites = new List<TechType> { TechType.Mining }
-                }
-            },
-            {
-                TechType.IronWorking,
-                new TechData
-                {
-                    Tech = TechType.IronWorking, Name = "Iron Working", Cost = 100,
-                    Prerequisites = new List<TechType> { TechType.BronzeWorking }
-                }
-            }
-        };
+                Name = t.name,
+                Cost = t.cost,
+                IsRepeatable = t.isRepeatable,
+                Prerequisites = new List<string>(t.prerequisites)
+            };
+
+            techTree[t.name] = data;
+        }
     }
 
     private PlayerResearchState GetState(int playerId)
     {
         if (!playerStates.ContainsKey(playerId))
-            playerStates[playerId] = new PlayerResearchState();
+        {
+            var state = new PlayerResearchState();
+            state.UnlockedTechs.Add("Agriculture");
+            state.TechCompletions["Agriculture"] = 1;
+            playerStates[playerId] = state;
+        }
+
         return playerStates[playerId];
     }
 
-    public bool HasTech(int playerId, TechType tech)
+    public bool HasTech(int playerId, string techId)
     {
-        return GetState(playerId).UnlockedTechs.Contains(tech);
+        return GetState(playerId).UnlockedTechs.Contains(techId);
     }
 
-    public bool CanResearch(int playerId, TechType tech)
+    public int GetTechCompletions(int playerId, string techId)
     {
-        if (HasTech(playerId, tech)) return false;
-        if (!techTree.TryGetValue(tech, out TechData data)) return false;
+        var state = GetState(playerId);
+        if (state.TechCompletions.TryGetValue(techId, out int count)) return count;
+        return 0;
+    }
+
+    public bool CanResearch(int playerId, string techId)
+    {
+        if (!techTree.TryGetValue(techId, out TechData data)) return false;
+
+        if (HasTech(playerId, techId) && !data.IsRepeatable) return false;
 
         foreach (var prereq in data.Prerequisites)
         {
@@ -143,34 +116,47 @@ public class TechManager : MonoBehaviour
         return true;
     }
 
-    public void SetResearch(int playerId, TechType tech)
+    public void SetResearch(int playerId, string techId)
     {
-        if (!CanResearch(playerId, tech)) return;
-        GetState(playerId).CurrentResearch = tech;
+        if (!CanResearch(playerId, techId)) return;
+        GetState(playerId).CurrentResearch = techId;
     }
 
     public void AddScience(int playerId, int amount)
     {
         var state = GetState(playerId);
-        if (state.CurrentResearch == null) return;
+        if (string.IsNullOrEmpty(state.CurrentResearch)) return;
 
         state.AccumulatedResearch += amount;
-        TechData data = techTree[state.CurrentResearch.Value];
+        TechData data = techTree[state.CurrentResearch];
 
         if (state.AccumulatedResearch >= data.Cost)
         {
-            UnlockTech(playerId, state.CurrentResearch.Value);
+            UnlockTech(playerId, state.CurrentResearch);
             state.AccumulatedResearch -= data.Cost;
             state.CurrentResearch = null;
         }
     }
 
-    public void UnlockTech(int playerId, TechType tech)
+    public void UnlockTech(int playerId, string techId)
     {
-        GetState(playerId).UnlockedTechs.Add(tech);
+        var state = GetState(playerId);
+        state.UnlockedTechs.Add(techId);
+
+        if (!state.TechCompletions.ContainsKey(techId))
+            state.TechCompletions[techId] = 0;
+
+        state.TechCompletions[techId]++;
+
+        if (techTree.TryGetValue(techId, out TechData data) && data.IsRepeatable)
+        {
+            OnRepeatableTechCompleted?.Invoke(playerId, techId, state.TechCompletions[techId]);
+            Debug.Log(
+                $"[TechManager] Player {playerId} discovered repeating technology {techId} (Times: {state.TechCompletions[techId]})");
+        }
     }
 
-    public TechType? GetCurrentResearch(int playerId)
+    public string GetCurrentResearch(int playerId)
     {
         return GetState(playerId).CurrentResearch;
     }
@@ -180,9 +166,20 @@ public class TechManager : MonoBehaviour
         return GetState(playerId).AccumulatedResearch;
     }
 
-    public int GetTechCost(TechType tech)
+    public int GetTechCost(string techId)
     {
-        if (techTree.TryGetValue(tech, out TechData data)) return data.Cost;
+        if (techTree.TryGetValue(techId, out TechData data)) return data.Cost;
         return 0;
+    }
+
+    public List<string> GetAllTechIds()
+    {
+        return techTree.Keys.ToList();
+    }
+
+    public string GetTechName(string techId)
+    {
+        if (techTree.TryGetValue(techId, out TechData data)) return data.Name;
+        return techId;
     }
 }

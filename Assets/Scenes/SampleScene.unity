@@ -5064,6 +5064,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 206523df42344c388d96591616dd67a0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TechManager
+  techJsonFile: {fileID: 4900000, guid: 973369cd52ab42899262acdda08c9c67, type: 3}
 --- !u!114 &1775689256
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -489,9 +489,9 @@ public class HexInteraction : MonoBehaviour
         if (techManager != null && turnManager != null)
         {
             if (Keyboard.current.tKey.wasPressedThisFrame)
-                techManager.SetResearch(turnManager.CurrentPlayerID, TechType.Pottery);
+                techManager.SetResearch(turnManager.CurrentPlayerID, "Pottery");
             if (Keyboard.current.yKey.wasPressedThisFrame)
-                techManager.SetResearch(turnManager.CurrentPlayerID, TechType.BronzeWorking);
+                techManager.SetResearch(turnManager.CurrentPlayerID, "BronzeWorking");
         }
 
         if (selectedCity != null && selectedCity.ownerID == turnManager.CurrentPlayerID)
@@ -503,9 +503,9 @@ public class HexInteraction : MonoBehaviour
             if (Keyboard.current.digit3Key.wasPressedThisFrame)
                 selectedCity.SetProject(new CityProject("Monument", ProjectType.Building, 40));
             if (Keyboard.current.digit4Key.wasPressedThisFrame)
-                selectedCity.SetProject(new CityProject("Archer", ProjectType.Unit, 30, TechType.Pottery));
+                selectedCity.SetProject(new CityProject("Archer", ProjectType.Unit, 30, "Pottery"));
             if (Keyboard.current.digit5Key.wasPressedThisFrame)
-                selectedCity.SetProject(new CityProject("Warrior", ProjectType.Unit, 40, TechType.BronzeWorking));
+                selectedCity.SetProject(new CityProject("Warrior", ProjectType.Unit, 40, "BronzeWorking"));
             if (Keyboard.current.digit6Key.wasPressedThisFrame)
                 selectedCity.SetProject(new CityProject("Repair", ProjectType.Process, 0));
         }

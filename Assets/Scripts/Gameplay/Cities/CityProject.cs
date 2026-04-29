@@ -11,7 +11,7 @@ public class CityProject
     public ProjectType type;
     public int cost;
     public bool requiresTech;
-    public TechType requiredTech;
+    public string requiredTech;
 
     public CityProject(string name, ProjectType type, int cost)
     {
@@ -21,7 +21,7 @@ public class CityProject
         this.requiresTech = false;
     }
 
-    public CityProject(string name, ProjectType type, int cost, TechType requiredTech)
+    public CityProject(string name, ProjectType type, int cost, string requiredTech)
     {
         this.name = name;
         this.type = type;

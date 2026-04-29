@@ -210,7 +210,7 @@ public class Unit : MonoBehaviour
 
             bool isForeign = nextNode.ownerID != -1 && nextNode.ownerID != ownerID;
             bool isAtWar = isForeign && playerManager != null && playerManager.IsAtWar(ownerID, nextNode.ownerID);
-            bool canSail = techManager != null && techManager.HasTech(ownerID, TechType.Sailing);
+            bool canSail = techManager != null && techManager.HasTech(ownerID, "Sailing");
 
             if ((!nextNode.isLand && !canSail) || hasEnemy || (isForeign && !isAtWar))
             {
@@ -290,7 +290,7 @@ public class Unit : MonoBehaviour
 
             bool isForeign = nextNode.ownerID != -1 && nextNode.ownerID != ownerID;
             bool isAtWar = isForeign && playerManager != null && playerManager.IsAtWar(ownerID, nextNode.ownerID);
-            bool canSail = techManager != null && techManager.HasTech(ownerID, TechType.Sailing);
+            bool canSail = techManager != null && techManager.HasTech(ownerID, "Sailing");
 
             if ((!nextNode.isLand && !canSail) || hasEnemy || (isForeign && !isAtWar))
             {
