@@ -18,7 +18,6 @@ public enum UnitClass
     Ranged
 }
 
-[RequireComponent(typeof(VelocityProvider))]
 public class Unit : MonoBehaviour
 {
     public static event Action<Unit> OnUnitMoved;
@@ -51,7 +50,6 @@ public class Unit : MonoBehaviour
     private TechManager techManager;
     private PlayerManager playerManager;
     private UnitManager unitManager;
-    private VelocityProvider velocityProvider;
 
     public bool isAnimating = false;
     public event Action onDestinationReached;
@@ -89,8 +87,6 @@ public class Unit : MonoBehaviour
         currentHP = maxHP;
         currentMP = maxMP;
         State = UnitState.Idle;
-
-        velocityProvider = GetComponent<VelocityProvider>();
 
         SpriteRenderer sr = GetComponent<SpriteRenderer>();
         if (sr != null && mainSprite != null) sr.sprite = mainSprite;
@@ -213,6 +209,7 @@ public class Unit : MonoBehaviour
 
                 Vector3 targetPos =
                     tilemap.CellToWorld(new Vector3Int(nextNode.y, tilemap.WorldToCell(transform.position).y + dx, 0));
+
                 while (Vector3.Distance(transform.position, targetPos) > 0.05f)
                 {
                     transform.position = Vector3.MoveTowards(transform.position, targetPos, moveSpeed * Time.deltaTime);
@@ -295,10 +292,9 @@ public class Unit : MonoBehaviour
                 Vector3 targetPos =
                     tilemap.CellToWorld(new Vector3Int(nextNode.y, tilemap.WorldToCell(transform.position).y + dx, 0));
 
-                velocityProvider.SetTarget(targetPos, moveSpeed);
-
-                while (!velocityProvider.HasReachedTarget())
+                while (Vector3.Distance(transform.position, targetPos) > 0.05f)
                 {
+                    transform.position = Vector3.MoveTowards(transform.position, targetPos, moveSpeed * Time.deltaTime);
                     yield return null;
                 }
 
