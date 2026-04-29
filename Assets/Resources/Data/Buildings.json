@@ -3,32 +3,43 @@
     {
       "name": "Monument",
       "cost": 60,
-      "requiredTech": ""
+      "requiredTech": "",
+      "effects": [
+        {
+          "type": "Culture",
+          "amount": 2
+        }
+      ]
     },
     {
       "name": "Granary",
       "cost": 60,
-      "requiredTech": "Pottery"
+      "requiredTech": "Pottery",
+      "effects": []
     },
     {
       "name": "Library",
       "cost": 90,
-      "requiredTech": "Writing"
+      "requiredTech": "Writing",
+      "effects": []
     },
     {
       "name": "Water Mill",
       "cost": 75,
-      "requiredTech": "The Wheel"
+      "requiredTech": "The Wheel",
+      "effects": []
     },
     {
       "name": "Walls",
       "cost": 75,
-      "requiredTech": "Masonry"
+      "requiredTech": "Masonry",
+      "effects": []
     },
     {
       "name": "Barracks",
       "cost": 75,
-      "requiredTech": "Bronze Working"
+      "requiredTech": "Bronze Working",
+      "effects": []
     }
   ]
 }

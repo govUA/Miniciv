@@ -8,12 +8,20 @@ public class BuildingDataModel
     public string name;
     public int cost;
     public string requiredTech;
+    public List<BuildingEffect> effects = new List<BuildingEffect>();
 }
 
 [System.Serializable]
 public class BuildingDatabase
 {
     public List<BuildingDataModel> buildings;
+}
+
+[System.Serializable]
+public class BuildingEffect
+{
+    public string type;
+    public int amount;
 }
 
 [RequireComponent(typeof(HexGrid))]

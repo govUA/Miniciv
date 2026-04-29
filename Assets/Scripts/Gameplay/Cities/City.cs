@@ -140,12 +140,28 @@ public class City : MonoBehaviour
             Debug.Log($"[CITY] {cityName} grew! Population is now {population}.");
         }
 
-        int turnCulture = 1;
+        int buildingCulture = 0;
 
-        if (builtBuildings.Contains("Monument"))
+        foreach (string buildingName in builtBuildings)
         {
-            turnCulture += 2;
+            if (cityManager != null &&
+                cityManager.buildingDatabaseDict.TryGetValue(buildingName, out BuildingDataModel bData))
+            {
+                if (bData.effects != null)
+                {
+                    foreach (var effect in bData.effects)
+                    {
+                        if (effect.type == "Culture")
+                        {
+                            buildingCulture += effect.amount;
+                        }
+                    }
+                }
+            }
         }
+
+        int turnCulture = 1;
+        turnCulture += buildingCulture;
 
         storedCulture += turnCulture;
 

@@ -79,11 +79,31 @@ public class CityUIManager : MonoBehaviour
             turnSci += node.sciYield;
         }
 
-        int turnCulture = 1;
-        if (currentCity.builtBuildings.Contains("Monument"))
+        int buildingCulture = 0;
+        CityManager cityManager = FindAnyObjectByType<CityManager>();
+
+        if (cityManager != null)
         {
-            turnCulture += 2;
+            foreach (string buildingName in currentCity.builtBuildings)
+            {
+                if (cityManager.buildingDatabaseDict.TryGetValue(buildingName, out BuildingDataModel bData))
+                {
+                    if (bData.effects != null)
+                    {
+                        foreach (var effect in bData.effects)
+                        {
+                            if (effect.type == "Culture")
+                            {
+                                buildingCulture += effect.amount;
+                            }
+                        }
+                    }
+                }
+            }
         }
+
+        int turnCulture = 1;
+        turnCulture += buildingCulture;
 
         perTurnStatsText.text = $"Yield (per turn):\n" +
                                 $"+{turnFood} Food\n" +
