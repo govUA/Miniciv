@@ -20,6 +20,9 @@ public class City : MonoBehaviour
     public int storedFood = 0;
     public int storedProduction = 0;
     public int storedScience = 0;
+    public int storedCulture = 0;
+
+    public int borderExpansions = 0;
 
     public CityProject currentProject;
     public List<string> builtBuildings = new List<string>();
@@ -137,6 +140,30 @@ public class City : MonoBehaviour
             Debug.Log($"[CITY] {cityName} grew! Population is now {population}.");
         }
 
+        int turnCulture = 1;
+
+        if (builtBuildings.Contains("Monument"))
+        {
+            turnCulture += 2;
+        }
+
+        storedCulture += turnCulture;
+
+        int cultureThreshold = 10 + (int)(Mathf.Pow(borderExpansions, 1.5f) * 10);
+
+        if (storedCulture >= cultureThreshold)
+        {
+            storedCulture -= cultureThreshold;
+            borderExpansions++;
+
+            if (cityManager != null)
+            {
+                cityManager.ExpandTerritoryByOne(this);
+                Debug.Log(
+                    $"[CITY] {cityName} expands its borders due to culture! Next threshold: {10 + (int)(Mathf.Pow(borderExpansions, 1.5f) * 10)}");
+            }
+        }
+
         if (currentProject != null)
         {
             if (currentProject.type == ProjectType.Process && currentProject.name == "Repair")
@@ -172,7 +199,6 @@ public class City : MonoBehaviour
         if (currentProject.type == ProjectType.Building)
         {
             builtBuildings.Add(currentProject.name);
-            if (currentProject.name == "Monument" && cityManager != null) cityManager.ExpandTerritoryByOne(this);
         }
         else if (currentProject.type == ProjectType.Unit)
         {

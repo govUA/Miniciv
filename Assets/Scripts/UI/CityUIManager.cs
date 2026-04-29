@@ -63,9 +63,12 @@ public class CityUIManager : MonoBehaviour
         cityNameText.text = currentCity.cityName;
         populationText.text = $"Population: {currentCity.population}";
 
+        int cultureThreshold = 10 + (int)(Mathf.Pow(currentCity.borderExpansions, 1.5f) * 10);
+
         accumulatedStatsText.text = $"Accumulated:\n" +
                                     $"Food: {currentCity.storedFood}\n" +
                                     $"Production: {currentCity.storedProduction}\n" +
+                                    $"Culture: {currentCity.storedCulture} / {cultureThreshold}\n" +
                                     $"Health: {currentCity.currentHP}/{currentCity.maxHP}";
 
         int turnFood = 0, turnProd = 0, turnSci = 0;
@@ -76,10 +79,17 @@ public class CityUIManager : MonoBehaviour
             turnSci += node.sciYield;
         }
 
+        int turnCulture = 1;
+        if (currentCity.builtBuildings.Contains("Monument"))
+        {
+            turnCulture += 2;
+        }
+
         perTurnStatsText.text = $"Yield (per turn):\n" +
                                 $"+{turnFood} Food\n" +
                                 $"+{turnProd} Production\n" +
-                                $"+{turnSci} Science";
+                                $"+{turnSci} Science\n" +
+                                $"+{turnCulture} Culture";
 
         UpdateCurrentProjectUI();
     }
