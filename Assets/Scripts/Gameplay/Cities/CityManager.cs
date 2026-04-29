@@ -2,10 +2,27 @@
 using UnityEngine.Tilemaps;
 using System.Collections.Generic;
 
+[System.Serializable]
+public class BuildingDataModel
+{
+    public string name;
+    public int cost;
+    public string requiredTech;
+}
+
+[System.Serializable]
+public class BuildingDatabase
+{
+    public List<BuildingDataModel> buildings;
+}
+
 [RequireComponent(typeof(HexGrid))]
 public class CityManager : MonoBehaviour
 {
-    public GameObject cityPrefab;
+    [Header("Data")] public TextAsset buildingsJsonFile;
+    public Dictionary<string, BuildingDataModel> buildingDatabaseDict = new Dictionary<string, BuildingDataModel>();
+
+    [Header("Settings")] public GameObject cityPrefab;
 
     public FogOfWarManager fowManager;
     public TurnManager turnManager;
@@ -20,8 +37,28 @@ public class CityManager : MonoBehaviour
     void Awake()
     {
         grid = GetComponent<HexGrid>();
-
         borderManager = FindAnyObjectByType<BorderManager>();
+        LoadBuildingDatabase();
+    }
+
+    private void LoadBuildingDatabase()
+    {
+        if (buildingsJsonFile == null)
+        {
+            Debug.LogError("[CityManager] JSON file with buildings not found!");
+            return;
+        }
+
+        BuildingDatabase db = JsonUtility.FromJson<BuildingDatabase>(buildingsJsonFile.text);
+        if (db != null && db.buildings != null)
+        {
+            foreach (var b in db.buildings)
+            {
+                buildingDatabaseDict[b.name] = b;
+            }
+
+            Debug.Log($"[CityManager] Loaded {buildingDatabaseDict.Count} basic buildings.");
+        }
     }
 
     void OnEnable()

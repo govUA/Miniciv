@@ -1,0 +1,34 @@
+﻿{
+  "buildings": [
+    {
+      "name": "Monument",
+      "cost": 60,
+      "requiredTech": ""
+    },
+    {
+      "name": "Granary",
+      "cost": 60,
+      "requiredTech": "Pottery"
+    },
+    {
+      "name": "Library",
+      "cost": 90,
+      "requiredTech": "Writing"
+    },
+    {
+      "name": "Water Mill",
+      "cost": 75,
+      "requiredTech": "The Wheel"
+    },
+    {
+      "name": "Walls",
+      "cost": 75,
+      "requiredTech": "Masonry"
+    },
+    {
+      "name": "Barracks",
+      "cost": 75,
+      "requiredTech": "Bronze Working"
+    }
+  ]
+}

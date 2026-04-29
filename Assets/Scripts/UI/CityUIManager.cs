@@ -137,39 +137,64 @@ public class CityUIManager : MonoBehaviour
         List<CityProject> availableProjects = new List<CityProject>();
 
         UnitManager unitManager = FindAnyObjectByType<UnitManager>();
+        CityManager cityManager = FindAnyObjectByType<CityManager>();
         TechManager techManager = FindAnyObjectByType<TechManager>();
 
-        if (unitManager != null && currentCity != null)
+        if (currentCity != null)
         {
-            foreach (var kvp in unitManager.unitDatabaseDict)
+            if (unitManager != null)
             {
-                UnitDataModel unitData = kvp.Value;
-                bool canBuild = true;
-
-                if (!string.IsNullOrEmpty(unitData.requiredTech))
+                foreach (var kvp in unitManager.unitDatabaseDict)
                 {
-                    if (techManager == null || !techManager.HasTech(currentCity.ownerID, unitData.requiredTech))
+                    UnitDataModel unitData = kvp.Value;
+                    bool canBuild = true;
+
+                    if (!string.IsNullOrEmpty(unitData.requiredTech))
                     {
-                        canBuild = false;
+                        if (techManager == null || !techManager.HasTech(currentCity.ownerID, unitData.requiredTech))
+                            canBuild = false;
+                    }
+
+                    if (canBuild)
+                    {
+                        availableProjects.Add(new CityProject(unitData.name, ProjectType.Unit, unitData.cost,
+                            unitData.requiredTech));
                     }
                 }
+            }
 
-                if (canBuild)
+            if (cityManager != null)
+            {
+                foreach (var kvp in cityManager.buildingDatabaseDict)
                 {
-                    availableProjects.Add(new CityProject(unitData.name, ProjectType.Unit, unitData.cost,
-                        unitData.requiredTech));
+                    BuildingDataModel bData = kvp.Value;
+
+                    if (currentCity.builtBuildings.Contains(bData.name))
+                        continue;
+
+                    bool canBuild = true;
+
+                    if (!string.IsNullOrEmpty(bData.requiredTech))
+                    {
+                        if (techManager == null || !techManager.HasTech(currentCity.ownerID, bData.requiredTech))
+                            canBuild = false;
+                    }
+
+                    if (canBuild)
+                    {
+                        availableProjects.Add(new CityProject(bData.name, ProjectType.Building, bData.cost,
+                            bData.requiredTech));
+                    }
                 }
             }
         }
 
-        availableProjects.Add(new CityProject("Monument", ProjectType.Building, 60));
         availableProjects.Add(new CityProject("Repair", ProjectType.Process, 0));
 
         foreach (CityProject proj in availableProjects)
         {
             GameObject btnObj = Instantiate(projectButtonPrefab, projectListContainer);
             TextMeshProUGUI btnText = btnObj.GetComponentInChildren<TextMeshProUGUI>();
-
             btnText.text = proj.type == ProjectType.Process
                 ? proj.name
                 : $"{proj.name}\n<size=80%>{proj.cost} Prod.</size>";
@@ -184,7 +209,6 @@ public class CityUIManager : MonoBehaviour
                     ProjectType.Process => "Icons/Projects/Projects",
                     _ => "Icons/Projects"
                 };
-
                 Sprite loadedIcon = Resources.Load<Sprite>($"{folder}/{proj.name}");
                 if (loadedIcon != null) projectIcon.sprite = loadedIcon;
             }

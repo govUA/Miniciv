@@ -5004,6 +5004,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 149d12e8124a4e7abd3460bb1044d4dc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CityManager
+  buildingsJsonFile: {fileID: 4900000, guid: 9569151843464c498575043dffec163e, type: 3}
   cityPrefab: {fileID: 6798092455644144345, guid: 379e91f5d55fb4e46b2f20b53d044874, type: 3}
   fowManager: {fileID: 1775689249}
   turnManager: {fileID: 1775689248}
