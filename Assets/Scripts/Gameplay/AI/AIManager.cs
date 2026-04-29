@@ -7,6 +7,7 @@ public class AIManager : MonoBehaviour
     public TurnManager turnManager;
     public PlayerManager playerManager;
     public UnitManager unitManager;
+    public CityManager cityManager;
 
     private void Start()
     {
@@ -28,7 +29,7 @@ public class AIManager : MonoBehaviour
 
     private IEnumerator ExecuteAITurn(int playerId)
     {
-        Debug.Log($"ШІ Гравець {playerId} приймає рішення...");
+        Debug.Log($"AI Player {playerId} makes decision...");
         yield return new WaitForSeconds(0.5f);
 
         ExecuteUnitActions(playerId);
@@ -40,23 +41,40 @@ public class AIManager : MonoBehaviour
 
     private void ExecuteUnitActions(int playerId)
     {
-        List<Unit> allUnits = unitManager.GetActiveUnits();
+        List<Unit> allUnits = new List<Unit>(unitManager.GetActiveUnits());
         Pathfinder pathfinder = FindObjectOfType<Pathfinder>();
         HexGrid grid = FindObjectOfType<HexGrid>();
 
+        if (cityManager == null) cityManager = FindObjectOfType<CityManager>();
+
         foreach (Unit unit in allUnits)
         {
+            if (unit == null) continue;
+
             if (unit.ownerID != playerId || unit.State != UnitState.Idle || unit.currentMP <= 0) continue;
 
             HexNode targetNode = EvaluateBestDestination(unit, grid);
 
-            if (targetNode != null && targetNode != unit.CurrentNode)
+            if (targetNode != null)
             {
-                List<HexNode> path = pathfinder.FindPath(unit, targetNode);
-
-                if (path != null && path.Count > 0)
+                if (targetNode == unit.CurrentNode)
                 {
-                    unit.MoveAlongPath(path);
+                    if (unit.isSettler)
+                    {
+                        if (cityManager.FoundCity(unit))
+                        {
+                            unitManager.RemoveUnit(unit);
+                        }
+                    }
+                }
+                else
+                {
+                    List<HexNode> path = pathfinder.FindPath(unit, targetNode);
+
+                    if (path != null && path.Count > 0)
+                    {
+                        unit.MoveAlongPath(path);
+                    }
                 }
             }
         }
@@ -65,7 +83,7 @@ public class AIManager : MonoBehaviour
     private HexNode EvaluateBestDestination(Unit unit, HexGrid grid)
     {
         HexNode bestNode = null;
-        float highestUtility = -1f;
+        float highestUtility = -1000f;
 
         for (int x = 0; x < grid.GetWidth(); x++)
         {
@@ -73,19 +91,13 @@ public class AIManager : MonoBehaviour
             {
                 HexNode node = grid.GetNode(x, y);
 
-                if (node == null || !node.isLand || node == unit.CurrentNode) continue;
+                if (node == null || !node.isLand) continue;
 
                 float utility = 0f;
 
                 if (unit.isSettler)
                 {
-                    float distance = Vector2.Distance(new Vector2(unit.CurrentNode.x, unit.CurrentNode.y),
-                        new Vector2(node.x, node.y));
-                    float distanceScore = 1f / (distance + 1f);
-
-                    float resourceScore = Random.Range(0.1f, 1f);
-
-                    utility = (distanceScore * 0.4f) + (resourceScore * 0.6f);
+                    utility = EvaluateSettlerTile(unit, node, grid);
                 }
                 else
                 {
@@ -100,7 +112,45 @@ public class AIManager : MonoBehaviour
             }
         }
 
-        return bestNode;
+        return bestNode ?? unit.CurrentNode;
+    }
+
+    private float EvaluateSettlerTile(Unit settler, HexNode candidateNode, HexGrid grid)
+    {
+        if (cityManager != null)
+        {
+            foreach (City city in cityManager.GetActiveCities())
+            {
+                if (grid.GetDistance(candidateNode, city.centerNode) <= 3)
+                {
+                    return -1000f;
+                }
+            }
+        }
+
+        if (candidateNode.hasCity) return -1000f;
+
+        List<HexNode> initialTerritory = grid.GetNodesInRange(candidateNode, 1);
+        float yieldScore = 0f;
+
+        foreach (HexNode n in initialTerritory)
+        {
+            yieldScore += (n.foodYield * 1.5f) + (n.prodYield * 1.2f) + (n.sciYield * 1.0f);
+        }
+
+        bool hasWaterNeighbor = false;
+        foreach (HexNode neighbor in grid.GetNeighbors(candidateNode))
+        {
+            if (!neighbor.isLand) hasWaterNeighbor = true;
+        }
+
+        if (hasWaterNeighbor) yieldScore += 3f;
+
+        int distance = grid.GetDistance(settler.CurrentNode, candidateNode);
+
+        float distanceScore = 20f / (distance + 1f);
+
+        return yieldScore + distanceScore;
     }
 
     private void OnDestroy()

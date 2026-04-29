@@ -5085,6 +5085,7 @@ MonoBehaviour:
   turnManager: {fileID: 1775689248}
   playerManager: {fileID: 1775689252}
   unitManager: {fileID: 1775689247}
+  cityManager: {fileID: 1775689251}
 --- !u!114 &1775689258
 MonoBehaviour:
   m_ObjectHideFlags: 0
