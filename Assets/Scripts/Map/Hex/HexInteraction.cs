@@ -485,30 +485,6 @@ public class HexInteraction : MonoBehaviour
                 turnManager.EndTurn();
             }
         }
-
-        if (techManager != null && turnManager != null)
-        {
-            if (Keyboard.current.tKey.wasPressedThisFrame)
-                techManager.SetResearch(turnManager.CurrentPlayerID, "Pottery");
-            if (Keyboard.current.yKey.wasPressedThisFrame)
-                techManager.SetResearch(turnManager.CurrentPlayerID, "BronzeWorking");
-        }
-
-        if (selectedCity != null && selectedCity.ownerID == turnManager.CurrentPlayerID)
-        {
-            if (Keyboard.current.digit1Key.wasPressedThisFrame)
-                selectedCity.SetProject(new CityProject("Scout", ProjectType.Unit, 20));
-            if (Keyboard.current.digit2Key.wasPressedThisFrame)
-                selectedCity.SetProject(new CityProject("Settler", ProjectType.Unit, 50));
-            if (Keyboard.current.digit3Key.wasPressedThisFrame)
-                selectedCity.SetProject(new CityProject("Monument", ProjectType.Building, 40));
-            if (Keyboard.current.digit4Key.wasPressedThisFrame)
-                selectedCity.SetProject(new CityProject("Archer", ProjectType.Unit, 30, "Pottery"));
-            if (Keyboard.current.digit5Key.wasPressedThisFrame)
-                selectedCity.SetProject(new CityProject("Warrior", ProjectType.Unit, 40, "BronzeWorking"));
-            if (Keyboard.current.digit6Key.wasPressedThisFrame)
-                selectedCity.SetProject(new CityProject("Repair", ProjectType.Process, 0));
-        }
     }
 
     private void DrawOverlays(Vector3Int hoverPos)
