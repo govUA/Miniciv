@@ -9,7 +9,9 @@
       "attackRange": 0,
       "visionRange": 2,
       "maxMP": 30,
-      "requiredTech": ""
+      "requiredTech": "",
+      "requiredPopulation": 2,
+      "populationCost": 1
     },
     {
       "name": "Scout",

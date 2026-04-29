@@ -64,6 +64,8 @@ public class AICityController : MonoBehaviour
                 if (!techManager.HasTech(playerId, unitData.requiredTech)) continue;
             }
 
+            if (unitData.requiredPopulation > 0 && city.population < unitData.requiredPopulation) continue;
+
             float score = Random.Range(5f, 15f);
 
             if (unitData.unitClass == "Civilian" && unitData.name.ToLower() == "settler")

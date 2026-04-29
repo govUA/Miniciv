@@ -203,6 +203,11 @@ public class CityUIManager : MonoBehaviour
                             canBuild = false;
                     }
 
+                    if (unitData.requiredPopulation > 0 && currentCity.population < unitData.requiredPopulation)
+                    {
+                        canBuild = false;
+                    }
+
                     if (canBuild)
                     {
                         availableProjects.Add(new CityProject(unitData.name, ProjectType.Unit, unitData.cost,

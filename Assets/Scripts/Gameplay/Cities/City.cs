@@ -105,6 +105,19 @@ public class City : MonoBehaviour
             }
         }
 
+        if (project.type == ProjectType.Unit && unitManager != null)
+        {
+            if (unitManager.unitDatabaseDict.TryGetValue(project.name, out UnitDataModel uData))
+            {
+                if (uData.requiredPopulation > 0 && population < uData.requiredPopulation)
+                {
+                    Debug.LogWarning(
+                        $"[CITY] Cannot build {project.name}. Requires population: {uData.requiredPopulation}!");
+                    return;
+                }
+            }
+        }
+
         currentProject = project;
         Debug.Log($"[CITY] {cityName} started building: {project.name} ({project.cost} Prod)");
     }
@@ -257,7 +270,21 @@ public class City : MonoBehaviour
         }
         else if (currentProject.type == ProjectType.Unit)
         {
-            if (unitManager != null) unitManager.SpawnUnit(centerNode, ownerID, currentProject.name);
+            if (unitManager != null)
+            {
+                if (unitManager.unitDatabaseDict.TryGetValue(currentProject.name, out UnitDataModel uData))
+                {
+                    if (uData.populationCost > 0)
+                    {
+                        population -= uData.populationCost;
+                        population = Mathf.Max(1, population);
+                        Debug.Log(
+                            $"[CITY] {cityName} spent {uData.populationCost} population to build {uData.name}. Population is now {population}.");
+                    }
+                }
+
+                unitManager.SpawnUnit(centerNode, ownerID, currentProject.name);
+            }
         }
 
         currentProject = null;

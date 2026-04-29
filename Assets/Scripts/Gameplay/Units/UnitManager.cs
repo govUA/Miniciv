@@ -14,6 +14,8 @@ public class UnitDataModel
     public int visionRange;
     public int maxMP;
     public string requiredTech;
+    public int requiredPopulation;
+    public int populationCost;
 
     [System.NonSerialized] public Sprite mainSprite;
     [System.NonSerialized] public Sprite iconSprite;
