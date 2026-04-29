@@ -3,6 +3,7 @@ using System.Collections;
 
 [RequireComponent(typeof(AICityController))]
 [RequireComponent(typeof(AIUnitController))]
+[RequireComponent(typeof(AITechController))]
 public class AIManager : MonoBehaviour
 {
     public TurnManager turnManager;
@@ -10,11 +11,13 @@ public class AIManager : MonoBehaviour
 
     private AICityController cityController;
     private AIUnitController unitController;
+    private AITechController techController;
 
     private void Awake()
     {
         cityController = GetComponent<AICityController>();
         unitController = GetComponent<AIUnitController>();
+        techController = GetComponent<AITechController>();
     }
 
     private void Start()
@@ -40,6 +43,7 @@ public class AIManager : MonoBehaviour
         Debug.Log($"AI Player {playerId} makes decision...");
         yield return new WaitForSeconds(0.5f);
 
+        techController.ExecuteTechActions(playerId);
         cityController.ExecuteCityActions(playerId);
         unitController.ExecuteUnitActions(playerId);
 
