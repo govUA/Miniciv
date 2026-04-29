@@ -29,21 +29,34 @@ public class HexGrid : MonoBehaviour
     {
         mapGenerator = generator;
         wrapWorld = mapGenerator.wrapWorld;
-
         unitManager = GetComponent<UnitManager>();
-
         int[,] mapData = mapGenerator.GetMap();
         width = mapData.GetLength(0);
         height = mapData.GetLength(1);
-
         nodes = new HexNode[width, height];
+
+        float mountainNoiseOffset = UnityEngine.Random.Range(0f, 100000f);
+        float forestNoiseOffset = UnityEngine.Random.Range(0f, 100000f);
+        float smallForestNoiseOffset = UnityEngine.Random.Range(0f, 100000f);
+
+        float mountainNoiseScale = 0.25f;
+        float forestNoiseScale = 0.15f;
+        float smallForestNoiseScale = 0.45f;
 
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
             {
                 bool isLand = mapData[x, y] == 1;
-                nodes[x, y] = new HexNode(x, y, isLand);
+
+                float mountainNoise = Mathf.PerlinNoise((x + mountainNoiseOffset) * mountainNoiseScale,
+                    (y + mountainNoiseOffset) * mountainNoiseScale);
+                float forestNoise = Mathf.PerlinNoise((x + forestNoiseOffset) * forestNoiseScale,
+                    (y + forestNoiseOffset) * forestNoiseScale);
+                float smallForestNoise = Mathf.PerlinNoise((x + smallForestNoiseOffset) * smallForestNoiseScale,
+                    (y + smallForestNoiseOffset) * smallForestNoiseScale);
+
+                nodes[x, y] = new HexNode(x, y, isLand, mountainNoise, forestNoise, smallForestNoise);
             }
         }
     }

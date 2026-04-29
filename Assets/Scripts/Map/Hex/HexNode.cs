@@ -39,7 +39,8 @@ public class HexNode
     private Dictionary<int, int> rememberedOwner = new Dictionary<int, int>();
     private Dictionary<int, bool> rememberedCity = new Dictionary<int, bool>();
 
-    public HexNode(int x, int y, bool isLand)
+    public HexNode(int x, int y, bool isLand, float mountainNoise = 0f, float forestNoise = 0f,
+        float smallForestNoise = 0f)
     {
         this.x = x;
         this.y = y;
@@ -55,8 +56,12 @@ public class HexNode
         }
         else
         {
-            int rnd = UnityEngine.Random.Range(0, 100);
-            if (rnd < 15)
+            float distanceToRidge = Mathf.Abs(mountainNoise - 0.5f);
+            float raggedDistance = distanceToRidge + UnityEngine.Random.Range(-0.04f, 0.04f);
+            bool isClusterMountain = raggedDistance < 0.04f;
+            bool isRandomMountain = UnityEngine.Random.Range(0, 100) < 5;
+
+            if (isClusterMountain || isRandomMountain)
             {
                 terrainType = TerrainType.Mountain;
                 foodYield = 0;
@@ -64,21 +69,32 @@ public class HexNode
                 sciYield = 1;
                 movementCost = 20f;
             }
-            else if (rnd < 45)
-            {
-                terrainType = TerrainType.Forest;
-                foodYield = 1;
-                prodYield = 2;
-                sciYield = 0;
-                movementCost = 15f;
-            }
             else
             {
-                terrainType = TerrainType.Plains;
-                foodYield = 2;
-                prodYield = 1;
-                sciYield = 0;
-                movementCost = 10f;
+                float raggedForest = forestNoise + UnityEngine.Random.Range(-0.05f, 0.05f);
+                bool isBigClusterForest = raggedForest > 0.55f;
+
+                float raggedSmallForest = smallForestNoise + UnityEngine.Random.Range(-0.05f, 0.05f);
+                bool isSmallClusterForest = raggedSmallForest > 0.72f;
+
+                bool isRandomForest = UnityEngine.Random.Range(0, 100) < 8;
+
+                if (isBigClusterForest || isSmallClusterForest || isRandomForest)
+                {
+                    terrainType = TerrainType.Forest;
+                    foodYield = 1;
+                    prodYield = 2;
+                    sciYield = 0;
+                    movementCost = 15f;
+                }
+                else
+                {
+                    terrainType = TerrainType.Plains;
+                    foodYield = 2;
+                    prodYield = 1;
+                    sciYield = 0;
+                    movementCost = 10f;
+                }
             }
         }
     }
