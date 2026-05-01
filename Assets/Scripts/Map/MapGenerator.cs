@@ -52,6 +52,7 @@ public class MapGenerator : MonoBehaviour
 
     void Start()
     {
+        LoadSettingsFromMenu();
         GenerateMap();
     }
 
@@ -205,5 +206,26 @@ public class MapGenerator : MonoBehaviour
     void OnValidate()
     {
         ApplyPresets();
+    }
+
+    void LoadSettingsFromMenu()
+    {
+        mapSize = (MapSizeType)GameSettings.MapSizeIndex;
+
+        if (mapSize == MapSizeType.Custom)
+        {
+            mapWidth = GameSettings.CustomWidth;
+            mapHeight = GameSettings.CustomHeight;
+        }
+
+        currentMapType = (MapType)GameSettings.MapTypeIndex;
+        seaLevel = (SeaLevelType)GameSettings.SeaLevelIndex;
+        wrapWorld = GameSettings.WrapWorld;
+        useRandomSeed = GameSettings.UseRandomSeed;
+
+        if (!useRandomSeed)
+        {
+            seed = GameSettings.Seed;
+        }
     }
 }
