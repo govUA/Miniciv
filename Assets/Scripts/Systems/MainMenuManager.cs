@@ -22,7 +22,8 @@ public class MainMenuManager : MonoBehaviour
     }
 
     [Header("Game and players")] public TMP_Dropdown civilizationDropdown;
-    public TMP_InputField playerCountInput;
+    public Slider playerCountSlider;
+    public TextMeshProUGUI playerCountText;
     public TextAsset civilizationsJson;
 
     [Header("Map settings")] public TMP_Dropdown mapSizeDropdown;
@@ -33,6 +34,10 @@ public class MainMenuManager : MonoBehaviour
     [Header("Custom sized map")] public GameObject customSizePanel;
     public TMP_InputField widthInput;
     public TMP_InputField heightInput;
+
+    [Header("Custom Sea Level Settings")] public GameObject customSeaLevelPanel;
+    public TMP_InputField smoothingIterationsInput;
+    public TMP_InputField fillPercentInput;
 
     [Header("Generation (Seed)")] public Toggle useRandomSeedToggle;
     public TMP_InputField seedInput;
@@ -47,10 +52,22 @@ public class MainMenuManager : MonoBehaviour
             OnRandomSeedToggleChanged(useRandomSeedToggle.isOn);
         }
 
+        if (playerCountSlider != null)
+        {
+            playerCountSlider.wholeNumbers = true;
+            playerCountSlider.onValueChanged.AddListener(OnPlayerCountChanged);
+        }
+
         if (mapSizeDropdown != null)
         {
             mapSizeDropdown.onValueChanged.AddListener(OnMapSizeChanged);
             OnMapSizeChanged(mapSizeDropdown.value);
+        }
+
+        if (seaLevelDropdown != null)
+        {
+            seaLevelDropdown.onValueChanged.AddListener(OnSeaLevelChanged);
+            OnSeaLevelChanged(seaLevelDropdown.value);
         }
     }
 
@@ -58,7 +75,75 @@ public class MainMenuManager : MonoBehaviour
     {
         if (customSizePanel != null)
         {
-            customSizePanel.SetActive(index == (int)MapGenerator.MapSizeType.Custom);
+            customSizePanel.SetActive(index == 5);
+        }
+
+        UpdatePlayerCountLimits(index);
+    }
+
+    private void OnSeaLevelChanged(int index)
+    {
+        if (customSeaLevelPanel != null)
+        {
+            customSeaLevelPanel.SetActive(index == 3);
+        }
+    }
+
+    private int GetClampedValue(TMP_InputField input, int min, int max, int defaultValue)
+    {
+        if (input != null && int.TryParse(input.text, out int val))
+        {
+            return Mathf.Clamp(val, min, max);
+        }
+
+        return defaultValue;
+    }
+
+    private void UpdatePlayerCountLimits(int mapSizeIndex)
+    {
+        if (playerCountSlider == null) return;
+
+        int minPlayers = 2;
+        int maxPlayers = 8;
+
+        switch (mapSizeIndex)
+        {
+            case 0:
+                maxPlayers = 4;
+                break;
+            case 1:
+                maxPlayers = 6;
+                break;
+            case 2:
+                maxPlayers = 8;
+                break;
+            case 3:
+                maxPlayers = 10;
+                break;
+            case 4:
+                maxPlayers = 12;
+                break;
+            case 5:
+                maxPlayers = 16;
+                break;
+        }
+
+        playerCountSlider.minValue = minPlayers;
+        playerCountSlider.maxValue = maxPlayers;
+
+        if (playerCountSlider.value > maxPlayers)
+            playerCountSlider.value = maxPlayers;
+        if (playerCountSlider.value < minPlayers)
+            playerCountSlider.value = minPlayers;
+
+        OnPlayerCountChanged(playerCountSlider.value);
+    }
+
+    private void OnPlayerCountChanged(float value)
+    {
+        if (playerCountText != null)
+        {
+            playerCountText.text = value.ToString();
         }
     }
 
@@ -72,26 +157,30 @@ public class MainMenuManager : MonoBehaviour
         if (civilizationDropdown != null)
             GameSettings.PlayerCivilizationIndex = civilizationDropdown.value;
 
-        if (playerCountInput != null && int.TryParse(playerCountInput.text, out int count))
-            GameSettings.PlayerCount = count;
+        if (playerCountSlider != null)
+            GameSettings.PlayerCount = (int)playerCountSlider.value;
 
         if (mapSizeDropdown != null)
             GameSettings.MapSizeIndex = mapSizeDropdown.value;
 
         if (GameSettings.MapSizeIndex == 5)
         {
-            if (widthInput != null && int.TryParse(widthInput.text, out int w))
-                GameSettings.CustomWidth = w;
-
-            if (heightInput != null && int.TryParse(heightInput.text, out int h))
-                GameSettings.CustomHeight = h;
+            GameSettings.CustomWidth = GetClampedValue(widthInput, 16, 256, 100);
+            GameSettings.CustomHeight = GetClampedValue(heightInput, 16, 256, 60);
         }
 
         if (mapTypeDropdown != null)
             GameSettings.MapTypeIndex = mapTypeDropdown.value;
 
         if (seaLevelDropdown != null)
+        {
             GameSettings.SeaLevelIndex = seaLevelDropdown.value;
+            if (GameSettings.SeaLevelIndex == 3)
+            {
+                GameSettings.SmoothingIterations = GetClampedValue(smoothingIterationsInput, 0, 100, 3);
+                GameSettings.FillPercent = GetClampedValue(fillPercentInput, 0, 100, 45);
+            }
+        }
 
         if (wrapWorldToggle != null)
             GameSettings.WrapWorld = wrapWorldToggle.isOn;

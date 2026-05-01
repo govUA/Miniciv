@@ -3,11 +3,14 @@
     public static int PlayerCount = 4;
     public static int PlayerCivilizationIndex = 0;
 
-    public static int MapSizeIndex = 2;
+    public static int MapSizeIndex = 3;
     public static int CustomWidth = 100;
     public static int CustomHeight = 60;
     public static int MapTypeIndex = 0;
-    public static int SeaLevelIndex = 1;
+    public static int SeaLevelIndex = 2;
+
+    public static int SmoothingIterations = 2;
+    public static int FillPercent = 35;
 
     public static bool WrapWorld = true;
     public static bool UseRandomSeed = true;
