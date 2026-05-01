@@ -49,7 +49,10 @@ public class AIManager : MonoBehaviour
 
         yield return new WaitForSeconds(0.5f);
 
-        turnManager.EndTurn();
+        if (turnManager != null && turnManager.CurrentPlayerID == playerId)
+        {
+            turnManager.EndTurn();
+        }
     }
 
     private void OnDestroy()

@@ -45,7 +45,13 @@ public class MainHUDManager : MonoBehaviour
 
         if (nextTurnButton != null && turnManager != null)
         {
-            nextTurnButton.onClick.AddListener(turnManager.EndTurn);
+            nextTurnButton.onClick.AddListener(() =>
+            {
+                if (turnManager.CurrentPlayerID == 0)
+                {
+                    turnManager.EndTurn();
+                }
+            });
         }
 
         if (techDropdown != null)
@@ -92,6 +98,11 @@ public class MainHUDManager : MonoBehaviour
 
         diplomacyText.text = "🤝 Diplomacy";
         turnText.text = $"TURN: {turnManager.CurrentTurn}";
+
+        if (nextTurnButton != null)
+        {
+            nextTurnButton.interactable = (playerId == 0);
+        }
     }
 
     private void HideHUD()

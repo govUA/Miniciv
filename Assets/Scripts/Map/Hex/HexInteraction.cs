@@ -384,7 +384,7 @@ public class HexInteraction : MonoBehaviour
             }
         }
 
-        if (Keyboard.current.enterKey.wasPressedThisFrame)
+        if (Keyboard.current.enterKey.wasPressedThisFrame && turnManager.CurrentPlayerID == 0)
         {
             if (turnManager != null)
             {
