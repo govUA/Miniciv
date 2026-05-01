@@ -72,6 +72,16 @@ public class PlayerManager : MonoBehaviour
             string leader = assignedCiv != null ? assignedCiv.leaderName : "Unknown";
             Debug.Log($"[PLAYER] Player {i} initialized as {civName} (Leader: {leader})");
         }
+
+        for (int i = 0; i < count; i++)
+        {
+            for (int j = i + 1; j < count; j++)
+            {
+                DeclareWar(i, j);
+            }
+        }
+
+        Debug.Log("[DIPLOMACY] TOTAL WAR MODE ENABLED: All players at war with each other!");
     }
 
     public PlayerData GetPlayer(int id)

@@ -33,6 +33,11 @@ public class HexInteraction : MonoBehaviour
         hexGrid = GetComponent<HexGrid>();
         pathfinder = GetComponent<Pathfinder>();
         techManager = Object.FindAnyObjectByType<TechManager>();
+        combatManager = Object.FindAnyObjectByType<CombatManager>();
+        if (unitManager == null) unitManager = Object.FindAnyObjectByType<UnitManager>();
+        if (cityManager == null) cityManager = Object.FindAnyObjectByType<CityManager>();
+        if (playerManager == null) playerManager = Object.FindAnyObjectByType<PlayerManager>();
+        if (turnManager == null) turnManager = Object.FindAnyObjectByType<TurnManager>();
     }
 
     void Update()

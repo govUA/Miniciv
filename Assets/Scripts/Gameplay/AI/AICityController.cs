@@ -75,7 +75,20 @@ public class AICityController : MonoBehaviour
             }
             else
             {
-                if (militaryCount < citiesCount * 2) score += 25f;
+                if (militaryCount < citiesCount * 3)
+                {
+                    score += 20f;
+
+                    score += (unitData.meleeStrength + unitData.rangedStrength) * 0.4f;
+
+                    if (unitData.unitClass == "Ranged") score += 5f;
+                    if (unitData.unitClass == "Cavalry") score += 10f;
+                    if (unitData.unitClass == "AntiCavalry") score += 5f;
+                }
+                else
+                {
+                    score -= 20f;
+                }
             }
 
             availableProjects.Add(

@@ -107,11 +107,17 @@ public class CombatManager : MonoBehaviour
                 int dmgToDef = Mathf.RoundToInt(30f * (attStrength / defStrength) * rngHit);
                 defUnit.TakeDamage(dmgToDef);
 
+                Debug.Log(
+                    $"[COMBAT] {attacker.unitName} attacks {defUnit.unitName} for {dmgToDef} damage! ({defUnit.currentHP}/{defUnit.maxHP} HP left)");
+
                 if (isMeleeAttack && defUnit.currentHP > 0)
                 {
                     float rngRet = Random.Range(0.85f, 1.15f);
                     int dmgToAtt = Mathf.RoundToInt(30f * (defStrength / attStrength) * rngRet);
                     attacker.TakeDamage(dmgToAtt);
+
+                    Debug.Log(
+                        $"[COMBAT] {defUnit.unitName} counter-attacks {attacker.unitName} for {dmgToAtt} damage! ({attacker.currentHP}/{attacker.maxHP} HP left)");
                 }
             }
         }
@@ -122,6 +128,9 @@ public class CombatManager : MonoBehaviour
 
             int oldOwner = defCity.ownerID;
             defCity.TakeDamage(dmgToCity, attacker.ownerID);
+
+            Debug.Log(
+                $"[COMBAT] {attacker.unitName} attacks City {defCity.cityName} for {dmgToCity} damage! ({defCity.currentHP}/{defCity.maxHP} HP left)");
 
             if (defCity.ownerID == attacker.ownerID && oldOwner != attacker.ownerID)
             {
@@ -152,6 +161,9 @@ public class CombatManager : MonoBehaviour
                     float rngRet = Random.Range(0.85f, 1.15f);
                     int dmgToAtt = Mathf.RoundToInt(30f * ((float)defCity.garrisonStrength / attStrength) * rngRet);
                     attacker.TakeDamage(dmgToAtt);
+
+                    Debug.Log(
+                        $"[COMBAT] City {defCity.cityName} counter-attacks {attacker.unitName} for {dmgToAtt} damage! ({attacker.currentHP}/{attacker.maxHP} HP left)");
                 }
             }
         }
@@ -173,6 +185,9 @@ public class CombatManager : MonoBehaviour
 
             int dmgToDef = Mathf.RoundToInt(30f * ((float)attacker.garrisonStrength / defStrength) * rngHit);
             defUnit.TakeDamage(dmgToDef);
+
+            Debug.Log(
+                $"[COMBAT] City {attacker.cityName} bombards {defUnit.unitName} for {dmgToDef} damage! ({defUnit.currentHP}/{defUnit.maxHP} HP left)");
         }
     }
 }
