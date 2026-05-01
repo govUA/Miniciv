@@ -166,7 +166,7 @@ public class HexInteraction : MonoBehaviour
                     }
 
                     int dist = hexGrid.GetDistance(selectedUnit.CurrentNode, targetNode);
-                    if (dist <= selectedUnit.attackRange)
+                    if (dist <= selectedUnit.GetEffectiveAttackRange())
                     {
                         if (combatManager != null)
                             combatManager.ResolveUnitCombat(selectedUnit, targetUnit, targetCity);
@@ -174,7 +174,7 @@ public class HexInteraction : MonoBehaviour
                     }
                     else
                     {
-                        List<HexNode> attackPositions = hexGrid.GetNodesInRange(targetNode, selectedUnit.attackRange);
+                        List<HexNode> attackPositions = hexGrid.GetNodesInRange(targetNode, selectedUnit.GetEffectiveAttackRange());
                         List<HexNode> bestPath = null;
 
                         bool canSail = techManager != null &&

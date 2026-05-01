@@ -72,7 +72,7 @@ public class AIUnitController : MonoBehaviour
         List<Unit> potentialUnitTargets = new List<Unit>();
         List<City> potentialCityTargets = new List<City>();
 
-        List<HexNode> nodesInRange = grid.GetNodesInRange(unit.CurrentNode, unit.attackRange);
+        List<HexNode> nodesInRange = grid.GetNodesInRange(unit.CurrentNode, unit.GetEffectiveAttackRange());
 
         foreach (HexNode node in nodesInRange)
         {

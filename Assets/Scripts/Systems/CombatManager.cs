@@ -60,11 +60,21 @@ public class CombatManager : MonoBehaviour
             Debug.Log("[COMBAT] Anti-Cavalry bonus activated: +50% attack against Cavalry!");
         }
 
-        float attStrength = baseAttStrength * attModifier;
-
         bool isMeleeAttack = attacker.unitClass == UnitClass.Melee ||
                              attacker.unitClass == UnitClass.AntiCavalry ||
                              (attacker.unitClass == UnitClass.Cavalry && attacker.attackRange == 1);
+
+        if (!isMeleeAttack)
+        {
+            HexNode targetNode = defUnit != null ? defUnit.CurrentNode : (defCity != null ? defCity.centerNode : null);
+            if (targetNode != null && HasObstacleInLOS(attacker.CurrentNode, targetNode))
+            {
+                attModifier -= 0.20f;
+                Debug.Log("[COMBAT] Ranged attack passes over forest or mountains! -20% damage.");
+            }
+        }
+
+        float attStrength = baseAttStrength * attModifier;
 
         if (defUnit != null)
         {
@@ -180,14 +190,109 @@ public class CombatManager : MonoBehaviour
             if (defUnit.isFortified) defModifier += 0.25f;
             if (defUnit.CurrentNode.terrainType == TerrainType.Forest) defModifier += 0.15f;
 
+            float effectiveGarrison = attacker.garrisonStrength;
+            if (HasObstacleInLOS(attacker.centerNode, defUnit.CurrentNode))
+            {
+                effectiveGarrison *= 0.8f;
+                Debug.Log("[COMBAT] City attack passes over a forest/mountain! -20% to attack damage.");
+            }
+
             float defStrength = defUnit.meleeStrength * defModifier;
             float rngHit = Random.Range(0.85f, 1.15f);
 
-            int dmgToDef = Mathf.RoundToInt(30f * ((float)attacker.garrisonStrength / defStrength) * rngHit);
+            int dmgToDef = Mathf.RoundToInt(30f * (effectiveGarrison / defStrength) * rngHit);
             defUnit.TakeDamage(dmgToDef);
 
             Debug.Log(
                 $"[COMBAT] City {attacker.cityName} bombards {defUnit.unitName} for {dmgToDef} damage! ({defUnit.currentHP}/{defUnit.maxHP} HP left)");
         }
+    }
+
+    private bool HasObstacleInLOS(HexNode start, HexNode end)
+    {
+        int targetX = end.x;
+        int targetY = end.y;
+
+        if (hexGrid.wrapWorld)
+        {
+            int dx = start.x - end.x;
+            if (Mathf.Abs(dx) > hexGrid.GetWidth() / 2)
+            {
+                targetX = end.x + (dx > 0 ? hexGrid.GetWidth() : -hexGrid.GetWidth());
+            }
+        }
+
+        Vector3 startCube = OffsetToCube(start.x, start.y);
+        Vector3 endCube = OffsetToCube(targetX, targetY);
+
+        int dist = Mathf.Max(
+            Mathf.Abs(Mathf.RoundToInt(startCube.x - endCube.x)),
+            Mathf.Abs(Mathf.RoundToInt(startCube.y - endCube.y)),
+            Mathf.Abs(Mathf.RoundToInt(startCube.z - endCube.z))
+        );
+
+        if (dist <= 1) return false;
+
+
+        for (int i = 1; i < dist; i++)
+        {
+            float t = (float)i / dist;
+            Vector3 pointCube = CubeLerp(startCube, endCube, t);
+            Vector3Int roundedCube = CubeRound(pointCube);
+
+            Vector2Int offsetCoord = CubeToOffset(roundedCube.x, roundedCube.y, roundedCube.z);
+            HexNode nodeOnLine = hexGrid.GetNode(offsetCoord.x, offsetCoord.y);
+
+            if (nodeOnLine != null)
+            {
+                if (nodeOnLine.terrainType == TerrainType.Forest || nodeOnLine.terrainType == TerrainType.Mountain)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private Vector3 OffsetToCube(int x, int y)
+    {
+        int q = x;
+        int r = y - (x - (x & 1)) / 2;
+        int s = -q - r;
+        return new Vector3(q, r, s);
+    }
+
+    private Vector2Int CubeToOffset(int q, int r, int s)
+    {
+        int x = q;
+        int y = r + (q - (q & 1)) / 2;
+        return new Vector2Int(x, y);
+    }
+
+    private Vector3 CubeLerp(Vector3 a, Vector3 b, float t)
+    {
+        return new Vector3(
+            Mathf.Lerp(a.x, b.x, t) + 1e-6f,
+            Mathf.Lerp(a.y, b.y, t) + 1e-6f,
+            Mathf.Lerp(a.z, b.z, t) - 2e-6f
+        );
+    }
+
+    private Vector3Int CubeRound(Vector3 frac)
+    {
+        int q = Mathf.RoundToInt(frac.x);
+        int r = Mathf.RoundToInt(frac.y);
+        int s = Mathf.RoundToInt(frac.z);
+
+        float q_diff = Mathf.Abs(q - frac.x);
+        float r_diff = Mathf.Abs(r - frac.y);
+        float s_diff = Mathf.Abs(s - frac.z);
+
+        if (q_diff > r_diff && q_diff > s_diff) q = -r - s;
+        else if (r_diff > s_diff) r = -q - s;
+        else s = -q - r;
+
+        return new Vector3Int(q, r, s);
     }
 }

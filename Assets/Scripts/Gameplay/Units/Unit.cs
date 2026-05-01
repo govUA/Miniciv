@@ -433,4 +433,19 @@ public class Unit : MonoBehaviour
 
         return simNode;
     }
+
+    public int GetEffectiveAttackRange()
+    {
+        int range = attackRange;
+        bool isRangedType = unitClass == UnitClass.Ranged ||
+                            unitClass == UnitClass.Naval ||
+                            (unitClass == UnitClass.Cavalry && attackRange > 1);
+
+        if (isRangedType && CurrentNode != null && CurrentNode.terrainType == TerrainType.Mountain)
+        {
+            range += 1;
+        }
+
+        return range;
+    }
 }
