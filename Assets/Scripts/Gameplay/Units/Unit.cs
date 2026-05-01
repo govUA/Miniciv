@@ -282,7 +282,7 @@ public class Unit : MonoBehaviour
             }
 
             int cost = (int)nextNode.movementCost;
-            if (CurrentNode.isLand && !nextNode.isLand) cost = 10;
+            if (!CurrentNode.isLand && !nextNode.isLand) cost = 10;
             else if (CurrentNode.isLand != nextNode.isLand) cost = 20;
 
             if (currentMP >= cost)
@@ -368,6 +368,7 @@ public class Unit : MonoBehaviour
             }
             else
             {
+                if (simCurrentNode == CurrentNode) return true;
                 return false;
             }
         }
