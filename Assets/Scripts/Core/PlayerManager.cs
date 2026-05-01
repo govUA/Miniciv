@@ -51,22 +51,35 @@ public class PlayerManager : MonoBehaviour
 
     public void InitializePlayers(int count)
     {
-        List<CivilizationData> assignedCivs = new List<CivilizationData>();
+        var allCivs = civilizationManager.availableCivilizations;
+
+        List<CivilizationData> usedCivs = new List<CivilizationData>();
+
         for (int i = 0; i < count; i++)
         {
-            bool isAI = (i > 0);
             CivilizationData assignedCiv = null;
 
-            if (civilizationManager != null)
+            if (i == 0)
             {
-                assignedCiv = civilizationManager.AssignRandomCivilization(assignedCivs);
-                if (assignedCiv != null)
+                int index = GameSettings.PlayerCivilizationIndex;
+                if (index >= 0 && index < allCivs.Count)
                 {
-                    assignedCivs.Add(assignedCiv);
+                    assignedCiv = allCivs[index];
+                    usedCivs.Add(assignedCiv);
                 }
             }
 
-            players[i] = new PlayerData(i, isAI, assignedCiv);
+            if (assignedCiv == null)
+            {
+                assignedCiv = civilizationManager.AssignRandomCivilization(usedCivs);
+
+                if (assignedCiv != null)
+                {
+                    usedCivs.Add(assignedCiv);
+                }
+            }
+
+            players[i] = new PlayerData(i, i != 0, assignedCiv);
 
             string civName = assignedCiv != null ? assignedCiv.civName : "Unknown";
             string leader = assignedCiv != null ? assignedCiv.leaderName : "Unknown";

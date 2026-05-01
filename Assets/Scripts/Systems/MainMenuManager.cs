@@ -21,20 +21,20 @@ public class MainMenuManager : MonoBehaviour
         public List<CivilizationEntry> civilizations;
     }
 
-    [Header("Гра та Гравці")] public TMP_Dropdown civilizationDropdown;
+    [Header("Game and players")] public TMP_Dropdown civilizationDropdown;
     public TMP_InputField playerCountInput;
     public TextAsset civilizationsJson;
 
-    [Header("Налаштування Карти")] public TMP_Dropdown mapSizeDropdown;
+    [Header("Map settings")] public TMP_Dropdown mapSizeDropdown;
     public TMP_Dropdown mapTypeDropdown;
     public TMP_Dropdown seaLevelDropdown;
     public Toggle wrapWorldToggle;
 
-    [Header("Користувацький розмір")] public GameObject customSizePanel;
+    [Header("Custom sized map")] public GameObject customSizePanel;
     public TMP_InputField widthInput;
     public TMP_InputField heightInput;
 
-    [Header("Генерація (Seed)")] public Toggle useRandomSeedToggle;
+    [Header("Generation (Seed)")] public Toggle useRandomSeedToggle;
     public TMP_InputField seedInput;
 
     private void Start()

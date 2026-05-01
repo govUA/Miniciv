@@ -14,4 +14,5 @@
     public static string Seed = "";
 
     public static bool DidPlayerWin = false;
+    public static float FinalScore = 0f;
 }

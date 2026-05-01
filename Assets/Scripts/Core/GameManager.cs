@@ -9,7 +9,32 @@ public class GameManager : MonoBehaviour
     public FogOfWarManager fowManager;
     public PlayerManager playerManager;
 
+    private bool pendingStart = false;
+    private bool hasStarted = false;
+
     public void StartGame()
+    {
+        if (hasStarted)
+        {
+            RunGameSetup();
+        }
+        else
+        {
+            pendingStart = true;
+        }
+    }
+
+    void Start()
+    {
+        hasStarted = true;
+
+        if (pendingStart)
+        {
+            RunGameSetup();
+        }
+    }
+
+    private void RunGameSetup()
     {
         HexGrid grid = GetComponent<HexGrid>();
         int numPlayers = turnManager != null ? turnManager.TotalPlayers : 2;

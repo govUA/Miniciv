@@ -10,6 +10,14 @@ public class TurnManager : MonoBehaviour
     public int CurrentPlayerID { get; private set; } = 0;
     public int TotalPlayers = 2;
 
+    private void Awake()
+    {
+        if (GameSettings.PlayerCount > 0)
+        {
+            TotalPlayers = GameSettings.PlayerCount;
+        }
+    }
+
     public void EndTurn()
     {
         CurrentPlayerID++;

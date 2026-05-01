@@ -114,8 +114,15 @@ public class VictoryManager : MonoBehaviour
 
         if (winnerId != -1)
         {
-            Debug.Log($"<color=green>[VICTORY] WINNER: Player {winnerId} with score {bestScore:F2}!</color>");
-            // TODO: UI
+            Debug.Log($"<color=green>[VICTORY] Player {winnerId} wins!</color>");
+
+            GameSettings.DidPlayerWin = (winnerId == 0);
+
+            GameSettings.FinalScore = (armyScores[0] / maxArmy) +
+                                      (cityScores[0] / maxCities) +
+                                      (goldScores[0] / maxGold);
+
+            UnityEngine.SceneManagement.SceneManager.LoadScene("EndScene");
         }
         else
         {

@@ -50,7 +50,7 @@ public class MapGenerator : MonoBehaviour
         new Vector2Int(-1, 1), new Vector2Int(-1, 0)
     };
 
-    void Start()
+    void Awake()
     {
         LoadSettingsFromMenu();
         GenerateMap();
