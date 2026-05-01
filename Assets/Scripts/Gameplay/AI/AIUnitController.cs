@@ -5,11 +5,15 @@ public class AIUnitController : MonoBehaviour
 {
     public UnitManager unitManager;
     public CityManager cityManager;
+    private PlayerManager playerManager;
+    private CombatManager combatManager;
 
     public void ExecuteUnitActions(int playerId)
     {
         if (unitManager == null) unitManager = FindObjectOfType<UnitManager>();
         if (cityManager == null) cityManager = FindObjectOfType<CityManager>();
+        if (playerManager == null) playerManager = FindObjectOfType<PlayerManager>();
+        if (combatManager == null) combatManager = FindObjectOfType<CombatManager>();
 
         TechManager techManager = FindObjectOfType<TechManager>();
         bool canSail = techManager != null && techManager.HasTech(playerId, "Sailing");
@@ -21,8 +25,15 @@ public class AIUnitController : MonoBehaviour
         foreach (Unit unit in allUnits)
         {
             if (unit == null) continue;
-
             if (unit.ownerID != playerId || unit.State != UnitState.Idle || unit.currentMP <= 0) continue;
+
+            bool attacked = false;
+            if (unit.unitClass != UnitClass.Civilian && !unit.hasAttackedThisTurn)
+            {
+                attacked = TryAttack(unit, grid);
+            }
+
+            if (attacked) continue;
 
             HexNode targetNode = EvaluateBestDestination(unit, grid, canSail);
 
@@ -56,6 +67,69 @@ public class AIUnitController : MonoBehaviour
         }
     }
 
+    private bool TryAttack(Unit unit, HexGrid grid)
+    {
+        List<Unit> potentialUnitTargets = new List<Unit>();
+        List<City> potentialCityTargets = new List<City>();
+
+        List<HexNode> nodesInRange = grid.GetNodesInRange(unit.CurrentNode, unit.attackRange);
+
+        foreach (HexNode node in nodesInRange)
+        {
+            foreach (Unit u in unitManager.GetUnitsAtNode(node))
+            {
+                if (u.ownerID != unit.ownerID && playerManager.IsAtWar(unit.ownerID, u.ownerID))
+                {
+                    potentialUnitTargets.Add(u);
+                }
+            }
+
+            foreach (City c in cityManager.GetActiveCities())
+            {
+                if (c.centerNode == node && c.ownerID != unit.ownerID && playerManager.IsAtWar(unit.ownerID, c.ownerID))
+                {
+                    potentialCityTargets.Add(c);
+                }
+            }
+        }
+
+        Unit bestUnitTarget = null;
+        City bestCityTarget = null;
+        float bestScore = -9999f;
+
+        foreach (Unit u in potentialUnitTargets)
+        {
+            float score = 100f - u.currentHP;
+            if (u.unitClass == UnitClass.Civilian) score += 50f;
+
+            if (score > bestScore)
+            {
+                bestScore = score;
+                bestUnitTarget = u;
+                bestCityTarget = null;
+            }
+        }
+
+        foreach (City c in potentialCityTargets)
+        {
+            float score = 150f - (c.currentHP * 0.2f);
+            if (score > bestScore)
+            {
+                bestScore = score;
+                bestCityTarget = c;
+                bestUnitTarget = null;
+            }
+        }
+
+        if (bestUnitTarget != null || bestCityTarget != null)
+        {
+            combatManager.ResolveUnitCombat(unit, bestUnitTarget, bestCityTarget);
+            return true;
+        }
+
+        return false;
+    }
+
     private HexNode EvaluateBestDestination(Unit unit, HexGrid grid, bool canSail)
     {
         HexNode bestNode = null;
@@ -69,29 +143,17 @@ public class AIUnitController : MonoBehaviour
 
                 if (node == null) continue;
 
-                if (unit.unitClass == UnitClass.Naval)
-                {
-                    if (node.isLand) continue;
-                }
-                else
-                {
-                    if (!node.isLand)
-                    {
-                        if (unit.isSettler || !canSail) continue;
-                    }
-                }
+                if (unit.unitClass == UnitClass.Naval && node.isLand) continue;
+                if (unit.unitClass != UnitClass.Naval && !node.isLand && (!canSail || unit.isSettler)) continue;
 
                 bool isOccupiedBySameType = false;
-                if (unitManager != null)
+                foreach (Unit u in unitManager.GetUnitsAtNode(node))
                 {
-                    foreach (Unit u in unitManager.GetUnitsAtNode(node))
+                    if (u != unit && u.ownerID == unit.ownerID &&
+                        (u.unitClass == UnitClass.Civilian) == (unit.unitClass == UnitClass.Civilian))
                     {
-                        if (u != unit && u.ownerID == unit.ownerID &&
-                            (u.unitClass == UnitClass.Civilian) == (unit.unitClass == UnitClass.Civilian))
-                        {
-                            isOccupiedBySameType = true;
-                            break;
-                        }
+                        isOccupiedBySameType = true;
+                        break;
                     }
                 }
 
@@ -105,7 +167,7 @@ public class AIUnitController : MonoBehaviour
                 }
                 else
                 {
-                    utility = EvaluateScoutTile(unit, node, grid);
+                    utility = EvaluateMilitaryTile(unit, node, grid);
                 }
 
                 if (utility > highestUtility)
@@ -119,55 +181,74 @@ public class AIUnitController : MonoBehaviour
         return bestNode ?? unit.CurrentNode;
     }
 
-    private float EvaluateScoutTile(Unit unit, HexNode candidateNode, HexGrid grid)
+    private float EvaluateMilitaryTile(Unit unit, HexNode candidateNode, HexGrid grid)
     {
         float score = 0f;
         VisionState vision = candidateNode.GetVision(unit.ownerID);
 
-        if (vision == VisionState.Unexplored)
+        if (vision == VisionState.Unexplored) score += 30f;
+        else if (vision == VisionState.Explored) score += 10f;
+
+        float minDistToEnemy = 999f;
+
+        foreach (Unit u in unitManager.GetActiveUnits())
         {
-            score += 500f;
-        }
-        else if (vision == VisionState.Explored)
-        {
-            score += 50f;
+            if (u.ownerID != unit.ownerID && playerManager.IsAtWar(unit.ownerID, u.ownerID))
+            {
+                if (u.CurrentNode.GetVision(unit.ownerID) == VisionState.Visible)
+                {
+                    float d = grid.GetDistance(candidateNode, u.CurrentNode);
+                    if (d < minDistToEnemy) minDistToEnemy = d;
+                }
+            }
         }
 
-        if (cityManager != null)
+        foreach (City c in cityManager.GetActiveCities())
         {
-            float minDistToCity = 999f;
+            if (c.ownerID != unit.ownerID && playerManager.IsAtWar(unit.ownerID, c.ownerID))
+            {
+                if (c.centerNode.GetVision(unit.ownerID) != VisionState.Unexplored)
+                {
+                    float d = grid.GetDistance(candidateNode, c.centerNode);
+                    if (d < minDistToEnemy) minDistToEnemy = d;
+                }
+            }
+        }
+
+        if (minDistToEnemy < 999f)
+        {
+            if (minDistToEnemy <= unit.attackRange) score += 200f;
+            else score += (100f / (minDistToEnemy + 1f));
+        }
+        else
+        {
+            float minDistToOwnCity = 999f;
             foreach (City c in cityManager.GetActiveCities())
             {
                 if (c.ownerID == unit.ownerID)
                 {
                     float d = grid.GetDistance(candidateNode, c.centerNode);
-                    if (d < minDistToCity) minDistToCity = d;
+                    if (d < minDistToOwnCity) minDistToOwnCity = d;
                 }
             }
 
-            if (minDistToCity == 0) score += 200f;
-            else if (minDistToCity <= 2) score += 150f;
-            else score += (50f / (minDistToCity + 1f));
+            if (minDistToOwnCity == 0) score += 50f;
+            else if (minDistToOwnCity <= 3) score += 40f;
+            else score += (20f / (minDistToOwnCity + 1f));
         }
 
         int distance = grid.GetDistance(unit.CurrentNode, candidateNode);
-        float distanceScore = 100f / (distance + 1f);
-        float randomBonus = Random.Range(0f, 10f);
+        float distanceScore = 15f / (distance + 1f);
+        float randomBonus = Random.Range(0f, 5f);
 
         return score + distanceScore + randomBonus;
     }
 
     private float EvaluateSettlerTile(Unit settler, HexNode candidateNode, HexGrid grid)
     {
-        if (cityManager != null)
+        foreach (City city in cityManager.GetActiveCities())
         {
-            foreach (City city in cityManager.GetActiveCities())
-            {
-                if (grid.GetDistance(candidateNode, city.centerNode) <= 3)
-                {
-                    return -1000f;
-                }
-            }
+            if (grid.GetDistance(candidateNode, city.centerNode) <= 3) return -1000f;
         }
 
         if (candidateNode.hasCity) return -1000f;
