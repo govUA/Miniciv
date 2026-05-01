@@ -18,8 +18,10 @@ public class CombatManager : MonoBehaviour
         float attModifier = 1.05f;
         if (attacker.CurrentNode.terrainType == TerrainType.Mountain) attModifier += 0.10f;
 
-        float baseAttStrength =
-            attacker.unitClass == UnitClass.Melee ? attacker.meleeStrength : attacker.rangedStrength;
+        float baseAttStrength = (attacker.unitClass == UnitClass.Melee || attacker.unitClass == UnitClass.AntiCavalry)
+            ? attacker.meleeStrength
+            : attacker.rangedStrength;
+
         if (attacker.unitClass == UnitClass.Cavalry)
         {
             baseAttStrength = attacker.attackRange > 1 ? attacker.rangedStrength : attacker.meleeStrength;
@@ -52,9 +54,16 @@ public class CombatManager : MonoBehaviour
             }
         }
 
+        if (attacker.unitClass == UnitClass.AntiCavalry && defUnit != null && defUnit.unitClass == UnitClass.Cavalry)
+        {
+            attModifier += 0.50f;
+            Debug.Log("[COMBAT] Anti-Cavalry bonus activated: +50% attack against Cavalry!");
+        }
+
         float attStrength = baseAttStrength * attModifier;
 
         bool isMeleeAttack = attacker.unitClass == UnitClass.Melee ||
+                             attacker.unitClass == UnitClass.AntiCavalry ||
                              (attacker.unitClass == UnitClass.Cavalry && attacker.attackRange == 1);
 
         if (defUnit != null)
@@ -85,6 +94,12 @@ public class CombatManager : MonoBehaviour
                 float defModifier = 1.0f;
                 if (defUnit.isFortified) defModifier += 0.25f;
                 if (defUnit.CurrentNode.terrainType == TerrainType.Forest) defModifier += 0.15f;
+
+                if (defUnit.unitClass == UnitClass.AntiCavalry && attacker.unitClass == UnitClass.Cavalry)
+                {
+                    defModifier += 0.50f;
+                    Debug.Log("[COMBAT] Anti-Cavalry bonus activated: +50% defense against Cavalry!");
+                }
 
                 float defStrength = defUnit.meleeStrength * defModifier;
 

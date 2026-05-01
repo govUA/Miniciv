@@ -48,7 +48,7 @@
     },
     {
       "name": "Spearman",
-      "unitClass": "Melee",
+      "unitClass": "AntiCavalry",
       "cost": 50,
       "meleeStrength": 25,
       "rangedStrength": 0,
