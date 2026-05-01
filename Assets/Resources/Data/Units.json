@@ -89,6 +89,17 @@
       "visionRange": 2,
       "maxMP": 40,
       "requiredTech": "Animal Husbandry"
+    },
+    {
+      "name": "Galley",
+      "unitClass": "Naval",
+      "cost": 65,
+      "meleeStrength": 20,
+      "rangedStrength": 0,
+      "attackRange": 1,
+      "visionRange": 2,
+      "maxMP": 30,
+      "requiredTech": "Sailing"
     }
   ]
 }

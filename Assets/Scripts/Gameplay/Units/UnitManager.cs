@@ -82,7 +82,7 @@ public class UnitManager : MonoBehaviour
 
     public Unit SpawnUnit(HexNode spawnNode, int playerId, string unitName = "Settler")
     {
-        if (spawnNode == null || !spawnNode.isLand || unitPrefab == null || turnManager == null) return null;
+        if (spawnNode == null || unitPrefab == null || turnManager == null) return null;
 
         if (!unitDatabaseDict.ContainsKey(unitName))
         {
@@ -91,13 +91,38 @@ public class UnitManager : MonoBehaviour
         }
 
         UnitDataModel unitData = unitDatabaseDict[unitName];
-        Vector3 spawnPos = mainTilemap.CellToWorld(new Vector3Int(spawnNode.y, spawnNode.x, 0));
+        HexNode actualSpawnNode = spawnNode;
+
+        if (unitData.unitClass == "Naval" && spawnNode.isLand)
+        {
+            actualSpawnNode = null;
+            foreach (HexNode neighbor in grid.GetNeighbors(spawnNode))
+            {
+                if (!neighbor.isLand && GetUnitAtNode(neighbor) == null)
+                {
+                    actualSpawnNode = neighbor;
+                    break;
+                }
+            }
+
+            if (actualSpawnNode == null)
+            {
+                Debug.LogWarning($"[UNIT] Cannot spawn {unitName}: no free adjacent water tiles.");
+                return null;
+            }
+        }
+        else if (unitData.unitClass != "Naval" && !spawnNode.isLand)
+        {
+            return null;
+        }
+
+        Vector3 spawnPos = mainTilemap.CellToWorld(new Vector3Int(actualSpawnNode.y, actualSpawnNode.x, 0));
         GameObject unitObj = Instantiate(unitPrefab, spawnPos, Quaternion.identity);
 
         Unit newUnit = unitObj.GetComponent<Unit>();
 
         newUnit.Initialize(
-            spawnNode,
+            actualSpawnNode,
             spawnPos,
             mainTilemap,
             turnManager,
@@ -110,9 +135,9 @@ public class UnitManager : MonoBehaviour
 
         activeUnits.Add(newUnit);
 
-        UpdateUnitOffsets(spawnNode);
+        UpdateUnitOffsets(actualSpawnNode);
 
-        Debug.Log($"[UNIT] Spawned {unitName} for Player {playerId} at [{spawnNode.x},{spawnNode.y}]");
+        Debug.Log($"[UNIT] Spawned {unitName} for Player {playerId} at [{actualSpawnNode.x},{actualSpawnNode.y}]");
         return newUnit;
     }
 

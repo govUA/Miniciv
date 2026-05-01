@@ -9,7 +9,6 @@ public class Pathfinder : MonoBehaviour
     private TechManager techManager;
     private UnitManager unitManager;
 
-
     private class PathNodeRecord
     {
         public HexNode Node;
@@ -99,31 +98,39 @@ public class Pathfinder : MonoBehaviour
                 bool isWalkable = neighbor.isLand;
                 int perceivedCost = (int)neighbor.movementCost;
 
-                bool currentIsLand = currentRecord.Node.isLand;
-                bool neighborIsLand = neighbor.isLand;
-
-                if (!currentIsLand && !neighborIsLand)
+                if (movingUnit.unitClass == UnitClass.Naval)
                 {
-                    if (techManager != null && techManager.HasTech(playerId, "Sailing"))
-                    {
-                        isWalkable = true;
-                        perceivedCost = 10;
-                    }
-                    else
-                    {
-                        isWalkable = false;
-                    }
+                    isWalkable = !neighbor.isLand;
+                    perceivedCost = 10;
                 }
-                else if (currentIsLand != neighborIsLand)
+                else
                 {
-                    if (techManager != null && techManager.HasTech(playerId, "Sailing"))
+                    bool currentIsLand = currentRecord.Node.isLand;
+                    bool neighborIsLand = neighbor.isLand;
+
+                    if (!currentIsLand && !neighborIsLand)
                     {
-                        isWalkable = true;
-                        perceivedCost = 20;
+                        if (techManager != null && techManager.HasTech(playerId, "Sailing"))
+                        {
+                            isWalkable = true;
+                            perceivedCost = 10;
+                        }
+                        else
+                        {
+                            isWalkable = false;
+                        }
                     }
-                    else
+                    else if (currentIsLand != neighborIsLand)
                     {
-                        isWalkable = false;
+                        if (techManager != null && techManager.HasTech(playerId, "Sailing"))
+                        {
+                            isWalkable = true;
+                            perceivedCost = 20;
+                        }
+                        else
+                        {
+                            isWalkable = false;
+                        }
                     }
                 }
 

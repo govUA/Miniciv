@@ -73,6 +73,17 @@
           "amount": 15
         }
       ]
+    },
+    {
+      "name": "Port",
+      "cost": 80,
+      "requiredTech": "Sailing",
+      "effects": [
+        {
+          "type": "NavalProdBonus",
+          "amount": 30
+        }
+      ]
     }
   ]
 }

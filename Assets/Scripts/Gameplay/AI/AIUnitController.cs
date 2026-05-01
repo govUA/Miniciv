@@ -69,9 +69,16 @@ public class AIUnitController : MonoBehaviour
 
                 if (node == null) continue;
 
-                if (!node.isLand)
+                if (unit.unitClass == UnitClass.Naval)
                 {
-                    if (unit.isSettler || !canSail) continue;
+                    if (node.isLand) continue;
+                }
+                else
+                {
+                    if (!node.isLand)
+                    {
+                        if (unit.isSettler || !canSail) continue;
+                    }
                 }
 
                 bool isOccupiedBySameType = false;

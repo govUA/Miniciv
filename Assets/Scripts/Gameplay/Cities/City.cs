@@ -139,6 +139,7 @@ public class City : MonoBehaviour
         }
 
         int militaryProdBonus = 0;
+        int navalProdBonus = 0;
 
         foreach (string buildingName in builtBuildings)
         {
@@ -157,6 +158,8 @@ public class City : MonoBehaviour
                             case "Culture": turnCulture += effect.amount; break;
                             case "MilitaryProdBonus":
                                 militaryProdBonus += effect.amount; break;
+                            case "NavalProdBonus":
+                                navalProdBonus += effect.amount; break;
                         }
                     }
                 }
@@ -164,17 +167,28 @@ public class City : MonoBehaviour
         }
 
         int finalTurnProd = turnProd;
-        if (militaryProdBonus > 0 && currentProject != null && currentProject.type == ProjectType.Unit)
+        if (currentProject != null && currentProject.type == ProjectType.Unit)
         {
             if (unitManager != null &&
                 unitManager.unitDatabaseDict.TryGetValue(currentProject.name, out UnitDataModel uData))
             {
-                if (uData.unitClass != "Civilian")
+                int appliedBonus = 0;
+
+                if (uData.unitClass == "Naval")
                 {
-                    float multiplier = 1f + (militaryProdBonus / 100f);
+                    appliedBonus = navalProdBonus;
+                }
+                else if (uData.unitClass != "Civilian")
+                {
+                    appliedBonus = militaryProdBonus;
+                }
+
+                if (appliedBonus > 0)
+                {
+                    float multiplier = 1f + (appliedBonus / 100f);
                     finalTurnProd = Mathf.RoundToInt(turnProd * multiplier);
                     Debug.Log(
-                        $"[CITY] {cityName} застосовує бонус {militaryProdBonus}% до виробництва. Base: {turnProd}, Final: {finalTurnProd}");
+                        $"[CITY] {cityName} застосовує бонус {appliedBonus}% до виробництва. Base: {turnProd}, Final: {finalTurnProd}");
                 }
             }
         }

@@ -74,6 +74,7 @@ public class CityUIManager : MonoBehaviour
         int turnFood = 1, turnProd = 1, turnSci = 1;
         int turnCulture = 1;
         int militaryProdBonus = 0;
+        int navalProdBonus = 0;
 
         foreach (var node in currentCity.territoryNodes)
         {
@@ -100,6 +101,7 @@ public class CityUIManager : MonoBehaviour
                                 case "Science": turnSci += effect.amount; break;
                                 case "Culture": turnCulture += effect.amount; break;
                                 case "MilitaryProdBonus": militaryProdBonus += effect.amount; break;
+                                case "NavalProdBonus": navalProdBonus += effect.amount; break;
                             }
                         }
                     }
@@ -108,16 +110,26 @@ public class CityUIManager : MonoBehaviour
         }
 
         int displayedProd = turnProd;
-        if (militaryProdBonus > 0 && currentCity.currentProject != null &&
-            currentCity.currentProject.type == ProjectType.Unit)
+        if (currentCity.currentProject != null && currentCity.currentProject.type == ProjectType.Unit)
         {
             UnitManager uManager = FindAnyObjectByType<UnitManager>();
             if (uManager != null &&
                 uManager.unitDatabaseDict.TryGetValue(currentCity.currentProject.name, out UnitDataModel uData))
             {
-                if (uData.unitClass != "Civilian")
+                int appliedBonus = 0;
+
+                if (uData.unitClass == "Naval")
                 {
-                    float multiplier = 1f + (militaryProdBonus / 100f);
+                    appliedBonus = navalProdBonus;
+                }
+                else if (uData.unitClass != "Civilian")
+                {
+                    appliedBonus = militaryProdBonus;
+                }
+
+                if (appliedBonus > 0)
+                {
+                    float multiplier = 1f + (appliedBonus / 100f);
                     displayedProd = Mathf.RoundToInt(turnProd * multiplier);
                 }
             }
@@ -188,6 +200,20 @@ public class CityUIManager : MonoBehaviour
         CityManager cityManager = FindAnyObjectByType<CityManager>();
         TechManager techManager = FindAnyObjectByType<TechManager>();
 
+        bool hasWaterNeighbor = false;
+        HexGrid hexGrid = cityManager != null ? cityManager.GetComponent<HexGrid>() : null;
+        if (hexGrid != null && currentCity != null)
+        {
+            foreach (HexNode neighbor in hexGrid.GetNeighbors(currentCity.centerNode))
+            {
+                if (!neighbor.isLand)
+                {
+                    hasWaterNeighbor = true;
+                    break;
+                }
+            }
+        }
+
         if (currentCity != null)
         {
             if (unitManager != null)
@@ -196,6 +222,11 @@ public class CityUIManager : MonoBehaviour
                 {
                     UnitDataModel unitData = kvp.Value;
                     bool canBuild = true;
+
+                    if (unitData.unitClass == "Naval" && !hasWaterNeighbor)
+                    {
+                        canBuild = false;
+                    }
 
                     if (!string.IsNullOrEmpty(unitData.requiredTech))
                     {
@@ -226,6 +257,11 @@ public class CityUIManager : MonoBehaviour
                         continue;
 
                     bool canBuild = true;
+
+                    if (bData.name == "Port" && !hasWaterNeighbor)
+                    {
+                        canBuild = false;
+                    }
 
                     if (!string.IsNullOrEmpty(bData.requiredTech))
                     {

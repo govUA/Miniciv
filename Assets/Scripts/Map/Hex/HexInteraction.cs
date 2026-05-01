@@ -177,9 +177,13 @@ public class HexInteraction : MonoBehaviour
                         List<HexNode> attackPositions = hexGrid.GetNodesInRange(targetNode, selectedUnit.attackRange);
                         List<HexNode> bestPath = null;
 
+                        bool canSail = techManager != null &&
+                                       techManager.HasTech(turnManager.CurrentPlayerID, "Sailing");
+
                         foreach (HexNode pos in attackPositions)
                         {
-                            if (!pos.isLand) continue;
+                            if (selectedUnit.unitClass == UnitClass.Naval && pos.isLand) continue;
+                            if (selectedUnit.unitClass != UnitClass.Naval && !pos.isLand && !canSail) continue;
 
                             bool canStand = true;
                             foreach (Unit u in unitManager.GetUnitsAtNode(pos))

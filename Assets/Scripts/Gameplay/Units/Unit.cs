@@ -17,7 +17,8 @@ public enum UnitClass
     Melee,
     Ranged,
     Cavalry,
-    AntiCavalry
+    AntiCavalry,
+    Naval
 }
 
 public class Unit : MonoBehaviour
@@ -193,14 +194,27 @@ public class Unit : MonoBehaviour
             bool isAtWar = isForeign && playerManager != null && playerManager.IsAtWar(ownerID, nextNode.ownerID);
             bool canSail = techManager != null && techManager.HasTech(ownerID, "Sailing");
 
-            if ((!nextNode.isLand && !canSail) || hasEnemy || (isForeign && !isAtWar))
+            if (unitClass == UnitClass.Naval && nextNode.isLand)
+            {
+                pathQueue.Clear();
+                break;
+            }
+
+            if (unitClass != UnitClass.Naval && !nextNode.isLand && !canSail)
+            {
+                pathQueue.Clear();
+                break;
+            }
+
+            if (hasEnemy || (isForeign && !isAtWar))
             {
                 pathQueue.Clear();
                 break;
             }
 
             int cost = (int)nextNode.movementCost;
-            if (!CurrentNode.isLand && !nextNode.isLand) cost = 10;
+            if (unitClass == UnitClass.Naval) cost = 10;
+            else if (!CurrentNode.isLand && !nextNode.isLand) cost = 10;
             else if (CurrentNode.isLand != nextNode.isLand) cost = 20;
 
             if (currentMP >= cost)
@@ -275,14 +289,27 @@ public class Unit : MonoBehaviour
             bool isAtWar = isForeign && playerManager != null && playerManager.IsAtWar(ownerID, nextNode.ownerID);
             bool canSail = techManager != null && techManager.HasTech(ownerID, "Sailing");
 
-            if ((!nextNode.isLand && !canSail) || hasEnemy || (isForeign && !isAtWar))
+            if (unitClass == UnitClass.Naval && nextNode.isLand)
+            {
+                pathQueue.Clear();
+                break;
+            }
+
+            if (unitClass != UnitClass.Naval && !nextNode.isLand && !canSail)
+            {
+                pathQueue.Clear();
+                break;
+            }
+
+            if (hasEnemy || (isForeign && !isAtWar))
             {
                 pathQueue.Clear();
                 break;
             }
 
             int cost = (int)nextNode.movementCost;
-            if (!CurrentNode.isLand && !nextNode.isLand) cost = 10;
+            if (unitClass == UnitClass.Naval) cost = 10;
+            else if (!CurrentNode.isLand && !nextNode.isLand) cost = 10;
             else if (CurrentNode.isLand != nextNode.isLand) cost = 20;
 
             if (currentMP >= cost)
@@ -326,8 +353,11 @@ public class Unit : MonoBehaviour
 
         foreach (HexNode node in pathQueue)
         {
+            if (unitClass == UnitClass.Naval && node.isLand) return false;
+
             int cost = (int)node.movementCost;
-            if (!simCurrentNode.isLand && !node.isLand) cost = 10;
+            if (unitClass == UnitClass.Naval) cost = 10;
+            else if (!simCurrentNode.isLand && !node.isLand) cost = 10;
             else if (simCurrentNode.isLand != node.isLand) cost = 20;
 
             if (simulatedMP >= cost)
@@ -386,7 +416,8 @@ public class Unit : MonoBehaviour
         foreach (HexNode node in pathQueue)
         {
             int cost = (int)node.movementCost;
-            if (!simNode.isLand && !node.isLand) cost = 10;
+            if (unitClass == UnitClass.Naval) cost = 10;
+            else if (!simNode.isLand && !node.isLand) cost = 10;
             else if (simNode.isLand != node.isLand) cost = 20;
 
             if (simulatedMP >= cost)

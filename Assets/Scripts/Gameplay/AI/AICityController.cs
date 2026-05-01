@@ -55,9 +55,25 @@ public class AICityController : MonoBehaviour
         List<CityProject> availableProjects = new List<CityProject>();
         List<float> projectScores = new List<float>();
 
+        bool hasWaterNeighbor = false;
+        HexGrid grid = FindObjectOfType<HexGrid>();
+        if (grid != null && city != null)
+        {
+            foreach (HexNode neighbor in grid.GetNeighbors(city.centerNode))
+            {
+                if (!neighbor.isLand)
+                {
+                    hasWaterNeighbor = true;
+                    break;
+                }
+            }
+        }
+
         foreach (var kvp in unitManager.unitDatabaseDict)
         {
             UnitDataModel unitData = kvp.Value;
+
+            if (unitData.unitClass == "Naval" && !hasWaterNeighbor) continue;
 
             if (!string.IsNullOrEmpty(unitData.requiredTech) && techManager != null)
             {
@@ -101,6 +117,8 @@ public class AICityController : MonoBehaviour
             BuildingDataModel bData = kvp.Value;
 
             if (city.builtBuildings.Contains(bData.name)) continue;
+
+            if (bData.name == "Port" && !hasWaterNeighbor) continue;
 
             if (!string.IsNullOrEmpty(bData.requiredTech) && techManager != null)
             {
