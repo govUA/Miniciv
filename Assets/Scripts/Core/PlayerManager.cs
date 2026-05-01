@@ -57,6 +57,15 @@ public class PlayerManager : MonoBehaviour
 
         for (int i = 0; i < count; i++)
         {
+            if (i == count - 1)
+            {
+                players[i] = new PlayerData(i, true, null);
+                players[i].primaryColor = Color.black;
+                players[i].secondaryColor = Color.red;
+                Debug.Log($"[PLAYER] Player {i} initialized as BARBARIANS");
+                continue;
+            }
+
             CivilizationData assignedCiv = null;
 
             if (i == 0)

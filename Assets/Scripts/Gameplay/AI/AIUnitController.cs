@@ -78,7 +78,7 @@ public class AIUnitController : MonoBehaviour
         {
             foreach (Unit u in unitManager.GetUnitsAtNode(node))
             {
-                if (u.ownerID != unit.ownerID && playerManager.IsAtWar(unit.ownerID, u.ownerID))
+                if (IsHostile(unit.ownerID, u.ownerID))
                 {
                     potentialUnitTargets.Add(u);
                 }
@@ -86,7 +86,7 @@ public class AIUnitController : MonoBehaviour
 
             foreach (City c in cityManager.GetActiveCities())
             {
-                if (c.centerNode == node && c.ownerID != unit.ownerID && playerManager.IsAtWar(unit.ownerID, c.ownerID))
+                if (c.centerNode == node && IsHostile(unit.ownerID, c.ownerID))
                 {
                     potentialCityTargets.Add(c);
                 }
@@ -186,16 +186,16 @@ public class AIUnitController : MonoBehaviour
         float score = 0f;
         VisionState vision = candidateNode.GetVision(unit.ownerID);
 
-        if (vision == VisionState.Unexplored) score += 30f;
-        else if (vision == VisionState.Explored) score += 10f;
+        TurnManager tm = FindObjectOfType<TurnManager>();
+        bool isBarbarian = (tm != null && unit.ownerID == tm.TotalPlayers - 1);
 
         float minDistToEnemy = 999f;
 
         foreach (Unit u in unitManager.GetActiveUnits())
         {
-            if (u.ownerID != unit.ownerID && playerManager.IsAtWar(unit.ownerID, u.ownerID))
+            if (IsHostile(unit.ownerID, u.ownerID))
             {
-                if (u.CurrentNode.GetVision(unit.ownerID) == VisionState.Visible)
+                if (isBarbarian || u.CurrentNode.GetVision(unit.ownerID) == VisionState.Visible)
                 {
                     float d = grid.GetDistance(candidateNode, u.CurrentNode);
                     if (d < minDistToEnemy) minDistToEnemy = d;
@@ -205,9 +205,9 @@ public class AIUnitController : MonoBehaviour
 
         foreach (City c in cityManager.GetActiveCities())
         {
-            if (c.ownerID != unit.ownerID && playerManager.IsAtWar(unit.ownerID, c.ownerID))
+            if (IsHostile(unit.ownerID, c.ownerID))
             {
-                if (c.centerNode.GetVision(unit.ownerID) != VisionState.Unexplored)
+                if (isBarbarian || c.centerNode.GetVision(unit.ownerID) != VisionState.Unexplored)
                 {
                     float d = grid.GetDistance(candidateNode, c.centerNode);
                     if (d < minDistToEnemy) minDistToEnemy = d;
@@ -215,13 +215,19 @@ public class AIUnitController : MonoBehaviour
             }
         }
 
+        int attackRange = unit.GetEffectiveAttackRange();
+
         if (minDistToEnemy < 999f)
         {
-            if (minDistToEnemy <= unit.attackRange) score += 200f;
-            else score += (100f / (minDistToEnemy + 1f));
+            if (minDistToEnemy <= attackRange)
+                score += 2000f;
+            else
+                score += 1000f - (minDistToEnemy * 10f);
         }
         else
         {
+            if (vision == VisionState.Unexplored) score += 300f;
+
             float minDistToOwnCity = 999f;
             foreach (City c in cityManager.GetActiveCities())
             {
@@ -232,16 +238,19 @@ public class AIUnitController : MonoBehaviour
                 }
             }
 
-            if (minDistToOwnCity == 0) score += 50f;
-            else if (minDistToOwnCity <= 3) score += 40f;
-            else score += (20f / (minDistToOwnCity + 1f));
+            if (minDistToOwnCity < 999f)
+            {
+                if (minDistToOwnCity <= 2) score += 500f;
+                else score += 400f - (minDistToOwnCity * 5f);
+            }
         }
 
         int distance = grid.GetDistance(unit.CurrentNode, candidateNode);
-        float distanceScore = 15f / (distance + 1f);
-        float randomBonus = Random.Range(0f, 5f);
+        float distancePenalty = distance * 2f;
 
-        return score + distanceScore + randomBonus;
+        float randomBonus = Random.Range(0f, 2f);
+
+        return score - distancePenalty + randomBonus;
     }
 
     private float EvaluateSettlerTile(Unit settler, HexNode candidateNode, HexGrid grid)
@@ -273,5 +282,20 @@ public class AIUnitController : MonoBehaviour
         float distanceScore = 20f / (distance + 1f);
 
         return yieldScore + distanceScore;
+    }
+
+    private bool IsHostile(int id1, int id2)
+    {
+        if (id1 == id2) return false;
+
+        TurnManager tm = FindObjectOfType<TurnManager>();
+        if (tm != null)
+        {
+            int barbId = tm.TotalPlayers - 1;
+            if (id1 == barbId || id2 == barbId) return true;
+        }
+
+        if (playerManager != null && playerManager.IsAtWar(id1, id2)) return true;
+        return false;
     }
 }

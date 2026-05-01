@@ -48,6 +48,7 @@ public class GameManager : MonoBehaviour
 
         for (int i = 0; i < numPlayers; i++)
         {
+            if (i == numPlayers - 1) continue;
             HexNode startNode = GetValidStartNode(grid, startNodes);
             if (startNode != null)
             {

@@ -14,7 +14,7 @@ public class TurnManager : MonoBehaviour
     {
         if (GameSettings.PlayerCount > 0)
         {
-            TotalPlayers = GameSettings.PlayerCount;
+            TotalPlayers = GameSettings.PlayerCount + 1;
         }
     }
 
