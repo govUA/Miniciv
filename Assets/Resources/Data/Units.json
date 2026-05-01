@@ -8,7 +8,7 @@
       "rangedStrength": 0,
       "attackRange": 0,
       "visionRange": 2,
-      "maxMP": 30,
+      "maxMP": 20,
       "requiredTech": "",
       "requiredPopulation": 2,
       "populationCost": 1
@@ -21,7 +21,7 @@
       "rangedStrength": 0,
       "attackRange": 1,
       "visionRange": 3,
-      "maxMP": 30,
+      "maxMP": 20,
       "requiredTech": ""
     },
     {
@@ -32,7 +32,7 @@
       "rangedStrength": 0,
       "attackRange": 1,
       "visionRange": 2,
-      "maxMP": 30,
+      "maxMP": 20,
       "requiredTech": ""
     },
     {
@@ -43,7 +43,7 @@
       "rangedStrength": 25,
       "attackRange": 2,
       "visionRange": 2,
-      "maxMP": 30,
+      "maxMP": 20,
       "requiredTech": "Archery"
     },
     {
@@ -54,7 +54,7 @@
       "rangedStrength": 0,
       "attackRange": 1,
       "visionRange": 2,
-      "maxMP": 30,
+      "maxMP": 20,
       "requiredTech": "Bronze Working"
     },
     {
@@ -65,12 +65,12 @@
       "rangedStrength": 0,
       "attackRange": 1,
       "visionRange": 2,
-      "maxMP": 30,
+      "maxMP": 20,
       "requiredTech": "Iron Working"
     },
     {
       "name": "Chariot Archer",
-      "unitClass": "Ranged",
+      "unitClass": "Cavalry",
       "cost": 50,
       "meleeStrength": 10,
       "rangedStrength": 30,
@@ -78,6 +78,17 @@
       "visionRange": 2,
       "maxMP": 40,
       "requiredTech": "The Wheel"
+    },
+    {
+      "name": "Horseman",
+      "unitClass": "Cavalry",
+      "cost": 70,
+      "meleeStrength": 35,
+      "rangedStrength": 0,
+      "attackRange": 1,
+      "visionRange": 2,
+      "maxMP": 40,
+      "requiredTech": "Animal Husbandry"
     }
   ]
 }

@@ -15,7 +15,8 @@ public enum UnitClass
 {
     Civilian,
     Melee,
-    Ranged
+    Ranged,
+    Cavalry
 }
 
 public class Unit : MonoBehaviour

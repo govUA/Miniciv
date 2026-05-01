@@ -336,8 +336,44 @@ public class HexInteraction : MonoBehaviour
         float attModifier = 1.05f;
         if (attacker.CurrentNode.terrainType == TerrainType.Mountain) attModifier += 0.10f;
 
-        float attStrength = (attacker.unitClass == UnitClass.Melee ? attacker.meleeStrength : attacker.rangedStrength) *
-                            attModifier;
+        float baseAttStrength =
+            attacker.unitClass == UnitClass.Melee ? attacker.meleeStrength : attacker.rangedStrength;
+        if (attacker.unitClass == UnitClass.Cavalry)
+        {
+            baseAttStrength = attacker.attackRange > 1 ? attacker.rangedStrength : attacker.meleeStrength;
+        }
+
+        if (attacker.unitClass == UnitClass.Melee && defUnit != null)
+        {
+            bool hasCavalryFlank = false;
+            List<HexNode> neighbors = hexGrid.GetNeighbors(defUnit.CurrentNode);
+
+            foreach (HexNode neighbor in neighbors)
+            {
+                List<Unit> adjacentUnits = unitManager.GetUnitsAtNode(neighbor);
+                foreach (Unit u in adjacentUnits)
+                {
+                    if (u.ownerID == attacker.ownerID && u.unitClass == UnitClass.Cavalry)
+                    {
+                        hasCavalryFlank = true;
+                        break;
+                    }
+                }
+
+                if (hasCavalryFlank) break;
+            }
+
+            if (hasCavalryFlank)
+            {
+                attModifier += 0.20f;
+                Debug.Log("[COMBAT] Flanking bonus from neighbouring cavalry activated: +20% to attack damage!");
+            }
+        }
+
+        float attStrength = baseAttStrength * attModifier;
+
+        bool isMeleeAttack = attacker.unitClass == UnitClass.Melee ||
+                             (attacker.unitClass == UnitClass.Cavalry && attacker.attackRange == 1);
 
         if (defUnit != null)
         {
@@ -374,7 +410,7 @@ public class HexInteraction : MonoBehaviour
                 int dmgToDef = Mathf.RoundToInt(30f * (attStrength / defStrength) * rngHit);
                 defUnit.TakeDamage(dmgToDef);
 
-                if (attacker.unitClass == UnitClass.Melee && defUnit.currentHP > 0)
+                if (isMeleeAttack && defUnit.currentHP > 0)
                 {
                     float rngRet = Random.Range(0.85f, 1.15f);
                     int dmgToAtt = Mathf.RoundToInt(30f * (defStrength / attStrength) * rngRet);
@@ -404,8 +440,7 @@ public class HexInteraction : MonoBehaviour
 
                 if (pathfinder != null)
                 {
-                    List<HexNode> capturePath =
-                        pathfinder.FindPath(attacker, defCity.centerNode);
+                    List<HexNode> capturePath = pathfinder.FindPath(attacker, defCity.centerNode);
                     if (capturePath != null && capturePath.Count > 0)
                     {
                         attacker.currentMP += 99;
@@ -415,7 +450,7 @@ public class HexInteraction : MonoBehaviour
             }
             else
             {
-                if (attacker.unitClass == UnitClass.Melee && defCity.ownerID != attacker.ownerID)
+                if (isMeleeAttack && defCity.ownerID != attacker.ownerID)
                 {
                     float rngRet = Random.Range(0.85f, 1.15f);
                     int dmgToAtt = Mathf.RoundToInt(30f * ((float)defCity.garrisonStrength / attStrength) * rngRet);
