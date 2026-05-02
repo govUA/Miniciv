@@ -66,9 +66,9 @@ public class CityUIManager : MonoBehaviour
         int cultureThreshold = 10 + (int)(Mathf.Pow(currentCity.borderExpansions, 1.5f) * 10);
 
         accumulatedStatsText.text = $"Accumulated:\n" +
-                                    $"Food: {currentCity.storedFood}\n" +
-                                    $"Production: {currentCity.storedProduction}\n" +
-                                    $"Culture: {currentCity.storedCulture} / {cultureThreshold}\n" +
+                                    $"<sprite name=\"Food\"> Food: {currentCity.storedFood}\n" +
+                                    $"<sprite name=\"Production\"> Production: {currentCity.storedProduction}\n" +
+                                    $"<sprite name=\"Culture\"> Culture: {currentCity.storedCulture} / {cultureThreshold}\n" +
                                     $"Health: {currentCity.currentHP}/{currentCity.maxHP}";
 
         int turnFood = 1, turnProd = 1, turnSci = 1;
@@ -136,10 +136,10 @@ public class CityUIManager : MonoBehaviour
         }
 
         perTurnStatsText.text = $"Yield (per turn):\n" +
-                                $"+{turnFood} Food\n" +
-                                $"+{displayedProd} Production\n" +
-                                $"+{turnSci} Science\n" +
-                                $"+{turnCulture} Culture";
+                                $"+{turnFood} <sprite name=\"Food\"> Food\n" +
+                                $"+{displayedProd} <sprite name=\"Production\"> Production\n" +
+                                $"+{turnSci} <sprite name=\"Science\"> Science\n" +
+                                $"+{turnCulture} <sprite name=\"Culture\"> Culture";
 
         UpdateCurrentProjectUI();
     }

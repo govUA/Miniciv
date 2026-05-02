@@ -86,13 +86,13 @@ public class MainHUDManager : MonoBehaviour
                 int currentGold = data.gold;
                 int income = economyManager.GetIncome(playerId);
                 string sign = income >= 0 ? "+" : "";
-                goldText.text = $"💰 {currentGold} ({sign}{income})";
+                goldText.text = $"<sprite name=\"Gold\"> {currentGold} ({sign}{income})";
             }
 
             if (happinessText != null)
             {
                 int happiness = economyManager.GetHappiness(playerId);
-                happinessText.text = $"🎭 {happiness}";
+                happinessText.text = $"<sprite name=\"Happiness\"> {happiness}";
 
                 if (happiness < 0) happinessText.color = Color.red;
                 else if (happiness < 10) happinessText.color = Color.white;
@@ -103,7 +103,7 @@ public class MainHUDManager : MonoBehaviour
         if (techManager != null)
         {
             int science = techManager.GetAccumulatedResearch(playerId);
-            scienceText.text = $"🧪 {science}";
+            scienceText.text = $"<sprite name=\"Science\"> {science}";
         }
 
         diplomacyText.text = "🤝 Diplomacy";
