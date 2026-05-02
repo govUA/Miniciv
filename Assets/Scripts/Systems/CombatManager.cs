@@ -8,6 +8,22 @@ public class CombatManager : MonoBehaviour
     public CityManager cityManager;
     public Pathfinder pathfinder;
 
+    private float GetHappinessCombatModifier(int playerId)
+    {
+        EconomyManager eco = FindAnyObjectByType<EconomyManager>();
+        if (eco == null) return 1.0f;
+
+        int happiness = eco.GetHappiness(playerId);
+
+        if (happiness < 0)
+        {
+            float penalty = Mathf.Clamp(happiness * 0.02f, -0.4f, 0f);
+            return 1.0f + penalty;
+        }
+
+        return 1.0f;
+    }
+
     public void ResolveUnitCombat(Unit attacker, Unit defUnit, City defCity)
     {
         attacker.hasAttackedThisTurn = true;
@@ -74,7 +90,8 @@ public class CombatManager : MonoBehaviour
             }
         }
 
-        float attStrength = baseAttStrength * attModifier;
+        float attackerHappinessMod = GetHappinessCombatModifier(attacker.ownerID);
+        float attStrength = baseAttStrength * attModifier * attackerHappinessMod;
 
         if (defUnit != null)
         {
@@ -108,10 +125,10 @@ public class CombatManager : MonoBehaviour
                 if (defUnit.unitClass == UnitClass.AntiCavalry && attacker.unitClass == UnitClass.Cavalry)
                 {
                     defModifier += 0.50f;
-                    Debug.Log("[COMBAT] Anti-Cavalry bonus activated: +50% defense against Cavalry!");
                 }
 
-                float defStrength = defUnit.meleeStrength * defModifier;
+                float defenderHappinessMod = GetHappinessCombatModifier(defUnit.ownerID);
+                float defStrength = defUnit.meleeStrength * defModifier * defenderHappinessMod;
 
                 float rngHit = Random.Range(0.85f, 1.15f);
                 int dmgToDef = Mathf.RoundToInt(30f * (attStrength / defStrength) * rngHit);
@@ -125,16 +142,18 @@ public class CombatManager : MonoBehaviour
                     float rngRet = Random.Range(0.85f, 1.15f);
                     int dmgToAtt = Mathf.RoundToInt(30f * (defStrength / attStrength) * rngRet);
                     attacker.TakeDamage(dmgToAtt);
-
                     Debug.Log(
-                        $"[COMBAT] {defUnit.unitName} counter-attacks {attacker.unitName} for {dmgToAtt} damage! ({attacker.currentHP}/{attacker.maxHP} HP left)");
+                        $"[COMBAT] {defUnit.unitName} counter-attacks {attacker.unitName} for {dmgToAtt} damage!");
                 }
             }
         }
         else if (defCity != null)
         {
+            float defCityHappinessMod = GetHappinessCombatModifier(defCity.ownerID);
+            float cityStrength = defCity.garrisonStrength * defCityHappinessMod;
+
             float rngHit = Random.Range(0.85f, 1.15f);
-            int dmgToCity = Mathf.RoundToInt(30f * (attStrength / defCity.garrisonStrength) * rngHit);
+            int dmgToCity = Mathf.RoundToInt(30f * (attStrength / cityStrength) * rngHit);
 
             int oldOwner = defCity.ownerID;
             defCity.TakeDamage(dmgToCity, attacker.ownerID);
@@ -169,11 +188,11 @@ public class CombatManager : MonoBehaviour
                 if (isMeleeAttack && defCity.ownerID != attacker.ownerID)
                 {
                     float rngRet = Random.Range(0.85f, 1.15f);
-                    int dmgToAtt = Mathf.RoundToInt(30f * ((float)defCity.garrisonStrength / attStrength) * rngRet);
+                    int dmgToAtt = Mathf.RoundToInt(30f * (cityStrength / attStrength) * rngRet);
                     attacker.TakeDamage(dmgToAtt);
 
                     Debug.Log(
-                        $"[COMBAT] City {defCity.cityName} counter-attacks {attacker.unitName} for {dmgToAtt} damage! ({attacker.currentHP}/{attacker.maxHP} HP left)");
+                        $"[COMBAT] City {defCity.cityName} counter-attacks {attacker.unitName} for {dmgToAtt} damage!");
                 }
             }
         }
@@ -190,14 +209,18 @@ public class CombatManager : MonoBehaviour
             if (defUnit.isFortified) defModifier += 0.25f;
             if (defUnit.CurrentNode.terrainType == TerrainType.Forest) defModifier += 0.15f;
 
-            float effectiveGarrison = attacker.garrisonStrength;
+            float attackerHappinessMod = GetHappinessCombatModifier(attacker.ownerID);
+            float effectiveGarrison = attacker.garrisonStrength * attackerHappinessMod;
+
             if (HasObstacleInLOS(attacker.centerNode, defUnit.CurrentNode))
             {
                 effectiveGarrison *= 0.8f;
                 Debug.Log("[COMBAT] City attack passes over a forest/mountain! -20% to attack damage.");
             }
 
-            float defStrength = defUnit.meleeStrength * defModifier;
+            float defenderHappinessMod = GetHappinessCombatModifier(defUnit.ownerID);
+            float defStrength = defUnit.meleeStrength * defModifier * defenderHappinessMod;
+
             float rngHit = Random.Range(0.85f, 1.15f);
 
             int dmgToDef = Mathf.RoundToInt(30f * (effectiveGarrison / defStrength) * rngHit);
@@ -232,7 +255,6 @@ public class CombatManager : MonoBehaviour
         );
 
         if (dist <= 1) return false;
-
 
         for (int i = 1; i < dist; i++)
         {

@@ -11,6 +11,7 @@ public class MainHUDManager : MonoBehaviour
 
     [Header("Top Bar Elements")] public TextMeshProUGUI goldText;
     public TextMeshProUGUI scienceText;
+    public TextMeshProUGUI happinessText;
     public TextMeshProUGUI diplomacyText;
     public TextMeshProUGUI turnText;
     public TMP_Dropdown techDropdown;
@@ -85,8 +86,17 @@ public class MainHUDManager : MonoBehaviour
                 int currentGold = data.gold;
                 int income = economyManager.GetIncome(playerId);
                 string sign = income >= 0 ? "+" : "";
-
                 goldText.text = $"💰 {currentGold} ({sign}{income})";
+            }
+
+            if (happinessText != null)
+            {
+                int happiness = economyManager.GetHappiness(playerId);
+                happinessText.text = $"🎭 {happiness}";
+
+                if (happiness < 0) happinessText.color = Color.red;
+                else if (happiness < 10) happinessText.color = Color.white;
+                else happinessText.color = Color.green;
             }
         }
 
@@ -107,18 +117,12 @@ public class MainHUDManager : MonoBehaviour
 
     private void HideHUD()
     {
-        if (hudContentPanel != null)
-        {
-            hudContentPanel.SetActive(false);
-        }
+        if (hudContentPanel != null) hudContentPanel.SetActive(false);
     }
 
     private void ShowHUD()
     {
-        if (hudContentPanel != null)
-        {
-            hudContentPanel.SetActive(true);
-        }
+        if (hudContentPanel != null) hudContentPanel.SetActive(true);
     }
 
     public void RefreshTechDropdown(int playerId)

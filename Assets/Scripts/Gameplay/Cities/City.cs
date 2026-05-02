@@ -35,6 +35,7 @@ public class City : MonoBehaviour
     private CityManager cityManager;
     private PlayerManager playerManager;
     private TechManager techManager;
+    private EconomyManager economyManager;
 
     public void Initialize(HexNode node, int playerId, string name, UnitManager um, CityManager cm, PlayerManager pm)
     {
@@ -44,30 +45,24 @@ public class City : MonoBehaviour
         unitManager = um;
         cityManager = cm;
         playerManager = pm;
-        techManager = UnityEngine.Object.FindAnyObjectByType<TechManager>();
+        techManager = FindAnyObjectByType<TechManager>();
+        economyManager = FindObjectOfType<EconomyManager>();
 
         currentHP = maxHP;
-
         UpdateColor();
     }
 
     private void UpdateColor()
     {
-        if (nameText != null)
-        {
-            nameText.text = cityName;
-        }
+        if (nameText != null) nameText.text = cityName;
 
         if (playerManager != null)
         {
             PlayerData pd = playerManager.GetPlayer(ownerID);
             if (pd != null)
             {
-                if (nameText != null)
-                    nameText.color = pd.primaryColor;
-
-                if (nameBackgroundRenderer != null)
-                    nameBackgroundRenderer.color = pd.secondaryColor;
+                if (nameText != null) nameText.color = pd.primaryColor;
+                if (nameBackgroundRenderer != null) nameBackgroundRenderer.color = pd.secondaryColor;
             }
         }
     }
@@ -76,10 +71,7 @@ public class City : MonoBehaviour
     {
         currentHP = Mathf.Clamp(currentHP - amount, 0, maxHP);
         Debug.Log($"[COMBAT] City {cityName} took {amount} damage. HP: {currentHP}/{maxHP}");
-        if (currentHP <= 0)
-        {
-            CaptureCity(attackerId);
-        }
+        if (currentHP <= 0) CaptureCity(attackerId);
     }
 
     private void CaptureCity(int newOwner)
@@ -156,10 +148,8 @@ public class City : MonoBehaviour
                             case "Production": turnProd += effect.amount; break;
                             case "Science": turnSci += effect.amount; break;
                             case "Culture": turnCulture += effect.amount; break;
-                            case "MilitaryProdBonus":
-                                militaryProdBonus += effect.amount; break;
-                            case "NavalProdBonus":
-                                navalProdBonus += effect.amount; break;
+                            case "MilitaryProdBonus": militaryProdBonus += effect.amount; break;
+                            case "NavalProdBonus": navalProdBonus += effect.amount; break;
                         }
                     }
                 }
@@ -172,31 +162,40 @@ public class City : MonoBehaviour
             if (unitManager != null &&
                 unitManager.unitDatabaseDict.TryGetValue(currentProject.name, out UnitDataModel uData))
             {
-                int appliedBonus = 0;
-
-                if (uData.unitClass == "Naval")
-                {
-                    appliedBonus = navalProdBonus;
-                }
-                else if (uData.unitClass != "Civilian")
-                {
-                    appliedBonus = militaryProdBonus;
-                }
+                int appliedBonus = (uData.unitClass == "Naval")
+                    ? navalProdBonus
+                    : (uData.unitClass != "Civilian" ? militaryProdBonus : 0);
 
                 if (appliedBonus > 0)
                 {
                     float multiplier = 1f + (appliedBonus / 100f);
                     finalTurnProd = Mathf.RoundToInt(turnProd * multiplier);
-                    Debug.Log(
-                        $"[CITY] {cityName} застосовує бонус {appliedBonus}% до виробництва. Base: {turnProd}, Final: {finalTurnProd}");
                 }
             }
+        }
+
+        int currentHappiness = economyManager != null ? economyManager.GetHappiness(ownerID) : 10;
+
+        if (currentHappiness < 0)
+        {
+            turnFood = Mathf.RoundToInt(turnFood * 0.25f);
+            Debug.Log($"[CITY] {cityName} growth dramatically slowed due to Unhappiness!");
+        }
+        else if (currentHappiness >= 20)
+        {
+            turnFood = Mathf.RoundToInt(turnFood * 1.20f);
+        }
+
+        if (currentHappiness <= -10)
+        {
+            finalTurnProd = Mathf.RoundToInt(finalTurnProd * 0.5f);
+            turnSci = Mathf.RoundToInt(turnSci * 0.5f);
+            Debug.Log($"[CITY] {cityName} production/science halved due to EXTREME Unhappiness!");
         }
 
         storedFood += turnFood;
         storedProduction += finalTurnProd;
         storedCulture += turnCulture;
-
 
         if (techManager != null && turnSci > 0)
         {
@@ -212,7 +211,6 @@ public class City : MonoBehaviour
         }
 
         int cultureThreshold = 10 + (int)(Mathf.Pow(borderExpansions, 1.5f) * 10);
-
         if (storedCulture >= cultureThreshold)
         {
             storedCulture -= cultureThreshold;
@@ -221,8 +219,6 @@ public class City : MonoBehaviour
             if (cityManager != null)
             {
                 cityManager.ExpandTerritoryByOne(this);
-                Debug.Log(
-                    $"[CITY] {cityName} expands its borders due to culture! Next threshold: {10 + (int)(Mathf.Pow(borderExpansions, 1.5f) * 10)}");
             }
         }
 
@@ -233,7 +229,6 @@ public class City : MonoBehaviour
                 if (currentHP < maxHP)
                 {
                     currentHP = Mathf.Clamp(currentHP + 20, 0, maxHP);
-                    Debug.Log($"[CITY] {cityName} is repairing. HP: {currentHP}/{maxHP}");
                     if (currentHP == maxHP) currentProject = null;
                 }
                 else
@@ -243,8 +238,6 @@ public class City : MonoBehaviour
             }
             else
             {
-                Debug.Log(
-                    $"[CITY] {cityName} producing {currentProject.name}: {storedProduction}/{currentProject.cost} Prod.");
                 if (storedProduction >= currentProject.cost)
                 {
                     storedProduction -= currentProject.cost;
@@ -284,17 +277,13 @@ public class City : MonoBehaviour
         }
         else if (currentProject.type == ProjectType.Unit)
         {
-            if (unitManager != null)
+            if (unitManager != null &&
+                unitManager.unitDatabaseDict.TryGetValue(currentProject.name, out UnitDataModel uData))
             {
-                if (unitManager.unitDatabaseDict.TryGetValue(currentProject.name, out UnitDataModel uData))
+                if (uData.populationCost > 0)
                 {
-                    if (uData.populationCost > 0)
-                    {
-                        population -= uData.populationCost;
-                        population = Mathf.Max(1, population);
-                        Debug.Log(
-                            $"[CITY] {cityName} spent {uData.populationCost} population to build {uData.name}. Population is now {population}.");
-                    }
+                    population -= uData.populationCost;
+                    population = Mathf.Max(1, population);
                 }
 
                 unitManager.SpawnUnit(centerNode, ownerID, currentProject.name);
@@ -316,16 +305,12 @@ public class City : MonoBehaviour
         {
             Vector2 screenPosition = Mouse.current.position.ReadValue();
             Vector2 mousePosition = Camera.main.ScreenToWorldPoint(screenPosition);
-
             RaycastHit2D hit = Physics2D.Raycast(mousePosition, Vector2.zero);
 
             if (hit.collider != null && hit.collider.gameObject == this.gameObject)
             {
                 CityUIManager uiManager = FindAnyObjectByType<CityUIManager>();
-                if (uiManager != null)
-                {
-                    uiManager.OpenCityUI(this);
-                }
+                if (uiManager != null) uiManager.OpenCityUI(this);
             }
         }
     }

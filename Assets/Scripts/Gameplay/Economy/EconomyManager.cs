@@ -72,6 +72,10 @@ public class EconomyManager : MonoBehaviour
                             {
                                 totalHappiness += effect.amount;
                             }
+                            else if (effect.type == "HappinessPerPop")
+                            {
+                                totalHappiness += (city.population / effect.amount);
+                            }
                         }
                     }
                 }

@@ -84,6 +84,43 @@
           "amount": 30
         }
       ]
+    },
+    {
+      "name": "Circus",
+      "cost": 75,
+      "requiredTech": "Trapping",
+      "effects": [
+        {
+          "type": "Happiness",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "name": "Temple",
+      "cost": 100,
+      "requiredTech": "Calendar",
+      "effects": [
+        {
+          "type": "Happiness",
+          "amount": 2
+        },
+        {
+          "type": "Culture",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "name": "Public Baths",
+      "cost": 120,
+      "requiredTech": "Masonry",
+      "effects": [
+        {
+          "type": "HappinessPerPop",
+          "amount": 3
+        }
+      ]
     }
   ]
 }
