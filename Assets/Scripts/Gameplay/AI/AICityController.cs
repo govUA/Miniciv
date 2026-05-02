@@ -46,6 +46,9 @@ public class AICityController : MonoBehaviour
         List<CityProject> availableProjects = new List<CityProject>();
         List<float> projectScores = new List<float>();
 
+        EconomyManager ecoManager = FindObjectOfType<EconomyManager>();
+        int currentHappiness = ecoManager != null ? ecoManager.GetHappiness(playerId) : 10;
+
         bool hasWaterNeighbor = false;
         HexGrid grid = FindObjectOfType<HexGrid>();
         if (grid != null && city != null)
@@ -73,6 +76,11 @@ public class AICityController : MonoBehaviour
                 score += 50f * strategy.expansionWeight;
 
                 if (city.population <= 2) score -= 100f;
+
+                if (currentHappiness < 1 || strategy.expansionWeight == 0f)
+                {
+                    score = -9999f;
+                }
             }
             else if (unitData.unitClass != "Civilian")
             {
@@ -81,11 +89,13 @@ public class AICityController : MonoBehaviour
                 if (strategy.currentState == AIState.Panic) score += 100f;
             }
 
-            score *= Random.Range(0.9f, 1.1f);
-
-            availableProjects.Add(
-                new CityProject(unitData.name, ProjectType.Unit, unitData.cost, unitData.requiredTech));
-            projectScores.Add(score);
+            if (score > -1000f)
+            {
+                score *= Random.Range(0.9f, 1.1f);
+                availableProjects.Add(new CityProject(unitData.name, ProjectType.Unit, unitData.cost,
+                    unitData.requiredTech));
+                projectScores.Add(score);
+            }
         }
 
         foreach (var kvp in cityManager.buildingDatabaseDict)

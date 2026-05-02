@@ -22,6 +22,8 @@ public class AIGrandStrategy : MonoBehaviour
     private PlayerManager playerManager;
     private UnitManager unitManager;
     private CityManager cityManager;
+    private EconomyManager economyManager;
+    private HexGrid grid;
 
     [Header("Current Status (Read Only)")] public AIState currentState;
     public AIPersonality basePersonality;
@@ -36,6 +38,8 @@ public class AIGrandStrategy : MonoBehaviour
         playerManager = FindObjectOfType<PlayerManager>();
         unitManager = FindObjectOfType<UnitManager>();
         cityManager = FindObjectOfType<CityManager>();
+        economyManager = FindObjectOfType<EconomyManager>();
+        grid = FindObjectOfType<HexGrid>();
 
         DeterminePersonality(playerId);
         EvaluateState(playerId);
@@ -44,7 +48,6 @@ public class AIGrandStrategy : MonoBehaviour
     private void DeterminePersonality(int playerId)
     {
         PlayerData pd = playerManager.GetPlayer(playerId);
-
         string personalityString = pd.civilization.aiPersonality;
 
         if (!string.IsNullOrEmpty(personalityString) &&
@@ -54,12 +57,8 @@ public class AIGrandStrategy : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning(
-                $"[AIGrandStrategy] Unknown or missing personality '{personalityString}' for leader {pd.civilization.leaderName}. Defaulting to Balanced.");
             basePersonality = AIPersonality.Balanced;
         }
-
-        float randomVariance = Random.Range(0.8f, 1.2f);
     }
 
     public void EvaluateState(int playerId)
@@ -75,7 +74,26 @@ public class AIGrandStrategy : MonoBehaviour
             if (u.ownerID == playerId && u.unitClass != UnitClass.Civilian)
                 myMilitaryPower += (u.meleeStrength + u.rangedStrength);
 
-        bool isAtWar = false; // DiplomacyManager: playerManager.IsAtWar(playerId)
+        int happiness = economyManager != null ? economyManager.GetHappiness(playerId) : 10;
+        int income = economyManager != null ? economyManager.GetIncome(playerId) : 10;
+
+        int availableFreeTiles = 0;
+        if (grid != null)
+        {
+            foreach (City c in cityManager.GetActiveCities())
+            {
+                if (c.ownerID == playerId)
+                {
+                    List<HexNode> nearbyNodes = grid.GetNodesInRange(c.centerNode, 5);
+                    foreach (HexNode node in nearbyNodes)
+                    {
+                        if (node.isLand && node.ownerID == -1) availableFreeTiles++;
+                    }
+                }
+            }
+        }
+
+        bool isAtWar = false;
         bool isLosingWar = false;
 
         if (isLosingWar)
@@ -86,7 +104,7 @@ public class AIGrandStrategy : MonoBehaviour
         {
             currentState = AIState.WarPreparation;
         }
-        else if (myCities < 5 || (basePersonality == AIPersonality.Expansionist && myCities < 8))
+        else if (availableFreeTiles > 15 && happiness > 2 && income > -5)
         {
             currentState = AIState.Expansion;
         }
@@ -95,10 +113,10 @@ public class AIGrandStrategy : MonoBehaviour
             currentState = AIState.PeacefulDevelopment;
         }
 
-        CalculateWeights();
+        CalculateWeights(happiness, availableFreeTiles);
     }
 
-    private void CalculateWeights()
+    private void CalculateWeights(int happiness, int freeTiles)
     {
         militaryWeight = basePersonality == AIPersonality.Militaristic ? 1.5f : 1.0f;
         expansionWeight = basePersonality == AIPersonality.Expansionist ? 1.5f : 1.0f;
@@ -113,23 +131,22 @@ public class AIGrandStrategy : MonoBehaviour
                 expansionWeight = 0f;
                 scienceWeight *= 0.5f;
                 break;
-
             case AIState.WarPreparation:
                 militaryWeight *= 2.0f;
                 economyWeight *= 1.2f;
-                expansionWeight *= 0.5f;
+                expansionWeight *= 0.2f;
                 break;
-
             case AIState.Expansion:
                 expansionWeight *= 2.5f;
                 militaryWeight *= 0.8f;
                 economyWeight *= 1.2f;
                 break;
-
             case AIState.PeacefulDevelopment:
                 economyWeight *= 1.5f;
                 scienceWeight *= 1.5f;
                 militaryWeight *= 0.5f;
+
+                if (happiness < 0 || freeTiles < 10) expansionWeight = 0f;
                 break;
         }
     }

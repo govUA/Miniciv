@@ -4828,6 +4828,7 @@ GameObject:
   - component: {fileID: 1775689262}
   - component: {fileID: 1775689263}
   - component: {fileID: 1775689264}
+  - component: {fileID: 1775689265}
   m_Layer: 0
   m_Name: MapGenerator
   m_TagString: Untagged
@@ -5076,6 +5077,9 @@ MonoBehaviour:
   cityManager: {fileID: 1775689251}
   unitManager: {fileID: 1775689247}
   turnManager: {fileID: 1775689248}
+  baseHappiness: 9
+  penaltyPerCity: 3
+  penaltyPerPopulation: 1
 --- !u!114 &1775689257
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5127,6 +5131,7 @@ MonoBehaviour:
     uniqueBuilding: 
     primaryColorHex: 
     secondaryColorHex: 
+    aiPersonality: 
     cityNames: []
   - civName: 
     leaderName: 
@@ -5134,6 +5139,7 @@ MonoBehaviour:
     uniqueBuilding: 
     primaryColorHex: 
     secondaryColorHex: 
+    aiPersonality: 
     cityNames: []
   - civName: 
     leaderName: 
@@ -5141,6 +5147,7 @@ MonoBehaviour:
     uniqueBuilding: 
     primaryColorHex: 
     secondaryColorHex: 
+    aiPersonality: 
     cityNames: []
   - civName: 
     leaderName: 
@@ -5148,6 +5155,7 @@ MonoBehaviour:
     uniqueBuilding: 
     primaryColorHex: 
     secondaryColorHex: 
+    aiPersonality: 
     cityNames: []
   - civName: 
     leaderName: 
@@ -5155,6 +5163,7 @@ MonoBehaviour:
     uniqueBuilding: 
     primaryColorHex: 
     secondaryColorHex: 
+    aiPersonality: 
     cityNames: []
   - civName: 
     leaderName: 
@@ -5162,6 +5171,7 @@ MonoBehaviour:
     uniqueBuilding: 
     primaryColorHex: 
     secondaryColorHex: 
+    aiPersonality: 
     cityNames: []
   - civName: 
     leaderName: 
@@ -5169,6 +5179,7 @@ MonoBehaviour:
     uniqueBuilding: 
     primaryColorHex: 
     secondaryColorHex: 
+    aiPersonality: 
     cityNames: []
   - civName: 
     leaderName: 
@@ -5176,6 +5187,7 @@ MonoBehaviour:
     uniqueBuilding: 
     primaryColorHex: 
     secondaryColorHex: 
+    aiPersonality: 
     cityNames: []
   - civName: 
     leaderName: 
@@ -5183,6 +5195,7 @@ MonoBehaviour:
     uniqueBuilding: 
     primaryColorHex: 
     secondaryColorHex: 
+    aiPersonality: 
     cityNames: []
   - civName: 
     leaderName: 
@@ -5190,6 +5203,7 @@ MonoBehaviour:
     uniqueBuilding: 
     primaryColorHex: 
     secondaryColorHex: 
+    aiPersonality: 
     cityNames: []
   - civName: 
     leaderName: 
@@ -5197,6 +5211,7 @@ MonoBehaviour:
     uniqueBuilding: 
     primaryColorHex: 
     secondaryColorHex: 
+    aiPersonality: 
     cityNames: []
   - civName: 
     leaderName: 
@@ -5204,6 +5219,7 @@ MonoBehaviour:
     uniqueBuilding: 
     primaryColorHex: 
     secondaryColorHex: 
+    aiPersonality: 
     cityNames: []
   - civName: 
     leaderName: 
@@ -5211,6 +5227,7 @@ MonoBehaviour:
     uniqueBuilding: 
     primaryColorHex: 
     secondaryColorHex: 
+    aiPersonality: 
     cityNames: []
   - civName: 
     leaderName: 
@@ -5218,6 +5235,7 @@ MonoBehaviour:
     uniqueBuilding: 
     primaryColorHex: 
     secondaryColorHex: 
+    aiPersonality: 
     cityNames: []
 --- !u!114 &1775689260
 MonoBehaviour:
@@ -5293,6 +5311,20 @@ MonoBehaviour:
   spawnInterval: 5
   maxBarbariansActive: 12
   weaknessRadius: 4
+--- !u!114 &1775689265
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1775689240}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2b4e3540f7c1447b8a5a68eafcae2bd0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AIGrandStrategy
+  currentState: 0
+  basePersonality: 0
 --- !u!1 &1822924926
 GameObject:
   m_ObjectHideFlags: 0
