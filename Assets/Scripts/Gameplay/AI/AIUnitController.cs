@@ -17,10 +17,26 @@ public class AIUnitController : MonoBehaviour
 
         TechManager techManager = FindObjectOfType<TechManager>();
         bool canSail = techManager != null && techManager.HasTech(playerId, "Sailing");
+        HexGrid grid = FindObjectOfType<HexGrid>();
+
+        City targetEnemyCity = DetermineCampaignTarget(playerId, grid);
+        HexNode rallyPoint = null;
+        bool isArmyReady = false;
+
+        if (targetEnemyCity != null)
+        {
+            rallyPoint = DetermineRallyPoint(targetEnemyCity, playerId, grid);
+            isArmyReady = CheckArmyStrength(playerId, targetEnemyCity);
+
+            if (isArmyReady)
+                Debug.Log($"[AI COMMAND] Player {playerId} launches FULL ATTACK on {targetEnemyCity.cityName}!");
+            else if (rallyPoint != null)
+                Debug.Log(
+                    $"[AI COMMAND] Player {playerId} is gathering forces at Rally Point to attack {targetEnemyCity.cityName}.");
+        }
 
         List<Unit> allUnits = new List<Unit>(unitManager.GetActiveUnits());
         Pathfinder pathfinder = FindObjectOfType<Pathfinder>();
-        HexGrid grid = FindObjectOfType<HexGrid>();
 
         foreach (Unit unit in allUnits)
         {
@@ -28,14 +44,14 @@ public class AIUnitController : MonoBehaviour
             if (unit.ownerID != playerId || unit.State != UnitState.Idle || unit.currentMP <= 0) continue;
 
             bool attacked = false;
-            if (unit.unitClass != UnitClass.Civilian && !unit.hasAttackedThisTurn)
+            if (unit.unitClass != UnitClass.Civilian && !unit.hasAttackedThisTurn && !unit.isHealing)
             {
                 attacked = TryAttack(unit, grid);
             }
 
             if (attacked) continue;
 
-            HexNode targetNode = EvaluateBestDestination(unit, grid, canSail);
+            HexNode targetNode = EvaluateBestDestination(unit, grid, canSail, targetEnemyCity, rallyPoint, isArmyReady);
 
             if (targetNode != null)
             {
@@ -43,10 +59,7 @@ public class AIUnitController : MonoBehaviour
                 {
                     if (unit.isSettler)
                     {
-                        if (cityManager.FoundCity(unit))
-                        {
-                            unitManager.RemoveUnit(unit);
-                        }
+                        if (cityManager.FoundCity(unit)) unitManager.RemoveUnit(unit);
                     }
                     else
                     {
@@ -57,7 +70,6 @@ public class AIUnitController : MonoBehaviour
                 else
                 {
                     List<HexNode> path = pathfinder.FindPath(unit, targetNode);
-
                     if (path != null && path.Count > 0)
                     {
                         unit.MoveAlongPath(path);
@@ -65,6 +77,189 @@ public class AIUnitController : MonoBehaviour
                 }
             }
         }
+    }
+
+    private HexNode EvaluateBestDestination(Unit unit, HexGrid grid, bool canSail, City targetCity, HexNode rallyPoint,
+        bool isArmyReady)
+    {
+        if (unit.isSettler) return FindBestSettlerDestination(unit, grid, canSail);
+
+        TurnManager tm = FindObjectOfType<TurnManager>();
+        bool isBarbarian = (tm != null && unit.ownerID == tm.TotalPlayers - 1);
+
+        if (unit.currentHP < 30 || (unit.isHealing && unit.currentHP < 90))
+        {
+            unit.isHealing = true;
+            City nearestFriendlyCity = GetNearestFriendlyCity(unit, grid);
+
+            if (nearestFriendlyCity != null)
+            {
+                int distToCity = grid.GetDistance(unit.CurrentNode, nearestFriendlyCity.centerNode);
+                if (distToCity <= 2)
+                {
+                    unit.isFortified = true;
+                    return unit.CurrentNode;
+                }
+
+                return nearestFriendlyCity.centerNode;
+            }
+        }
+        else
+        {
+            unit.isHealing = false;
+        }
+
+        if (targetCity != null && !isBarbarian)
+        {
+            if (isArmyReady)
+            {
+                if (unit.unitClass == UnitClass.Naval && targetCity.centerNode.isLand)
+                {
+                    // TODO: Fleet logic
+                }
+                else return targetCity.centerNode;
+            }
+            else if (rallyPoint != null)
+            {
+                int distToRally = grid.GetDistance(unit.CurrentNode, rallyPoint);
+                if (distToRally > 2)
+                {
+                    return rallyPoint;
+                }
+                else
+                {
+                    unit.isFortified = true;
+                    return unit.CurrentNode;
+                }
+            }
+        }
+
+        HexNode bestTargetNode = null;
+        int minDistance = int.MaxValue;
+
+        foreach (Unit u in unitManager.GetActiveUnits())
+        {
+            if (IsHostile(unit.ownerID, u.ownerID) &&
+                (isBarbarian || u.CurrentNode.GetVision(unit.ownerID) == VisionState.Visible))
+            {
+                if (unit.unitClass == UnitClass.Naval && u.CurrentNode.isLand) continue;
+                if (unit.unitClass != UnitClass.Naval && !u.CurrentNode.isLand && !canSail) continue;
+
+                int dist = grid.GetDistance(unit.CurrentNode, u.CurrentNode);
+                if (dist < minDistance)
+                {
+                    minDistance = dist;
+                    bestTargetNode = u.CurrentNode;
+                }
+            }
+        }
+
+        if (bestTargetNode != null) return bestTargetNode;
+
+        List<HexNode> nearbyNodes = grid.GetNodesInRange(unit.CurrentNode, 10);
+        foreach (HexNode node in nearbyNodes)
+        {
+            if (node.GetVision(unit.ownerID) == VisionState.Unexplored)
+            {
+                if (unit.unitClass == UnitClass.Naval && node.isLand) continue;
+                if (unit.unitClass != UnitClass.Naval && !node.isLand && !canSail) continue;
+                return node;
+            }
+        }
+
+        City cityToGuard = GetNearestFriendlyCity(unit, grid);
+        return cityToGuard != null ? cityToGuard.centerNode : unit.CurrentNode;
+    }
+
+    private City DetermineCampaignTarget(int playerId, HexGrid grid)
+    {
+        City bestTarget = null;
+        int minDistance = int.MaxValue;
+
+        foreach (City c in cityManager.GetActiveCities())
+        {
+            if (IsHostile(playerId, c.ownerID) && c.centerNode.GetVision(playerId) != VisionState.Unexplored)
+            {
+                City myNearestCity = GetNearestFriendlyCity(c.centerNode, playerId, grid);
+                if (myNearestCity != null)
+                {
+                    int d = grid.GetDistance(myNearestCity.centerNode, c.centerNode);
+                    if (d < minDistance)
+                    {
+                        minDistance = d;
+                        bestTarget = c;
+                    }
+                }
+            }
+        }
+
+        return bestTarget;
+    }
+
+    private HexNode DetermineRallyPoint(City targetCity, int playerId, HexGrid grid)
+    {
+        City myNearestCity = GetNearestFriendlyCity(targetCity.centerNode, playerId, grid);
+        if (myNearestCity == null) return targetCity.centerNode;
+
+        HexNode bestRally = myNearestCity.centerNode;
+        int shortestToEnemy = grid.GetDistance(bestRally, targetCity.centerNode);
+
+        List<HexNode> candidateNodes = grid.GetNodesInRange(myNearestCity.centerNode, 3);
+        foreach (HexNode n in candidateNodes)
+        {
+            if (n.isLand && n.ownerID != targetCity.ownerID)
+            {
+                int distToEnemy = grid.GetDistance(n, targetCity.centerNode);
+                if (distToEnemy < shortestToEnemy)
+                {
+                    shortestToEnemy = distToEnemy;
+                    bestRally = n;
+                }
+            }
+        }
+
+        return bestRally;
+    }
+
+    private bool CheckArmyStrength(int playerId, City targetCity)
+    {
+        int totalArmyStrength = 0;
+        foreach (Unit u in unitManager.GetActiveUnits())
+        {
+            if (u.ownerID == playerId && u.unitClass != UnitClass.Civilian && !u.isHealing)
+            {
+                totalArmyStrength += (u.meleeStrength + u.rangedStrength);
+            }
+        }
+
+        float enemyDefensivePower = (targetCity.garrisonStrength * 1.5f) + (targetCity.currentHP / 4f);
+
+        return totalArmyStrength >= enemyDefensivePower;
+    }
+
+    private City GetNearestFriendlyCity(Unit unit, HexGrid grid)
+    {
+        return GetNearestFriendlyCity(unit.CurrentNode, unit.ownerID, grid);
+    }
+
+    private City GetNearestFriendlyCity(HexNode fromNode, int playerId, HexGrid grid)
+    {
+        City nearest = null;
+        int minDist = int.MaxValue;
+        foreach (City c in cityManager.GetActiveCities())
+        {
+            if (c.ownerID == playerId)
+            {
+                int d = grid.GetDistance(fromNode, c.centerNode);
+                if (d < minDist)
+                {
+                    minDist = d;
+                    nearest = c;
+                }
+            }
+        }
+
+        return nearest;
     }
 
     private bool TryAttack(Unit unit, HexGrid grid)
@@ -128,95 +323,6 @@ public class AIUnitController : MonoBehaviour
         }
 
         return false;
-    }
-
-    private HexNode EvaluateBestDestination(Unit unit, HexGrid grid, bool canSail)
-    {
-        if (unit.isSettler)
-        {
-            return FindBestSettlerDestination(unit, grid, canSail);
-        }
-        else
-        {
-            return FindBestMilitaryDestination(unit, grid, canSail);
-        }
-    }
-
-    private HexNode FindBestMilitaryDestination(Unit unit, HexGrid grid, bool canSail)
-    {
-        TurnManager tm = FindObjectOfType<TurnManager>();
-        bool isBarbarian = (tm != null && unit.ownerID == tm.TotalPlayers - 1);
-
-        HexNode bestTargetNode = null;
-        int minDistance = int.MaxValue;
-
-        foreach (Unit u in unitManager.GetActiveUnits())
-        {
-            if (IsHostile(unit.ownerID, u.ownerID))
-            {
-                if (isBarbarian || u.CurrentNode.GetVision(unit.ownerID) == VisionState.Visible)
-                {
-                    if (unit.unitClass == UnitClass.Naval && u.CurrentNode.isLand) continue;
-                    if (unit.unitClass != UnitClass.Naval && !u.CurrentNode.isLand && !canSail) continue;
-
-                    int dist = grid.GetDistance(unit.CurrentNode, u.CurrentNode);
-                    if (dist < minDistance)
-                    {
-                        minDistance = dist;
-                        bestTargetNode = u.CurrentNode;
-                    }
-                }
-            }
-        }
-
-        foreach (City c in cityManager.GetActiveCities())
-        {
-            if (IsHostile(unit.ownerID, c.ownerID))
-            {
-                if (isBarbarian || c.centerNode.GetVision(unit.ownerID) != VisionState.Unexplored)
-                {
-                    if (unit.unitClass == UnitClass.Naval && c.centerNode.isLand) continue;
-                    if (unit.unitClass != UnitClass.Naval && !c.centerNode.isLand && !canSail) continue;
-
-                    int dist = grid.GetDistance(unit.CurrentNode, c.centerNode);
-                    if (dist < minDistance)
-                    {
-                        minDistance = dist;
-                        bestTargetNode = c.centerNode;
-                    }
-                }
-            }
-        }
-
-        if (bestTargetNode != null) return bestTargetNode;
-
-        List<HexNode> nearbyNodes = grid.GetNodesInRange(unit.CurrentNode, 10);
-        foreach (HexNode node in nearbyNodes)
-        {
-            if (node.GetVision(unit.ownerID) == VisionState.Unexplored)
-            {
-                if (unit.unitClass == UnitClass.Naval && node.isLand) continue;
-                if (unit.unitClass != UnitClass.Naval && !node.isLand && !canSail) continue;
-                return node;
-            }
-        }
-
-        int minCityDist = int.MaxValue;
-        HexNode cityToGuard = null;
-        foreach (City c in cityManager.GetActiveCities())
-        {
-            if (c.ownerID == unit.ownerID)
-            {
-                int dist = grid.GetDistance(unit.CurrentNode, c.centerNode);
-                if (dist < minCityDist && dist > 1)
-                {
-                    minCityDist = dist;
-                    cityToGuard = c.centerNode;
-                }
-            }
-        }
-
-        return cityToGuard ?? unit.CurrentNode;
     }
 
     private HexNode FindBestSettlerDestination(Unit settler, HexGrid grid, bool canSail)
