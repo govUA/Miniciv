@@ -12,12 +12,14 @@ public class AIManager : MonoBehaviour
     private AICityController cityController;
     private AIUnitController unitController;
     private AITechController techController;
+    private AIGrandStrategy grandStrategy;
 
     private void Awake()
     {
         cityController = GetComponent<AICityController>();
         unitController = GetComponent<AIUnitController>();
         techController = GetComponent<AITechController>();
+        grandStrategy = GetComponent<AIGrandStrategy>();
     }
 
     private void Start()
@@ -41,6 +43,14 @@ public class AIManager : MonoBehaviour
     private IEnumerator ExecuteAITurn(int playerId)
     {
         Debug.Log($"AI Player {playerId} makes decision...");
+
+        if (grandStrategy != null)
+        {
+            if (turnManager.CurrentTurn == 1) grandStrategy.InitializeStrategy(playerId);
+
+            grandStrategy.EvaluateState(playerId);
+        }
+
         yield return new WaitForSeconds(0.5f);
 
         techController.ExecuteTechActions(playerId);

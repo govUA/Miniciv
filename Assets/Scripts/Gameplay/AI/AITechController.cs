@@ -1,33 +1,42 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
+[RequireComponent(typeof(AIGrandStrategy))]
 public class AITechController : MonoBehaviour
 {
+    private AIGrandStrategy strategy;
+
+    private void Awake()
+    {
+        strategy = GetComponent<AIGrandStrategy>();
+    }
+
     public void ExecuteTechActions(int playerId)
     {
         TechManager techManager = FindObjectOfType<TechManager>();
-        if (techManager == null) return;
-
-        if (!string.IsNullOrEmpty(techManager.GetCurrentResearch(playerId))) return;
+        if (techManager == null || !string.IsNullOrEmpty(techManager.GetCurrentResearch(playerId))) return;
 
         UnitManager unitManager = FindObjectOfType<UnitManager>();
         CityManager cityManager = FindObjectOfType<CityManager>();
 
-        List<string> availableTechs = new List<string>();
-        List<float> techScores = new List<float>();
+        string bestTech = null;
+        float bestScore = -9999f;
 
         foreach (string techId in techManager.GetAllTechIds())
         {
             if (techManager.CanResearch(playerId, techId))
             {
-                float score = Random.Range(10f, 25f);
+                float score = 10f;
 
                 if (unitManager != null)
                 {
                     foreach (var kvp in unitManager.unitDatabaseDict)
                     {
                         if (kvp.Value.requiredTech == techId)
-                            score += 20f;
+                        {
+                            if (kvp.Value.unitClass != "Civilian")
+                                score += 20f * strategy.militaryWeight;
+                        }
                     }
                 }
 
@@ -36,38 +45,41 @@ public class AITechController : MonoBehaviour
                     foreach (var kvp in cityManager.buildingDatabaseDict)
                     {
                         if (kvp.Value.requiredTech == techId)
-                            score += 25f;
+                        {
+                            bool hasEcon = false;
+                            bool hasMilitary = false;
+                            foreach (var effect in kvp.Value.effects)
+                            {
+                                if (effect.type == "Gold" || effect.type == "Food" || effect.type == "Science")
+                                    hasEcon = true;
+                                if (effect.type == "MaxHP" || effect.type == "MilitaryProdBonus" ||
+                                    effect.type == "NavalProdBonus") hasMilitary = true;
+                            }
+
+                            if (hasEcon) score += 25f * strategy.economyWeight;
+                            if (hasMilitary) score += 15f * strategy.militaryWeight;
+                        }
                     }
                 }
 
                 int cost = techManager.GetTechCost(techId);
-                score -= (cost * 0.02f);
+                score -= (cost * 0.05f);
 
-                availableTechs.Add(techId);
-                techScores.Add(score);
+                score *= Random.Range(0.9f, 1.1f);
+
+                if (score > bestScore)
+                {
+                    bestScore = score;
+                    bestTech = techId;
+                }
             }
         }
 
-        if (availableTechs.Count > 0)
+        if (bestTech != null)
         {
-            string bestTech = null;
-            float bestScore = -9999f;
-
-            for (int i = 0; i < availableTechs.Count; i++)
-            {
-                if (techScores[i] > bestScore)
-                {
-                    bestScore = techScores[i];
-                    bestTech = availableTechs[i];
-                }
-            }
-
-            if (bestTech != null)
-            {
-                techManager.SetResearch(playerId, bestTech);
-                Debug.Log(
-                    $"[AI] Player {playerId} started researching: {techManager.GetTechName(bestTech)} (Score: {bestScore:F1})");
-            }
+            techManager.SetResearch(playerId, bestTech);
+            Debug.Log(
+                $"[AI] Player {playerId} researches: {techManager.GetTechName(bestTech)} (Score: {bestScore:F1}) based on state: {strategy.currentState}");
         }
     }
 }

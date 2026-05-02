@@ -1,10 +1,17 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
+[RequireComponent(typeof(AIGrandStrategy))]
 public class AICityController : MonoBehaviour
 {
     public CityManager cityManager;
     public UnitManager unitManager;
+    private AIGrandStrategy strategy;
+
+    private void Awake()
+    {
+        strategy = GetComponent<AIGrandStrategy>();
+    }
 
     public void ExecuteCityActions(int playerId)
     {
@@ -12,34 +19,19 @@ public class AICityController : MonoBehaviour
         if (unitManager == null) unitManager = FindObjectOfType<UnitManager>();
         TechManager techManager = FindObjectOfType<TechManager>();
 
-        int myCitiesCount = 0;
-        foreach (City c in cityManager.GetActiveCities())
-            if (c.ownerID == playerId)
-                myCitiesCount++;
-
-        int myMilitaryCount = 0;
-        int mySettlersCount = 0;
-        foreach (Unit u in unitManager.GetActiveUnits())
-        {
-            if (u.ownerID == playerId)
-            {
-                if (u.unitClass == UnitClass.Civilian) mySettlersCount++;
-                else myMilitaryCount++;
-            }
-        }
-
         foreach (City city in cityManager.GetActiveCities())
         {
             if (city.ownerID != playerId) continue;
 
             if (city.currentProject == null)
             {
-                CityProject bestProject = ChooseBestProjectForCity(city, playerId, techManager, myCitiesCount,
-                    myMilitaryCount, mySettlersCount);
+                CityProject bestProject = ChooseBestProjectForCity(city, playerId, techManager);
 
                 if (bestProject != null)
                 {
                     city.SetProject(bestProject);
+                    Debug.Log(
+                        $"[AI City] {city.cityName} is building {bestProject.name} (State: {strategy.currentState})");
                 }
                 else
                 {
@@ -49,8 +41,7 @@ public class AICityController : MonoBehaviour
         }
     }
 
-    private CityProject ChooseBestProjectForCity(City city, int playerId, TechManager techManager, int citiesCount,
-        int militaryCount, int settlersCount)
+    private CityProject ChooseBestProjectForCity(City city, int playerId, TechManager techManager)
     {
         List<CityProject> availableProjects = new List<CityProject>();
         List<float> projectScores = new List<float>();
@@ -60,52 +51,37 @@ public class AICityController : MonoBehaviour
         if (grid != null && city != null)
         {
             foreach (HexNode neighbor in grid.GetNeighbors(city.centerNode))
-            {
                 if (!neighbor.isLand)
                 {
                     hasWaterNeighbor = true;
                     break;
                 }
-            }
         }
 
         foreach (var kvp in unitManager.unitDatabaseDict)
         {
             UnitDataModel unitData = kvp.Value;
-
             if (unitData.unitClass == "Naval" && !hasWaterNeighbor) continue;
-
-            if (!string.IsNullOrEmpty(unitData.requiredTech) && techManager != null)
-            {
-                if (!techManager.HasTech(playerId, unitData.requiredTech)) continue;
-            }
-
+            if (!string.IsNullOrEmpty(unitData.requiredTech) && techManager != null &&
+                !techManager.HasTech(playerId, unitData.requiredTech)) continue;
             if (unitData.requiredPopulation > 0 && city.population < unitData.requiredPopulation) continue;
 
-            float score = Random.Range(5f, 15f);
+            float score = 10f;
 
             if (unitData.unitClass == "Civilian" && unitData.name.ToLower() == "settler")
             {
-                if (citiesCount + settlersCount < 4) score += 50f;
-                else score -= 30f;
+                score += 50f * strategy.expansionWeight;
+
+                if (city.population <= 2) score -= 100f;
             }
-            else
+            else if (unitData.unitClass != "Civilian")
             {
-                if (militaryCount < citiesCount * 3)
-                {
-                    score += 20f;
+                score += (unitData.meleeStrength + unitData.rangedStrength) * strategy.militaryWeight;
 
-                    score += (unitData.meleeStrength + unitData.rangedStrength) * 0.4f;
-
-                    if (unitData.unitClass == "Ranged") score += 5f;
-                    if (unitData.unitClass == "Cavalry") score += 10f;
-                    if (unitData.unitClass == "AntiCavalry") score += 5f;
-                }
-                else
-                {
-                    score -= 20f;
-                }
+                if (strategy.currentState == AIState.Panic) score += 100f;
             }
+
+            score *= Random.Range(0.9f, 1.1f);
 
             availableProjects.Add(
                 new CityProject(unitData.name, ProjectType.Unit, unitData.cost, unitData.requiredTech));
@@ -115,17 +91,38 @@ public class AICityController : MonoBehaviour
         foreach (var kvp in cityManager.buildingDatabaseDict)
         {
             BuildingDataModel bData = kvp.Value;
-
             if (city.builtBuildings.Contains(bData.name)) continue;
-
             if (bData.name == "Port" && !hasWaterNeighbor) continue;
+            if (!string.IsNullOrEmpty(bData.requiredTech) && techManager != null &&
+                !techManager.HasTech(playerId, bData.requiredTech)) continue;
 
-            if (!string.IsNullOrEmpty(bData.requiredTech) && techManager != null)
+            float score = 5f;
+
+            foreach (var effect in bData.effects)
             {
-                if (!techManager.HasTech(playerId, bData.requiredTech)) continue;
+                switch (effect.type)
+                {
+                    case "Gold":
+                    case "Production":
+                    case "Food":
+                        score += effect.amount * 10f * strategy.economyWeight;
+                        break;
+                    case "Science":
+                        score += effect.amount * 10f * strategy.scienceWeight;
+                        break;
+                    case "Culture":
+                        score += effect.amount * 5f * strategy.expansionWeight;
+                        break;
+                    case "MaxHP":
+                    case "Garrison":
+                    case "MilitaryProdBonus":
+                    case "NavalProdBonus":
+                        score += effect.amount * 0.5f * strategy.militaryWeight;
+                        break;
+                }
             }
 
-            float score = Random.Range(15f, 35f);
+            score *= Random.Range(0.9f, 1.1f);
 
             availableProjects.Add(new CityProject(bData.name, ProjectType.Building, bData.cost, bData.requiredTech));
             projectScores.Add(score);
@@ -133,7 +130,6 @@ public class AICityController : MonoBehaviour
 
         CityProject bestProj = null;
         float bestScore = -999f;
-
         for (int i = 0; i < availableProjects.Count; i++)
         {
             if (projectScores[i] > bestScore)

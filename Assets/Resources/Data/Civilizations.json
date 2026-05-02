@@ -7,6 +7,7 @@
       "uniqueBuilding": "Floating Gardens",
       "primaryColorHex": "#722F37",
       "secondaryColorHex": "#00CED1",
+      "aiPersonality": "Militaristic",
       "cityNames": [
         "Tenochtitlan",
         "Teotihuacan",
@@ -38,6 +39,7 @@
       "uniqueBuilding": "Terrace",
       "primaryColorHex": "#EEDC82",
       "secondaryColorHex": "#556B2F",
+      "aiPersonality": "Expansionist",
       "cityNames": [
         "Cuzco",
         "Machu Picchu",
@@ -69,6 +71,7 @@
       "uniqueBuilding": "Ikanda",
       "primaryColorHex": "#FDF5E6",
       "secondaryColorHex": "#4B3621",
+      "aiPersonality": "Militaristic",
       "cityNames": [
         "Ulundi",
         "uMgungundlovu",
@@ -100,6 +103,7 @@
       "uniqueBuilding": "Pyramid",
       "primaryColorHex": "#FFD700",
       "secondaryColorHex": "#4169E1",
+      "aiPersonality": "Balanced",
       "cityNames": [
         "Cairo",
         "Alexandria",
@@ -131,6 +135,7 @@
       "uniqueBuilding": "Ziggurat",
       "primaryColorHex": "#000080",
       "secondaryColorHex": "#FFD700",
+      "aiPersonality": "Militaristic",
       "cityNames": [
         "Babylon",
         "Nineveh",
@@ -162,6 +167,7 @@
       "uniqueBuilding": "Oracle",
       "primaryColorHex": "#FFFFFF",
       "secondaryColorHex": "#005BAE",
+      "aiPersonality": "Expansionist",
       "cityNames": [
         "Athens",
         "Thessaloniki",
@@ -193,6 +199,7 @@
       "uniqueBuilding": "Dolmen",
       "primaryColorHex": "#C8102E",
       "secondaryColorHex": "#FFFFFF",
+      "aiPersonality": "Capitalist",
       "cityNames": [
         "London",
         "Birmingham",
@@ -224,6 +231,7 @@
       "uniqueBuilding": "Chateau",
       "primaryColorHex": "#002395",
       "secondaryColorHex": "#ED2939",
+      "aiPersonality": "Balanced",
       "cityNames": [
         "Paris",
         "Marseille",
@@ -255,6 +263,7 @@
       "uniqueBuilding": "Hanse",
       "primaryColorHex": "#000000",
       "secondaryColorHex": "#FFCE00",
+      "aiPersonality": "Capitalist",
       "cityNames": [
         "Berlin",
         "Hamburg",
@@ -286,6 +295,7 @@
       "uniqueBuilding": "Krepost",
       "primaryColorHex": "#D52B1E",
       "secondaryColorHex": "#FFFFFF",
+      "aiPersonality": "Expansionist",
       "cityNames": [
         "Moscow",
         "Saint Petersburg",
@@ -317,6 +327,7 @@
       "uniqueBuilding": "Step Well",
       "primaryColorHex": "#FF9933",
       "secondaryColorHex": "#128807",
+      "aiPersonality": "Balanced",
       "cityNames": [
         "New Delhi",
         "Mumbai",
@@ -348,6 +359,7 @@
       "uniqueBuilding": "Paper Maker",
       "primaryColorHex": "#DE2910",
       "secondaryColorHex": "#FFDE00",
+      "aiPersonality": "Balanced",
       "cityNames": [
         "Beijing",
         "Shanghai",
@@ -379,6 +391,7 @@
       "uniqueBuilding": "Dojo",
       "primaryColorHex": "#FFFFFF",
       "secondaryColorHex": "#BC002D",
+      "aiPersonality": "Militaristic",
       "cityNames": [
         "Tokyo",
         "Yokohama",
@@ -410,6 +423,7 @@
       "uniqueBuilding": "Colosseum",
       "primaryColorHex": "#FFDC00",
       "secondaryColorHex": "#750073",
+      "aiPersonality": "Expansionist",
       "cityNames": [
         "Roma",
         "Ostia",

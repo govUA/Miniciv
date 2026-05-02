@@ -10,6 +10,7 @@ public class CivilizationData
     public string uniqueBuilding;
     public string primaryColorHex;
     public string secondaryColorHex;
+    public string aiPersonality;
     public List<string> cityNames;
 }
 
