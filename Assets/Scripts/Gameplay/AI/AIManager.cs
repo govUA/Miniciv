@@ -13,6 +13,7 @@ public class AIManager : MonoBehaviour
     private AIUnitController unitController;
     private AITechController techController;
     private AIGrandStrategy grandStrategy;
+    private AIDiplomacyController diplomacyController;
 
     private void Awake()
     {
@@ -20,6 +21,7 @@ public class AIManager : MonoBehaviour
         unitController = GetComponent<AIUnitController>();
         techController = GetComponent<AITechController>();
         grandStrategy = GetComponent<AIGrandStrategy>();
+        diplomacyController = GetComponent<AIDiplomacyController>();
     }
 
     private void Start()
@@ -54,6 +56,7 @@ public class AIManager : MonoBehaviour
         yield return new WaitForSeconds(0.5f);
 
         techController.ExecuteTechActions(playerId);
+        diplomacyController.ExecuteDiplomacyActions(playerId);
         cityController.ExecuteCityActions(playerId);
         unitController.ExecuteUnitActions(playerId);
 

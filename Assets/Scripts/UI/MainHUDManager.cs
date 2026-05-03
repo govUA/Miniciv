@@ -12,7 +12,6 @@ public class MainHUDManager : MonoBehaviour
     [Header("Top Bar Elements")] public TextMeshProUGUI goldText;
     public TextMeshProUGUI scienceText;
     public TextMeshProUGUI happinessText;
-    public TextMeshProUGUI diplomacyText;
     public TextMeshProUGUI turnText;
     public Button openTechTreeButton;
     public TechTreeUIManager techTreeUI;
@@ -97,7 +96,6 @@ public class MainHUDManager : MonoBehaviour
             scienceText.text = $"<sprite name=\"Science\"> {science}";
         }
 
-        diplomacyText.text = "🤝 Diplomacy";
         turnText.text = $"TURN: {turnManager.CurrentTurn}";
 
         if (nextTurnButton != null)

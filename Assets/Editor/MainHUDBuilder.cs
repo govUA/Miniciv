@@ -36,7 +36,6 @@ public class MainHUDBuilder : EditorWindow
 
         hudManager.goldText = CreateText("GoldText", topBar.transform, "💰 0", 22);
         hudManager.scienceText = CreateText("ScienceText", topBar.transform, "🧪 0", 22);
-        hudManager.diplomacyText = CreateText("DiplomacyText", topBar.transform, "🤝 Diplomacy", 22);
 
         hudManager.turnText = CreateText("TurnText", topBar.transform, "TURN: 1", 22);
         hudManager.turnText.alignment = TextAlignmentOptions.Right;
