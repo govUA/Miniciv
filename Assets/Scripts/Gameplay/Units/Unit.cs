@@ -193,6 +193,7 @@ public class Unit : MonoBehaviour
             bool isForeign = nextNode.ownerID != -1 && nextNode.ownerID != ownerID;
             bool isAtWar = isForeign && playerManager != null && playerManager.IsAtWar(ownerID, nextNode.ownerID);
             bool canSail = techManager != null && techManager.HasTech(ownerID, "Sailing");
+            bool hasEnemyCity = nextNode.hasCity && isForeign && isAtWar;
 
             if (unitClass == UnitClass.Naval && nextNode.isLand)
             {
@@ -206,7 +207,7 @@ public class Unit : MonoBehaviour
                 break;
             }
 
-            if (hasEnemy || (isForeign && !isAtWar))
+            if (hasEnemy || hasEnemyCity || (isForeign && !isAtWar))
             {
                 pathQueue.Clear();
                 break;
@@ -288,6 +289,7 @@ public class Unit : MonoBehaviour
             bool isForeign = nextNode.ownerID != -1 && nextNode.ownerID != ownerID;
             bool isAtWar = isForeign && playerManager != null && playerManager.IsAtWar(ownerID, nextNode.ownerID);
             bool canSail = techManager != null && techManager.HasTech(ownerID, "Sailing");
+            bool hasEnemyCity = nextNode.hasCity && isForeign && isAtWar;
 
             if (unitClass == UnitClass.Naval && nextNode.isLand)
             {
@@ -301,7 +303,7 @@ public class Unit : MonoBehaviour
                 break;
             }
 
-            if (hasEnemy || (isForeign && !isAtWar))
+            if (hasEnemy || hasEnemyCity || (isForeign && !isAtWar))
             {
                 pathQueue.Clear();
                 break;

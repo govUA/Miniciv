@@ -131,7 +131,8 @@ public class CombatManager : MonoBehaviour
                 float defStrength = defUnit.meleeStrength * defModifier * defenderHappinessMod;
 
                 float rngHit = Random.Range(0.85f, 1.15f);
-                int dmgToDef = Mathf.RoundToInt(30f * (attStrength / defStrength) * rngHit);
+                float powerRatio = Mathf.Clamp(attStrength / defStrength, 0.5f, 3.0f);
+                int dmgToDef = Mathf.RoundToInt(30f * powerRatio * rngHit);
                 defUnit.TakeDamage(dmgToDef);
 
                 Debug.Log(
@@ -223,7 +224,8 @@ public class CombatManager : MonoBehaviour
 
             float rngHit = Random.Range(0.85f, 1.15f);
 
-            int dmgToDef = Mathf.RoundToInt(30f * (effectiveGarrison / defStrength) * rngHit);
+            float powerRatio = Mathf.Clamp(effectiveGarrison / defStrength, 0.5f, 3.0f);
+            int dmgToDef = Mathf.RoundToInt(30f * powerRatio * rngHit);
             defUnit.TakeDamage(dmgToDef);
 
             Debug.Log(
