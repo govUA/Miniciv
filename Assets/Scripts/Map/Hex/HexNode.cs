@@ -65,7 +65,7 @@ public class HexNode
             {
                 terrainType = TerrainType.Mountain;
                 foodYield = 0;
-                prodYield = 3;
+                prodYield = 1;
                 sciYield = 1;
                 movementCost = 20f;
             }
@@ -82,7 +82,7 @@ public class HexNode
                 if (isBigClusterForest || isSmallClusterForest || isRandomForest)
                 {
                     terrainType = TerrainType.Forest;
-                    foodYield = 1;
+                    foodYield = 0;
                     prodYield = 2;
                     sciYield = 0;
                     movementCost = 15f;
@@ -90,7 +90,7 @@ public class HexNode
                 else
                 {
                     terrainType = TerrainType.Plains;
-                    foodYield = 2;
+                    foodYield = 1;
                     prodYield = 1;
                     sciYield = 0;
                     movementCost = 10f;

@@ -10,7 +10,7 @@ public class City : MonoBehaviour
     public string cityName;
     public int visionRange = 2;
 
-    public int maxHP = 200;
+    public int maxHP = 120;
     public int currentHP;
     public int garrisonStrength = 15;
     public int attackRange = 2;
@@ -202,19 +202,19 @@ public class City : MonoBehaviour
             techManager.AddScience(ownerID, turnSci);
         }
 
-        int foodToGrow = 15 + 8 * (population - 1) + (int)Mathf.Pow(population - 1, 1.5f);
+        int foodToGrow = 8 + 8 * (population - 1) + (int)Mathf.Pow(population - 1, 1.5f);
 
         if (storedFood >= foodToGrow)
         {
             storedFood -= foodToGrow;
             population++;
 
-            int nextFoodReq = 15 + 8 * (population - 1) + (int)Mathf.Pow(population - 1, 1.5f);
+            int nextFoodReq = 8 + 8 * (population - 1) + (int)Mathf.Pow(population - 1, 1.5f);
             Debug.Log(
                 $"[CITY] {cityName} grew! Population is now {population}. Next citizen needs {nextFoodReq} food.");
         }
 
-        int cultureThreshold = 10 + (int)(6 * Mathf.Pow(borderExpansions, 1.3f));
+        int cultureThreshold = 5 + (int)(6 * Mathf.Pow(borderExpansions, 1.3f));
 
         if (storedCulture >= cultureThreshold)
         {

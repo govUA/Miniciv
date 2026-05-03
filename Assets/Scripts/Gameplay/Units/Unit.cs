@@ -141,7 +141,7 @@ public class Unit : MonoBehaviour
         hasAttackedThisTurn = false;
         if (isHealing)
         {
-            int healAmount = (CurrentNode.ownerID == ownerID) ? 20 : 10;
+            int healAmount = (CurrentNode.ownerID == ownerID) ? 40 : 25;
             currentHP = Mathf.Clamp(currentHP + healAmount, 0, maxHP);
             if (currentHP == maxHP) isHealing = false;
         }
