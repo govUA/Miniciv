@@ -200,6 +200,9 @@ public class CityUIManager : MonoBehaviour
         CityManager cityManager = FindAnyObjectByType<CityManager>();
         TechManager techManager = FindAnyObjectByType<TechManager>();
 
+        PlayerManager playerManager = FindAnyObjectByType<PlayerManager>();
+        PlayerData pd = playerManager != null ? playerManager.GetPlayer(currentCity.ownerID) : null;
+
         bool hasWaterNeighbor = false;
         HexGrid hexGrid = cityManager != null ? cityManager.GetComponent<HexGrid>() : null;
         if (hexGrid != null && currentCity != null)
@@ -257,6 +260,15 @@ public class CityUIManager : MonoBehaviour
                         continue;
 
                     bool canBuild = true;
+
+                    if (bData.isWonder)
+                    {
+                        if (pd == null || !pd.unlockedWonders.Contains(bData.name))
+                            canBuild = false;
+
+                        if (canBuild && cityManager.IsWonderBuiltOrBuilding(currentCity.ownerID, bData.name))
+                            canBuild = false;
+                    }
 
                     if (bData.name == "Port" && !hasWaterNeighbor)
                     {

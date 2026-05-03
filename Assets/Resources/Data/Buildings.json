@@ -121,6 +121,1570 @@
           "amount": 3
         }
       ]
+    },
+    {
+      "name": "Templo Mayor",
+      "cost": 1000,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Culture",
+          "amount": 20
+        },
+        {
+          "type": "Science",
+          "amount": 10
+        }
+      ]
+    },
+    {
+      "name": "Pyramid of the Sun",
+      "cost": 600,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Science",
+          "amount": 20
+        },
+        {
+          "type": "Gold",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Pyramid of the Moon",
+      "cost": 1000,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Happiness",
+          "amount": 6
+        },
+        {
+          "type": "Culture",
+          "amount": 10
+        }
+      ]
+    },
+    {
+      "name": "Sun Stone",
+      "cost": 500,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Culture",
+          "amount": 10
+        },
+        {
+          "type": "Science",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Chapultepec Aqueduct",
+      "cost": 900,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Happiness",
+          "amount": 6
+        },
+        {
+          "type": "Culture",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Xochicalco",
+      "cost": 1000,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Happiness",
+          "amount": 2
+        },
+        {
+          "type": "Production",
+          "amount": 10
+        }
+      ]
+    },
+    {
+      "name": "Great Ballcourt",
+      "cost": 900,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Gold",
+          "amount": 10
+        },
+        {
+          "type": "Culture",
+          "amount": 15
+        }
+      ]
+    },
+    {
+      "name": "Machu Picchu",
+      "cost": 600,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Gold",
+          "amount": 10
+        },
+        {
+          "type": "Culture",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Sacsayhuaman",
+      "cost": 800,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Gold",
+          "amount": 10
+        },
+        {
+          "type": "Production",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Coricancha",
+      "cost": 700,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Culture",
+          "amount": 15
+        },
+        {
+          "type": "Science",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Qhapaq Nan",
+      "cost": 700,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Gold",
+          "amount": 10
+        },
+        {
+          "type": "Production",
+          "amount": 15
+        }
+      ]
+    },
+    {
+      "name": "Moray",
+      "cost": 800,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Happiness",
+          "amount": 4
+        },
+        {
+          "type": "Culture",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Tipon",
+      "cost": 900,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Gold",
+          "amount": 20
+        },
+        {
+          "type": "Production",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Choquequirao",
+      "cost": 1000,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Culture",
+          "amount": 20
+        },
+        {
+          "type": "Science",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Great Kraal of Ulundi",
+      "cost": 700,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Culture",
+          "amount": 10
+        },
+        {
+          "type": "Gold",
+          "amount": 10
+        }
+      ]
+    },
+    {
+      "name": "Isandlwana Memorial",
+      "cost": 700,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Production",
+          "amount": 10
+        },
+        {
+          "type": "Gold",
+          "amount": 10
+        }
+      ]
+    },
+    {
+      "name": "Valley of Kings",
+      "cost": 700,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Science",
+          "amount": 20
+        },
+        {
+          "type": "Production",
+          "amount": 15
+        }
+      ]
+    },
+    {
+      "name": "Oribi Gorge",
+      "cost": 1000,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Culture",
+          "amount": 20
+        },
+        {
+          "type": "Gold",
+          "amount": 15
+        }
+      ]
+    },
+    {
+      "name": "Drakensberg Enclave",
+      "cost": 600,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Science",
+          "amount": 15
+        },
+        {
+          "type": "Happiness",
+          "amount": 3
+        }
+      ]
+    },
+    {
+      "name": "uMgungundlovu Palace",
+      "cost": 1000,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Happiness",
+          "amount": 6
+        },
+        {
+          "type": "Science",
+          "amount": 10
+        }
+      ]
+    },
+    {
+      "name": "Blood River Monument",
+      "cost": 500,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Science",
+          "amount": 15
+        },
+        {
+          "type": "Culture",
+          "amount": 10
+        }
+      ]
+    },
+    {
+      "name": "Great Sphinx",
+      "cost": 700,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Culture",
+          "amount": 20
+        },
+        {
+          "type": "Gold",
+          "amount": 15
+        }
+      ]
+    },
+    {
+      "name": "Lighthouse of Alexandria",
+      "cost": 700,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Science",
+          "amount": 15
+        },
+        {
+          "type": "Happiness",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Library of Alexandria",
+      "cost": 500,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Science",
+          "amount": 15
+        }
+      ]
+    },
+    {
+      "name": "Karnak Temple",
+      "cost": 800,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Science",
+          "amount": 10
+        },
+        {
+          "type": "Production",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Valley of the Kings",
+      "cost": 1000,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Happiness",
+          "amount": 6
+        },
+        {
+          "type": "Gold",
+          "amount": 15
+        }
+      ]
+    },
+    {
+      "name": "Abu Simbel",
+      "cost": 800,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Happiness",
+          "amount": 4
+        },
+        {
+          "type": "Production",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Temple of Hatshepsut",
+      "cost": 600,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Happiness",
+          "amount": 2
+        },
+        {
+          "type": "Production",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Hanging Gardens",
+      "cost": 500,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Science",
+          "amount": 20
+        },
+        {
+          "type": "Gold",
+          "amount": 10
+        }
+      ]
+    },
+    {
+      "name": "Ishtar Gate",
+      "cost": 900,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Culture",
+          "amount": 15
+        },
+        {
+          "type": "Happiness",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Tower of Babel",
+      "cost": 800,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Happiness",
+          "amount": 6
+        },
+        {
+          "type": "Gold",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Code of Hammurabi Stele",
+      "cost": 1000,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Culture",
+          "amount": 20
+        },
+        {
+          "type": "Production",
+          "amount": 10
+        }
+      ]
+    },
+    {
+      "name": "Esagila",
+      "cost": 500,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Gold",
+          "amount": 10
+        },
+        {
+          "type": "Happiness",
+          "amount": 3
+        }
+      ]
+    },
+    {
+      "name": "Walls of Babylon",
+      "cost": 500,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Gold",
+          "amount": 20
+        },
+        {
+          "type": "Science",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Lion of Babylon",
+      "cost": 1000,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Gold",
+          "amount": 10
+        },
+        {
+          "type": "Science",
+          "amount": 10
+        }
+      ]
+    },
+    {
+      "name": "Parthenon",
+      "cost": 600,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Happiness",
+          "amount": 6
+        },
+        {
+          "type": "Culture",
+          "amount": 10
+        }
+      ]
+    },
+    {
+      "name": "Statue of Zeus",
+      "cost": 800,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Culture",
+          "amount": 15
+        },
+        {
+          "type": "Science",
+          "amount": 10
+        }
+      ]
+    },
+    {
+      "name": "Colossus of Rhodes",
+      "cost": 600,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Culture",
+          "amount": 20
+        },
+        {
+          "type": "Gold",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Temple of Artemis",
+      "cost": 500,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Production",
+          "amount": 20
+        },
+        {
+          "type": "Culture",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Mausoleum at Halicarnassus",
+      "cost": 600,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Production",
+          "amount": 15
+        },
+        {
+          "type": "Science",
+          "amount": 15
+        }
+      ]
+    },
+    {
+      "name": "Epidaurus Theater",
+      "cost": 900,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Production",
+          "amount": 20
+        },
+        {
+          "type": "Science",
+          "amount": 15
+        }
+      ]
+    },
+    {
+      "name": "Mount Athos",
+      "cost": 1000,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Science",
+          "amount": 15
+        },
+        {
+          "type": "Production",
+          "amount": 15
+        }
+      ]
+    },
+    {
+      "name": "Stonehenge",
+      "cost": 1000,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Gold",
+          "amount": 20
+        },
+        {
+          "type": "Happiness",
+          "amount": 3
+        }
+      ]
+    },
+    {
+      "name": "Tower of London",
+      "cost": 500,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Science",
+          "amount": 10
+        },
+        {
+          "type": "Gold",
+          "amount": 10
+        }
+      ]
+    },
+    {
+      "name": "Big Ben",
+      "cost": 500,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Happiness",
+          "amount": 6
+        },
+        {
+          "type": "Science",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Westminster Abbey",
+      "cost": 500,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Culture",
+          "amount": 10
+        },
+        {
+          "type": "Science",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Globe Theatre",
+      "cost": 500,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Gold",
+          "amount": 20
+        },
+        {
+          "type": "Culture",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Oxford University",
+      "cost": 700,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Production",
+          "amount": 20
+        },
+        {
+          "type": "Science",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Hadrian's Wall",
+      "cost": 1000,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Happiness",
+          "amount": 2
+        },
+        {
+          "type": "Production",
+          "amount": 10
+        }
+      ]
+    },
+    {
+      "name": "Eiffel Tower",
+      "cost": 800,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Culture",
+          "amount": 15
+        },
+        {
+          "type": "Happiness",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Notre-Dame",
+      "cost": 800,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Science",
+          "amount": 10
+        },
+        {
+          "type": "Culture",
+          "amount": 15
+        }
+      ]
+    },
+    {
+      "name": "Palace of Versailles",
+      "cost": 800,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Gold",
+          "amount": 15
+        },
+        {
+          "type": "Happiness",
+          "amount": 3
+        }
+      ]
+    },
+    {
+      "name": "Louvre",
+      "cost": 1000,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Culture",
+          "amount": 10
+        },
+        {
+          "type": "Science",
+          "amount": 10
+        }
+      ]
+    },
+    {
+      "name": "Mont Saint-Michel",
+      "cost": 1000,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Gold",
+          "amount": 10
+        },
+        {
+          "type": "Culture",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Arc de Triomphe",
+      "cost": 600,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Happiness",
+          "amount": 2
+        },
+        {
+          "type": "Production",
+          "amount": 10
+        }
+      ]
+    },
+    {
+      "name": "Chartres Cathedral",
+      "cost": 600,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Gold",
+          "amount": 10
+        },
+        {
+          "type": "Happiness",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "name": "Brandenburg Gate",
+      "cost": 800,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Happiness",
+          "amount": 2
+        },
+        {
+          "type": "Culture",
+          "amount": 15
+        }
+      ]
+    },
+    {
+      "name": "Neuschwanstein",
+      "cost": 900,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Culture",
+          "amount": 10
+        },
+        {
+          "type": "Science",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Cologne Cathedral",
+      "cost": 800,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Production",
+          "amount": 10
+        },
+        {
+          "type": "Happiness",
+          "amount": 3
+        }
+      ]
+    },
+    {
+      "name": "Reichstag",
+      "cost": 500,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Science",
+          "amount": 10
+        },
+        {
+          "type": "Happiness",
+          "amount": 3
+        }
+      ]
+    },
+    {
+      "name": "Heidelberg Castle",
+      "cost": 700,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Production",
+          "amount": 15
+        },
+        {
+          "type": "Gold",
+          "amount": 15
+        }
+      ]
+    },
+    {
+      "name": "Aachen Cathedral",
+      "cost": 1000,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Happiness",
+          "amount": 2
+        },
+        {
+          "type": "Production",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Holstentor",
+      "cost": 700,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Science",
+          "amount": 20
+        },
+        {
+          "type": "Culture",
+          "amount": 15
+        }
+      ]
+    },
+    {
+      "name": "Saint Basil's Cathedral",
+      "cost": 900,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Culture",
+          "amount": 10
+        },
+        {
+          "type": "Production",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "The Hermitage",
+      "cost": 900,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Production",
+          "amount": 10
+        },
+        {
+          "type": "Science",
+          "amount": 15
+        }
+      ]
+    },
+    {
+      "name": "Moscow Kremlin",
+      "cost": 500,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Science",
+          "amount": 20
+        },
+        {
+          "type": "Culture",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Trans-Siberian Railway",
+      "cost": 1000,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Science",
+          "amount": 10
+        },
+        {
+          "type": "Happiness",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Peterhof Palace",
+      "cost": 600,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Happiness",
+          "amount": 6
+        },
+        {
+          "type": "Culture",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Bolshoi Theatre",
+      "cost": 800,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Happiness",
+          "amount": 4
+        },
+        {
+          "type": "Gold",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Motherland Calls",
+      "cost": 1000,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Gold",
+          "amount": 15
+        },
+        {
+          "type": "Science",
+          "amount": 10
+        }
+      ]
+    },
+    {
+      "name": "Taj Mahal",
+      "cost": 600,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Gold",
+          "amount": 15
+        },
+        {
+          "type": "Happiness",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "name": "Red Fort",
+      "cost": 500,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Production",
+          "amount": 10
+        },
+        {
+          "type": "Culture",
+          "amount": 15
+        }
+      ]
+    },
+    {
+      "name": "Mahabodhi Temple",
+      "cost": 600,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Happiness",
+          "amount": 2
+        },
+        {
+          "type": "Gold",
+          "amount": 10
+        }
+      ]
+    },
+    {
+      "name": "Qutub Minar",
+      "cost": 500,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Science",
+          "amount": 15
+        },
+        {
+          "type": "Production",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Meenakshi Temple",
+      "cost": 800,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Happiness",
+          "amount": 6
+        },
+        {
+          "type": "Gold",
+          "amount": 15
+        }
+      ]
+    },
+    {
+      "name": "Sanchi Stupa",
+      "cost": 900,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Culture",
+          "amount": 20
+        },
+        {
+          "type": "Production",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Hawa Mahal",
+      "cost": 600,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Gold",
+          "amount": 10
+        },
+        {
+          "type": "Culture",
+          "amount": 15
+        }
+      ]
+    },
+    {
+      "name": "Great Wall",
+      "cost": 750,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "MaxHP",
+          "amount": 200
+        },
+        {
+          "type": "Garrison",
+          "amount": 20
+        }
+      ]
+    },
+    {
+      "name": "Forbidden City",
+      "cost": 900,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Science",
+          "amount": 15
+        },
+        {
+          "type": "Production",
+          "amount": 15
+        }
+      ]
+    },
+    {
+      "name": "Terracotta Army",
+      "cost": 600,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Gold",
+          "amount": 20
+        },
+        {
+          "type": "Science",
+          "amount": 15
+        }
+      ]
+    },
+    {
+      "name": "Temple of Heaven",
+      "cost": 700,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Happiness",
+          "amount": 4
+        },
+        {
+          "type": "Production",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Summer Palace",
+      "cost": 500,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Production",
+          "amount": 10
+        },
+        {
+          "type": "Gold",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Potala Palace",
+      "cost": 700,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Science",
+          "amount": 10
+        },
+        {
+          "type": "Production",
+          "amount": 15
+        }
+      ]
+    },
+    {
+      "name": "Three Gorges Dam",
+      "cost": 800,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Happiness",
+          "amount": 6
+        },
+        {
+          "type": "Production",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Mount Fuji",
+      "cost": 500,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Culture",
+          "amount": 20
+        },
+        {
+          "type": "Gold",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Himeji Castle",
+      "cost": 700,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Happiness",
+          "amount": 4
+        },
+        {
+          "type": "Science",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Kinkaku-ji",
+      "cost": 500,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Gold",
+          "amount": 10
+        },
+        {
+          "type": "Production",
+          "amount": 10
+        }
+      ]
+    },
+    {
+      "name": "Itsukushima Shrine",
+      "cost": 600,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Science",
+          "amount": 15
+        },
+        {
+          "type": "Culture",
+          "amount": 15
+        }
+      ]
+    },
+    {
+      "name": "Fushimi Inari",
+      "cost": 800,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Happiness",
+          "amount": 2
+        },
+        {
+          "type": "Science",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Todai-ji",
+      "cost": 600,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Production",
+          "amount": 10
+        },
+        {
+          "type": "Culture",
+          "amount": 15
+        }
+      ]
+    },
+    {
+      "name": "Senso-ji",
+      "cost": 700,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Production",
+          "amount": 15
+        },
+        {
+          "type": "Science",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Pantheon",
+      "cost": 1000,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Culture",
+          "amount": 10
+        },
+        {
+          "type": "Happiness",
+          "amount": 3
+        }
+      ]
+    },
+    {
+      "name": "Roman Forum",
+      "cost": 600,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Science",
+          "amount": 15
+        },
+        {
+          "type": "Happiness",
+          "amount": 3
+        }
+      ]
+    },
+    {
+      "name": "Circus Maximus",
+      "cost": 600,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Science",
+          "amount": 20
+        },
+        {
+          "type": "Culture",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Trevi Fountain",
+      "cost": 800,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Gold",
+          "amount": 10
+        },
+        {
+          "type": "Production",
+          "amount": 10
+        }
+      ]
+    },
+    {
+      "name": "Baths of Caracalla",
+      "cost": 700,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Happiness",
+          "amount": 6
+        },
+        {
+          "type": "Production",
+          "amount": 15
+        }
+      ]
+    },
+    {
+      "name": "Trajan's Column",
+      "cost": 700,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Culture",
+          "amount": 15
+        },
+        {
+          "type": "Science",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "name": "Appian Way",
+      "cost": 900,
+      "requiredTech": "",
+      "isWonder": true,
+      "effects": [
+        {
+          "type": "Gold",
+          "amount": 10
+        },
+        {
+          "type": "Culture",
+          "amount": 15
+        }
+      ]
     }
   ]
 }

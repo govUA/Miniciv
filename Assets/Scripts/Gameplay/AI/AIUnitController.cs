@@ -174,7 +174,7 @@ public class AIUnitController : MonoBehaviour
     private City DetermineCampaignTarget(int playerId, HexGrid grid)
     {
         City bestTarget = null;
-        int minDistance = int.MaxValue;
+        float bestTargetScore = -9999f;
 
         foreach (City c in cityManager.GetActiveCities())
         {
@@ -184,9 +184,24 @@ public class AIUnitController : MonoBehaviour
                 if (myNearestCity != null)
                 {
                     int d = grid.GetDistance(myNearestCity.centerNode, c.centerNode);
-                    if (d < minDistance)
+
+                    int enemyWonderCount = 0;
+                    foreach (string b in c.builtBuildings)
                     {
-                        minDistance = d;
+                        if (cityManager.buildingDatabaseDict.TryGetValue(b, out var bData) && bData.isWonder)
+                            enemyWonderCount++;
+                    }
+
+                    float targetScore = -d;
+
+                    if (enemyWonderCount > 0)
+                    {
+                        targetScore += (enemyWonderCount * 10f);
+                    }
+
+                    if (targetScore > bestTargetScore)
+                    {
+                        bestTargetScore = targetScore;
                         bestTarget = c;
                     }
                 }

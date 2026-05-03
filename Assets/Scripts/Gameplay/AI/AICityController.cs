@@ -49,6 +49,9 @@ public class AICityController : MonoBehaviour
         EconomyManager ecoManager = FindObjectOfType<EconomyManager>();
         int currentHappiness = ecoManager != null ? ecoManager.GetHappiness(playerId) : 10;
 
+        PlayerManager pm = FindObjectOfType<PlayerManager>();
+        PlayerData pd = pm != null ? pm.GetPlayer(playerId) : null;
+
         bool hasWaterNeighbor = false;
         HexGrid grid = FindObjectOfType<HexGrid>();
         if (grid != null && city != null)
@@ -106,7 +109,15 @@ public class AICityController : MonoBehaviour
             if (!string.IsNullOrEmpty(bData.requiredTech) && techManager != null &&
                 !techManager.HasTech(playerId, bData.requiredTech)) continue;
 
+            if (bData.isWonder)
+            {
+                if (pd == null || !pd.unlockedWonders.Contains(bData.name)) continue;
+                if (cityManager.IsWonderBuiltOrBuilding(playerId, bData.name)) continue;
+            }
+
             float score = 5f;
+
+            if (bData.isWonder) score += 1000f;
 
             foreach (var effect in bData.effects)
             {

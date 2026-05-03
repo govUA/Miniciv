@@ -10,6 +10,7 @@ public class PlayerData
     public Color secondaryColor = Color.black;
     public int gold = 10;
     public CivilizationData civilization;
+    public List<string> unlockedWonders = new List<string>();
 
     public PlayerData(int id, bool isAI = false, CivilizationData civ = null)
     {
@@ -48,6 +49,49 @@ public class PlayerManager : MonoBehaviour
 {
     public CivilizationManager civilizationManager;
     private Dictionary<int, PlayerData> players = new Dictionary<int, PlayerData>();
+
+    void Start()
+    {
+        TechManager techManager = FindAnyObjectByType<TechManager>();
+        if (techManager != null)
+        {
+            techManager.OnRepeatableTechCompleted += HandleFutureTechCompleted;
+        }
+    }
+
+    void OnDestroy()
+    {
+        TechManager techManager = FindAnyObjectByType<TechManager>();
+        if (techManager != null)
+        {
+            techManager.OnRepeatableTechCompleted -= HandleFutureTechCompleted;
+        }
+    }
+
+    private void HandleFutureTechCompleted(int playerId, string techId, int timesCompleted)
+    {
+        if (techId == "Future Tech")
+        {
+            PlayerData pd = GetPlayer(playerId);
+            if (pd != null && pd.civilization != null && pd.civilization.wonderNames != null)
+            {
+                int wonderIndex = timesCompleted - 1;
+                if (wonderIndex < pd.civilization.wonderNames.Count)
+                {
+                    string wonderToUnlock = pd.civilization.wonderNames[wonderIndex];
+                    if (!pd.unlockedWonders.Contains(wonderToUnlock))
+                    {
+                        pd.unlockedWonders.Add(wonderToUnlock);
+                        Debug.Log($"[WONDER] Гравець {playerId} відкрив можливість будувати: {wonderToUnlock}");
+                    }
+                }
+                else
+                {
+                    Debug.Log($"[WONDER] Гравець {playerId} вже відкрив усі дива своєї цивілізації!");
+                }
+            }
+        }
+    }
 
     public void InitializePlayers(int count)
     {

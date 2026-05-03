@@ -12,6 +12,7 @@ public class CivilizationData
     public string secondaryColorHex;
     public string aiPersonality;
     public List<string> cityNames;
+    public List<string> wonderNames;
 }
 
 [System.Serializable]

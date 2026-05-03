@@ -30,6 +30,15 @@
         "Ecatepec",
         "Coatepec",
         "Malinalco"
+      ],
+      "wonderNames": [
+        "Templo Mayor",
+        "Pyramid of the Sun",
+        "Pyramid of the Moon",
+        "Sun Stone",
+        "Chapultepec Aqueduct",
+        "Xochicalco",
+        "Great Ballcourt"
       ]
     },
     {
@@ -62,6 +71,15 @@
         "Pisac",
         "Choquequirao",
         "Tiahuanaco"
+      ],
+      "wonderNames": [
+        "Machu Picchu",
+        "Sacsayhuaman",
+        "Coricancha",
+        "Qhapaq Nan",
+        "Moray",
+        "Tipon",
+        "Choquequirao"
       ]
     },
     {
@@ -94,6 +112,15 @@
         "Gingindlovu",
         "Nkandla",
         "Greytown"
+      ],
+      "wonderNames": [
+        "Great Kraal of Ulundi",
+        "Isandlwana Memorial",
+        "Valley of Kings",
+        "Oribi Gorge",
+        "Drakensberg Enclave",
+        "uMgungundlovu Palace",
+        "Blood River Monument"
       ]
     },
     {
@@ -126,6 +153,15 @@
         "Hurghada",
         "Qena",
         "Sohag"
+      ],
+      "wonderNames": [
+        "Great Sphinx",
+        "Lighthouse of Alexandria",
+        "Library of Alexandria",
+        "Karnak Temple",
+        "Valley of the Kings",
+        "Abu Simbel",
+        "Temple of Hatshepsut"
       ]
     },
     {
@@ -158,6 +194,15 @@
         "Basra",
         "Erbil",
         "Kirkuk"
+      ],
+      "wonderNames": [
+        "Hanging Gardens",
+        "Ishtar Gate",
+        "Tower of Babel",
+        "Code of Hammurabi Stele",
+        "Esagila",
+        "Walls of Babylon",
+        "Lion of Babylon"
       ]
     },
     {
@@ -190,6 +235,15 @@
         "Marousi",
         "Agios Dimitrios",
         "Zografou"
+      ],
+      "wonderNames": [
+        "Parthenon",
+        "Statue of Zeus",
+        "Colossus of Rhodes",
+        "Temple of Artemis",
+        "Mausoleum at Halicarnassus",
+        "Epidaurus Theater",
+        "Mount Athos"
       ]
     },
     {
@@ -222,6 +276,15 @@
         "Swansea",
         "Bradford",
         "Southend-on-Sea"
+      ],
+      "wonderNames": [
+        "Stonehenge",
+        "Tower of London",
+        "Big Ben",
+        "Westminster Abbey",
+        "Globe Theatre",
+        "Oxford University",
+        "Hadrian's Wall"
       ]
     },
     {
@@ -254,6 +317,15 @@
         "Nîmes",
         "Villeurbanne",
         "Mulhouse"
+      ],
+      "wonderNames": [
+        "Eiffel Tower",
+        "Notre-Dame",
+        "Palace of Versailles",
+        "Louvre",
+        "Mont Saint-Michel",
+        "Arc de Triomphe",
+        "Chartres Cathedral"
       ]
     },
     {
@@ -286,6 +358,15 @@
         "Bonn",
         "Münster",
         "Karlsruhe"
+      ],
+      "wonderNames": [
+        "Brandenburg Gate",
+        "Neuschwanstein",
+        "Cologne Cathedral",
+        "Reichstag",
+        "Heidelberg Castle",
+        "Aachen Cathedral",
+        "Holstentor"
       ]
     },
     {
@@ -318,6 +399,15 @@
         "Tolyatti",
         "Izhevsk",
         "Barnaul"
+      ],
+      "wonderNames": [
+        "Saint Basil's Cathedral",
+        "The Hermitage",
+        "Moscow Kremlin",
+        "Trans-Siberian Railway",
+        "Peterhof Palace",
+        "Bolshoi Theatre",
+        "Motherland Calls"
       ]
     },
     {
@@ -350,6 +440,15 @@
         "Patna",
         "Vadodara",
         "Ghaziabad"
+      ],
+      "wonderNames": [
+        "Taj Mahal",
+        "Red Fort",
+        "Mahabodhi Temple",
+        "Qutub Minar",
+        "Meenakshi Temple",
+        "Sanchi Stupa",
+        "Hawa Mahal"
       ]
     },
     {
@@ -382,6 +481,15 @@
         "Shenyang",
         "Hefei",
         "Kunming"
+      ],
+      "wonderNames": [
+        "Great Wall",
+        "Forbidden City",
+        "Terracotta Army",
+        "Temple of Heaven",
+        "Summer Palace",
+        "Potala Palace",
+        "Three Gorges Dam"
       ]
     },
     {
@@ -414,6 +522,15 @@
         "Sagamihara",
         "Okayama",
         "Shizuoka"
+      ],
+      "wonderNames": [
+        "Mount Fuji",
+        "Himeji Castle",
+        "Kinkaku-ji",
+        "Itsukushima Shrine",
+        "Fushimi Inari",
+        "Todai-ji",
+        "Senso-ji"
       ]
     },
     {
@@ -446,6 +563,15 @@
         "Ancona",
         "Genua",
         "Ariminum"
+      ],
+      "wonderNames": [
+        "Pantheon",
+        "Roman Forum",
+        "Circus Maximus",
+        "Trevi Fountain",
+        "Baths of Caracalla",
+        "Trajan's Column",
+        "Appian Way"
       ]
     }
   ]

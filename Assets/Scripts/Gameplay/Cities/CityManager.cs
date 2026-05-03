@@ -8,6 +8,7 @@ public class BuildingDataModel
     public string name;
     public int cost;
     public string requiredTech;
+    public bool isWonder;
     public List<BuildingEffect> effects = new List<BuildingEffect>();
 }
 
@@ -241,5 +242,19 @@ public class CityManager : MonoBehaviour
         if (fowManager != null) fowManager.UpdateVisionDisplay(city.ownerID);
 
         if (borderManager != null) borderManager.UpdateBorders();
+    }
+
+    public bool IsWonderBuiltOrBuilding(int playerId, string wonderName)
+    {
+        foreach (City city in activeCities)
+        {
+            if (city.ownerID == playerId)
+            {
+                if (city.builtBuildings.Contains(wonderName)) return true;
+                if (city.currentProject != null && city.currentProject.name == wonderName) return true;
+            }
+        }
+
+        return false;
     }
 }

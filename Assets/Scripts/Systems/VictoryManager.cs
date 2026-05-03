@@ -34,7 +34,19 @@ public class VictoryManager : MonoBehaviour
 
     private void CheckElimination(int playerId)
     {
-        if (gameEnded || eliminatedPlayers.Contains(playerId)) return;
+        if (gameEnded) return;
+
+        int wonderCount = GetPlayerWonderCount(playerId);
+        if (wonderCount >= 7)
+        {
+            Debug.Log($"<color=green>[VICTORY] Player {playerId} wins, having 7 World Wonders!</color>");
+            gameEnded = true;
+            GameSettings.DidPlayerWin = (playerId == 0);
+        
+            GameSettings.FinalScore = 10f + wonderCount;
+            UnityEngine.SceneManagement.SceneManager.LoadScene("EndScene");
+            return;
+        }
 
         bool hasCities = cityManager.GetActiveCities().Any(c => c.ownerID == playerId);
         bool hasSettlers = unitManager.GetActiveUnits().Any(u => u.ownerID == playerId && u.isSettler);
@@ -71,6 +83,7 @@ public class VictoryManager : MonoBehaviour
         float[] armyScores = new float[totalPlayers];
         float[] cityScores = new float[totalPlayers];
         float[] goldScores = new float[totalPlayers];
+        float[] wonderScores = new float[totalPlayers];
 
         for (int i = 0; i < totalPlayers; i++)
         {
@@ -85,6 +98,7 @@ public class VictoryManager : MonoBehaviour
 
             var playerData = playerManager.GetPlayer(i);
             goldScores[i] = playerData != null ? playerData.gold : 0;
+            wonderScores[i] = GetPlayerWonderCount(i);
         }
 
         float maxArmy = Mathf.Max(armyScores.Max(), 1f);
@@ -100,7 +114,8 @@ public class VictoryManager : MonoBehaviour
 
             float normalizedScore = (armyScores[i] / maxArmy) +
                                     (cityScores[i] / maxCities) +
-                                    (goldScores[i] / maxGold);
+                                    (goldScores[i] / maxGold)+ 
+                                    wonderScores[i];
 
             Debug.Log(
                 $"[VICTORY] Player {i} | Army: {armyScores[i]}, Cities: {cityScores[i]}, Gold: {goldScores[i]} | Total score: {normalizedScore:F2}");
@@ -120,7 +135,8 @@ public class VictoryManager : MonoBehaviour
 
             GameSettings.FinalScore = (armyScores[0] / maxArmy) +
                                       (cityScores[0] / maxCities) +
-                                      (goldScores[0] / maxGold);
+                                      (goldScores[0] / maxGold)+ 
+                                      wonderScores[0];
 
             UnityEngine.SceneManagement.SceneManager.LoadScene("EndScene");
         }
@@ -128,5 +144,25 @@ public class VictoryManager : MonoBehaviour
         {
             Debug.Log("<color=red>[VICTORY] All players were defeated, no winner!</color>");
         }
+    }
+
+    public int GetPlayerWonderCount(int playerId)
+    {
+        int count = 0;
+        foreach (City c in cityManager.GetActiveCities())
+        {
+            if (c.ownerID == playerId)
+            {
+                foreach (string buildingName in c.builtBuildings)
+                {
+                    if (cityManager.buildingDatabaseDict.TryGetValue(buildingName, out var bData))
+                    {
+                        if (bData.isWonder) count++;
+                    }
+                }
+            }
+        }
+
+        return count;
     }
 }
