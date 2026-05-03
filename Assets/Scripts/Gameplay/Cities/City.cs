@@ -202,15 +202,20 @@ public class City : MonoBehaviour
             techManager.AddScience(ownerID, turnSci);
         }
 
-        int foodToGrow = population * 10 + 10;
+        int foodToGrow = 15 + 8 * (population - 1) + (int)Mathf.Pow(population - 1, 1.5f);
+
         if (storedFood >= foodToGrow)
         {
             storedFood -= foodToGrow;
             population++;
-            Debug.Log($"[CITY] {cityName} grew! Population is now {population}.");
+
+            int nextFoodReq = 15 + 8 * (population - 1) + (int)Mathf.Pow(population - 1, 1.5f);
+            Debug.Log(
+                $"[CITY] {cityName} grew! Population is now {population}. Next citizen needs {nextFoodReq} food.");
         }
 
-        int cultureThreshold = 10 + (int)(Mathf.Pow(borderExpansions, 1.5f) * 10);
+        int cultureThreshold = 10 + (int)(6 * Mathf.Pow(borderExpansions, 1.3f));
+
         if (storedCulture >= cultureThreshold)
         {
             storedCulture -= cultureThreshold;

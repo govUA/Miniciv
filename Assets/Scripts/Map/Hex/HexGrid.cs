@@ -24,6 +24,14 @@ public class HexGrid : MonoBehaviour
         new Vector2Int(1, 1), new Vector2Int(1, 0),
         new Vector2Int(-1, 1), new Vector2Int(-1, 0)
     };
+    
+    public  static HexGrid Instance { get; private set; }
+
+    void Awake()
+    {
+        if (Instance != null && Instance != this) Destroy(this);
+        else Instance = this;
+    }
 
     public void InitializeGrid(MapGenerator generator)
     {

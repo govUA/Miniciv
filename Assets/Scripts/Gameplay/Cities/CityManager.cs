@@ -92,46 +92,72 @@ public class CityManager : MonoBehaviour
 
     public void ExpandTerritoryByOne(City city)
     {
-        List<HexNode> candidates = new List<HexNode>();
+        HexGrid grid = HexGrid.Instance;
+        if (grid == null) return;
 
-        foreach (HexNode node in city.territoryNodes)
+        List<HexNode> candidateNodes = new List<HexNode>();
+
+        foreach (HexNode ownedNode in city.territoryNodes)
         {
-            foreach (HexNode neighbor in grid.GetNeighbors(node))
+            foreach (HexNode neighbor in grid.GetNeighbors(ownedNode))
             {
-                if (neighbor.ownerID == -1)
+                if (neighbor.ownerID == -1 && !candidateNodes.Contains(neighbor))
                 {
-                    if (!candidates.Contains(neighbor))
-                        candidates.Add(neighbor);
+                    if (grid.GetDistance(city.centerNode, neighbor) <= 5)
+                    {
+                        candidateNodes.Add(neighbor);
+                    }
                 }
             }
         }
 
-        if (candidates.Count > 0)
+        if (candidateNodes.Count == 0) return;
+
+        HexNode bestNode = null;
+        float bestScore = -9999f;
+
+        foreach (HexNode node in candidateNodes)
         {
-            HexNode bestTile = candidates[0];
-            float minDistance = float.MaxValue;
-
-            foreach (HexNode c in candidates)
+            float score = EvaluateTileForExpansion(city, node, grid);
+            if (score > bestScore)
             {
-                float d = Mathf.Sqrt(Mathf.Pow(c.x - city.centerNode.x, 2) + Mathf.Pow(c.y - city.centerNode.y, 2));
-                if (d < minDistance)
-                {
-                    minDistance = d;
-                    bestTile = c;
-                }
+                bestScore = score;
+                bestNode = node;
             }
+        }
 
-            bestTile.ownerID = city.ownerID;
-            city.territoryNodes.Add(bestTile);
+        if (bestNode != null)
+        {
+            bestNode.ownerID = city.ownerID;
+            city.territoryNodes.Add(bestNode);
 
+            Debug.Log($"[CITY] {city.cityName} borders expanded to ({bestNode.x}, {bestNode.y})! Score: {bestScore}");
 
-            if (fowManager != null)
-            {
-                fowManager.UpdateVisionDisplay(city.ownerID);
-            }
-
+            BorderManager borderManager = FindAnyObjectByType<BorderManager>();
             if (borderManager != null) borderManager.UpdateBorders();
+
+            if (fowManager != null) fowManager.UpdateVisionDisplay(city.ownerID);
         }
+    }
+
+    private float EvaluateTileForExpansion(City city, HexNode node, HexGrid grid)
+    {
+        float score = 0f;
+
+        score += node.foodYield * 12f;
+        score += node.prodYield * 10f;
+        score += node.sciYield * 5f;
+
+        if (node.terrainType == TerrainType.Plains || node.terrainType == TerrainType.Forest) score += 5f;
+        if (node.terrainType == TerrainType.Mountain) score -= 15f;
+        if (!node.isLand) score -= 5f;
+
+        int dist = grid.GetDistance(city.centerNode, node);
+        score -= dist * 25f;
+
+        score += Random.Range(0f, 2f);
+
+        return score;
     }
 
     public bool FoundCity(Unit settler)
