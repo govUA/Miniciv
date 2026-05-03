@@ -7,12 +7,14 @@ public class TechTreeUIManager : MonoBehaviour
 {
     [Header("UI References")] public GameObject techTreePanel;
     public RectTransform contentContainer;
+    public ScrollRect scrollRect;
 
     [Header("Prefabs")] public GameObject nodePrefab;
     public GameObject linePrefab;
 
     [Header("Layout Settings")] public float xSpacing = 300f;
     public float ySpacing = 150f;
+    public float startXOffset = 150f;
     public Vector2 nodeScale = new Vector2(0.8f, 0.8f);
 
     [Header("Zoom Settings")] public float minZoom = 0.4f;
@@ -65,6 +67,13 @@ public class TechTreeUIManager : MonoBehaviour
         if (!isActive)
         {
             GenerateTree();
+
+            if (scrollRect != null)
+            {
+                Canvas.ForceUpdateCanvases();
+                scrollRect.horizontalNormalizedPosition = 0f;
+                scrollRect.verticalNormalizedPosition = 0.5f;
+            }
         }
     }
 
@@ -104,7 +113,7 @@ public class TechTreeUIManager : MonoBehaviour
 
                 rect.localScale = new Vector3(nodeScale.x, nodeScale.y, 1f);
 
-                float xPos = tier * xSpacing;
+                float xPos = startXOffset + (tier * xSpacing);
                 float yPos = -(i * ySpacing) + ((techsInTier.Count - 1) * ySpacing / 2f);
                 rect.anchoredPosition = new Vector2(xPos, yPos);
 
@@ -202,7 +211,10 @@ public class TechTreeUIManager : MonoBehaviour
             bool canResearch = techManager.CanResearch(playerId, techId);
             bool isResearching = (techId == currentResearch);
 
+            int completionCount = techManager.GetTechCompletions(playerId, techId);
+
             kvp.Value.UpdateVisualState(isUnlocked, isResearching, canResearch);
+            kvp.Value.UpdateCompletions(completionCount);
         }
     }
 
