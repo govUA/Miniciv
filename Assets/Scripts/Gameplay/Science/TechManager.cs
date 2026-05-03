@@ -182,4 +182,13 @@ public class TechManager : MonoBehaviour
         if (techTree.TryGetValue(techId, out TechData data)) return data.Name;
         return techId;
     }
+    
+    public List<string> GetPrerequisites(string techId)
+    {
+        if (techTree.TryGetValue(techId, out TechData data))
+        {
+            return data.Prerequisites;
+        }
+        return new List<string>();
+    }
 }

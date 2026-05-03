@@ -2,6 +2,7 @@
 using UnityEngine.Tilemaps;
 using UnityEngine.InputSystem;
 using System.Collections.Generic;
+using UnityEngine.EventSystems;
 
 [RequireComponent(typeof(HexGrid))]
 [RequireComponent(typeof(Pathfinder))]
@@ -43,8 +44,15 @@ public class HexInteraction : MonoBehaviour
     void Update()
     {
         if (highlightTilemap == null || mainTilemap == null) return;
-        HandleHover();
-        HandleClick();
+
+        bool isPointerOverUI = EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
+
+        if (!isPointerOverUI)
+        {
+            HandleHover();
+            HandleClick();
+        }
+
         HandleHotkeys();
     }
 
@@ -174,7 +182,8 @@ public class HexInteraction : MonoBehaviour
                     }
                     else
                     {
-                        List<HexNode> attackPositions = hexGrid.GetNodesInRange(targetNode, selectedUnit.GetEffectiveAttackRange());
+                        List<HexNode> attackPositions =
+                            hexGrid.GetNodesInRange(targetNode, selectedUnit.GetEffectiveAttackRange());
                         List<HexNode> bestPath = null;
 
                         bool canSail = techManager != null &&

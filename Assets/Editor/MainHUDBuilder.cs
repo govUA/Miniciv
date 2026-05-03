@@ -33,7 +33,6 @@ public class MainHUDBuilder : EditorWindow
         layout.childForceExpandWidth = false;
 
         TMP_Dropdown dropdown = CreateRobustDropdown(topBar.transform);
-        hudManager.techDropdown = dropdown;
 
         hudManager.goldText = CreateText("GoldText", topBar.transform, "💰 0", 22);
         hudManager.scienceText = CreateText("ScienceText", topBar.transform, "🧪 0", 22);

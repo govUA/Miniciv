@@ -14,7 +14,8 @@ public class MainHUDManager : MonoBehaviour
     public TextMeshProUGUI happinessText;
     public TextMeshProUGUI diplomacyText;
     public TextMeshProUGUI turnText;
-    public TMP_Dropdown techDropdown;
+    public Button openTechTreeButton;
+    public TechTreeUIManager techTreeUI;
 
     [Header("Action Elements")] public Button nextTurnButton;
 
@@ -55,17 +56,7 @@ public class MainHUDManager : MonoBehaviour
             });
         }
 
-        if (techDropdown != null)
-        {
-            techDropdown.onValueChanged.AddListener(OnTechSelected);
-        }
-
-        if (turnManager != null)
-        {
-            turnManager.OnPlayerChanged += RefreshTechDropdown;
-        }
-
-        RefreshTechDropdown(turnManager != null ? turnManager.CurrentPlayerID : 0);
+        if (openTechTreeButton != null) openTechTreeButton.onClick.AddListener(() => techTreeUI.ToggleTechTree());
     }
 
     void Update()
@@ -123,51 +114,5 @@ public class MainHUDManager : MonoBehaviour
     private void ShowHUD()
     {
         if (hudContentPanel != null) hudContentPanel.SetActive(true);
-    }
-
-    public void RefreshTechDropdown(int playerId)
-    {
-        if (techDropdown == null || techManager == null) return;
-
-        techDropdown.ClearOptions();
-        displayedTechs.Clear();
-
-        List<string> options = new List<string>();
-        options.Add("--- Select Research ---");
-
-        List<string> allTechIds = techManager.GetAllTechIds();
-        foreach (string techId in allTechIds)
-        {
-            if (techManager.CanResearch(playerId, techId))
-            {
-                options.Add(techManager.GetTechName(techId));
-                displayedTechs.Add(techId);
-            }
-        }
-
-        techDropdown.AddOptions(options);
-
-        string current = techManager.GetCurrentResearch(playerId);
-        if (!string.IsNullOrEmpty(current))
-        {
-            int index = displayedTechs.IndexOf(current);
-            techDropdown.SetValueWithoutNotify(index + 1);
-        }
-    }
-
-    private void OnTechSelected(int index)
-    {
-        if (index == 0) return;
-
-        int playerId = turnManager.CurrentPlayerID;
-        string selectedTech = displayedTechs[index - 1];
-
-        techManager.SetResearch(playerId, selectedTech);
-        Debug.Log($"[HUD] Research started: {selectedTech}");
-    }
-
-    private void OnDestroy()
-    {
-        if (turnManager != null) turnManager.OnPlayerChanged -= RefreshTechDropdown;
     }
 }
