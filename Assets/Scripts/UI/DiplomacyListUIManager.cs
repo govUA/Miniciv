@@ -8,7 +8,6 @@ public class DiplomacyListUIManager : MonoBehaviour
     [Header("UI Panels")] public GameObject listPanel;
     public Transform contentContainer;
     public GameObject factionButtonPrefab;
-    public Button closeButton;
 
     [Header("Dependencies")] public DiplomacyWindowUIManager diplomacyWindow;
 
@@ -19,9 +18,6 @@ public class DiplomacyListUIManager : MonoBehaviour
     {
         playerManager = FindAnyObjectByType<PlayerManager>();
         turnManager = FindAnyObjectByType<TurnManager>();
-
-        closeButton.onClick.AddListener(ClosePanel);
-        listPanel.SetActive(false);
     }
 
     public void TogglePanel()
@@ -58,17 +54,22 @@ public class DiplomacyListUIManager : MonoBehaviour
             if (pData != null)
             {
                 GameObject btnObj = Instantiate(factionButtonPrefab, contentContainer);
-                TextMeshProUGUI btnText = btnObj.GetComponentInChildren<TextMeshProUGUI>();
+                FactionButtonUI btnUI = btnObj.GetComponent<FactionButtonUI>();
 
-                string civName = pData.civilization != null ? pData.civilization.civName : $"Player {i}";
+                string civName = pData.civilization != null ? pData.civilization.civName : $"Faction {i}";
                 string leaderName = pData.civilization != null ? pData.civilization.leaderName : "Unknown Leader";
 
-                btnText.text = $"{leaderName} ({civName})";
-                btnText.color = pData.primaryColor;
+                btnUI.leaderNameText.text = leaderName;
+                btnUI.civNameText.text = civName;
 
-                int targetFactionId = i; // Кешуємо для лямбди
-                Button btn = btnObj.GetComponent<Button>();
-                btn.onClick.AddListener(() => OnFactionClicked(targetFactionId));
+                Sprite leaderSprite = Resources.Load<Sprite>($"Icons/Leaders/{leaderName}");
+                if (leaderSprite != null) btnUI.leaderIcon.sprite = leaderSprite;
+
+                Sprite civSprite = Resources.Load<Sprite>($"Icons/Civilizations/{civName}");
+                if (civSprite != null) btnUI.civIcon.sprite = civSprite;
+
+                int targetFactionId = i;
+                btnUI.button.onClick.AddListener(() => OnFactionClicked(targetFactionId));
             }
         }
     }

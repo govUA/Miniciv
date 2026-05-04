@@ -29,8 +29,6 @@ public class DiplomacyWindowUIManager : MonoBehaviour
         declareWarButton.onClick.AddListener(OnDeclareWarClicked);
         proposePeaceButton.onClick.AddListener(OnProposePeaceClicked);
         formAllianceButton.onClick.AddListener(OnFormAllianceClicked);
-
-        windowPanel.SetActive(false);
     }
 
     public void OpenWindow(int targetPlayerId)

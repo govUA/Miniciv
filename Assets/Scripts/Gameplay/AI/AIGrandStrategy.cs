@@ -45,6 +45,15 @@ public class AIGrandStrategy : MonoBehaviour
         EvaluateState(playerId);
     }
 
+    private void Awake()
+    {
+        playerManager = FindAnyObjectByType<PlayerManager>();
+        unitManager = FindAnyObjectByType<UnitManager>();
+        cityManager = FindAnyObjectByType<CityManager>();
+        economyManager = FindAnyObjectByType<EconomyManager>();
+        grid = FindAnyObjectByType<HexGrid>();
+    }
+
     private void DeterminePersonality(int playerId)
     {
         PlayerData pd = playerManager.GetPlayer(playerId);
@@ -63,6 +72,12 @@ public class AIGrandStrategy : MonoBehaviour
 
     public void EvaluateState(int playerId)
     {
+        if (cityManager == null) cityManager = FindAnyObjectByType<CityManager>();
+        if (unitManager == null) unitManager = FindAnyObjectByType<UnitManager>();
+        if (economyManager == null) economyManager = FindAnyObjectByType<EconomyManager>();
+        if (grid == null) grid = FindAnyObjectByType<HexGrid>();
+        if (playerManager == null) playerManager = FindAnyObjectByType<PlayerManager>();
+
         int myCities = 0;
         int myMilitaryPower = 0;
 
