@@ -40,10 +40,31 @@ public class AIDiplomacyController : MonoBehaviour
                     float myPower = GetMilitaryPower(aiPlayerId);
                     float enemyPower = GetMilitaryPower(otherId);
                     float powerRatio = enemyPower > 0f ? myPower / enemyPower : 5f;
-                    float warDesire = ResponseCurves.Logistic(powerRatio, 4f, 1.5f);
 
-                    if (strategy.basePersonality == AIPersonality.Militaristic) warDesire += 0.2f;
-                    if (strategy.basePersonality == AIPersonality.Capitalist) warDesire -= 0.15f;
+                    float midpoint = 1.5f;
+                    float maxDesireMultiplier = 1.0f;
+
+                    if (strategy.basePersonality == AIPersonality.Militaristic)
+                    {
+                        midpoint = 1.1f;
+                    }
+                    else if (strategy.basePersonality == AIPersonality.Capitalist)
+                    {
+                        midpoint = 2.5f;
+                        maxDesireMultiplier = 0.15f;
+                    }
+                    else if (strategy.basePersonality == AIPersonality.Expansionist)
+                    {
+                        midpoint = 1.8f;
+                        maxDesireMultiplier = 0.3f;
+                    }
+                    else
+                    {
+                        midpoint = 1.5f;
+                        maxDesireMultiplier = 0.4f;
+                    }
+
+                    float warDesire = ResponseCurves.Logistic(powerRatio, 5f, midpoint) * maxDesireMultiplier;
 
                     if (Random.value < warDesire)
                     {
