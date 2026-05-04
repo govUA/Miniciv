@@ -18,6 +18,7 @@ public class HexInteraction : MonoBehaviour
     public CityManager cityManager;
     public PlayerManager playerManager;
     public CombatManager combatManager;
+    public UnitUIManager unitUIManager;
 
     private HexGrid hexGrid;
     private Pathfinder pathfinder;
@@ -39,6 +40,7 @@ public class HexInteraction : MonoBehaviour
         if (cityManager == null) cityManager = Object.FindAnyObjectByType<CityManager>();
         if (playerManager == null) playerManager = Object.FindAnyObjectByType<PlayerManager>();
         if (turnManager == null) turnManager = Object.FindAnyObjectByType<TurnManager>();
+        if (unitUIManager == null) unitUIManager = Object.FindAnyObjectByType<UnitUIManager>();
     }
 
     void Update()
@@ -140,6 +142,8 @@ public class HexInteraction : MonoBehaviour
 
             currentPath = null;
             DrawOverlays(cellPosition);
+
+            if (unitUIManager != null) unitUIManager.SelectUnit(selectedUnit);
         }
         else if (Mouse.current.rightButton.wasPressedThisFrame)
         {
@@ -441,5 +445,15 @@ public class HexInteraction : MonoBehaviour
                 }
             }
         }
+    }
+
+    public void ClearSelection()
+    {
+        selectedUnit = null;
+        selectedNode = null;
+        selectedCity = null;
+        currentPath = null;
+        DrawOverlays(new Vector3Int(-9999, -9999, -9999));
+        if (unitUIManager != null) unitUIManager.SelectUnit(null);
     }
 }
