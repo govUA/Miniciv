@@ -77,8 +77,14 @@ public class GameManager : MonoBehaviour
     private HexNode GetValidStartNode(HexGrid grid, List<HexNode> existingStarts)
     {
         int attempts = 0;
+        int requiredDistance = 15;
+
         while (attempts < 2000)
         {
+            if (attempts == 500) requiredDistance = 10;
+            if (attempts == 1000) requiredDistance = 7;
+            if (attempts == 1500) requiredDistance = 4;
+
             int rx = UnityEngine.Random.Range(0, grid.GetWidth());
             int ry = UnityEngine.Random.Range(0, grid.GetHeight());
             HexNode candidate = grid.GetNode(rx, ry);
@@ -93,7 +99,7 @@ public class GameManager : MonoBehaviour
                     int dy = Mathf.Abs(candidate.y - existing.y);
 
                     int dist = Mathf.Max(dx, dy);
-                    if (dist < 15)
+                    if (dist < requiredDistance)
                     {
                         tooClose = true;
                         break;
@@ -107,6 +113,16 @@ public class GameManager : MonoBehaviour
             }
 
             attempts++;
+        }
+
+        Debug.LogWarning("Failed to find ideal start node, picking random land.");
+
+        for (int i = 0; i < grid.GetWidth() * grid.GetHeight(); i++)
+        {
+            int rx = UnityEngine.Random.Range(0, grid.GetWidth());
+            int ry = UnityEngine.Random.Range(0, grid.GetHeight());
+            HexNode n = grid.GetNode(rx, ry);
+            if (n != null && n.isLand) return n;
         }
 
         return null;

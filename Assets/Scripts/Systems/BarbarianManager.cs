@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using System.Collections;
 
 public class BarbarianManager : MonoBehaviour
 {
@@ -20,7 +21,31 @@ public class BarbarianManager : MonoBehaviour
     void Start()
     {
         if (turnManager != null)
+        {
             turnManager.OnTurnEnded += CheckForSpawns;
+            turnManager.OnPlayerChanged += HandlePlayerTurn;
+        }
+    }
+
+    private void HandlePlayerTurn(int playerId)
+    {
+        if (playerId == BarbarianID)
+        {
+            StartCoroutine(ExecuteBarbarianTurn());
+        }
+    }
+
+    private IEnumerator ExecuteBarbarianTurn()
+    {
+        Debug.Log("[BARBARIAN] Turn started.");
+        yield return new WaitForSeconds(0.5f);
+
+        // TODO: Unit logic
+        // unitController.ExecuteBarbarianMoves();
+        if (turnManager != null && turnManager.CurrentPlayerID == BarbarianID)
+        {
+            turnManager.EndTurn();
+        }
     }
 
     private void CheckForSpawns()
@@ -111,6 +136,10 @@ public class BarbarianManager : MonoBehaviour
 
     void OnDestroy()
     {
-        if (turnManager != null) turnManager.OnTurnEnded -= CheckForSpawns;
+        if (turnManager != null)
+        {
+            turnManager.OnTurnEnded -= CheckForSpawns;
+            turnManager.OnPlayerChanged -= HandlePlayerTurn;
+        }
     }
 }

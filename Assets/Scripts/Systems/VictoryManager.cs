@@ -36,13 +36,27 @@ public class VictoryManager : MonoBehaviour
     {
         if (gameEnded) return;
 
+        if (playerId == turnManager.TotalPlayers - 1) return;
+
+        if (eliminatedPlayers.Contains(playerId))
+        {
+            if (turnManager.CurrentPlayerID == playerId)
+            {
+                turnManager.EndTurn();
+            }
+
+            return;
+        }
+
+        if (turnManager.CurrentTurn == 1) return;
+
         int wonderCount = GetPlayerWonderCount(playerId);
         if (wonderCount >= 7)
         {
             Debug.Log($"<color=green>[VICTORY] Player {playerId} wins, having 7 World Wonders!</color>");
             gameEnded = true;
             GameSettings.DidPlayerWin = (playerId == 0);
-        
+
             GameSettings.FinalScore = 10f + wonderCount;
             UnityEngine.SceneManagement.SceneManager.LoadScene("EndScene");
             return;
@@ -78,7 +92,7 @@ public class VictoryManager : MonoBehaviour
         gameEnded = true;
         Debug.Log($"[VICTORY] The game has reached its limit at {maxTurns} turns. Deciding the winner...");
 
-        int totalPlayers = turnManager.TotalPlayers;
+        int totalPlayers = turnManager.TotalPlayers - 1;
 
         float[] armyScores = new float[totalPlayers];
         float[] cityScores = new float[totalPlayers];
@@ -114,7 +128,7 @@ public class VictoryManager : MonoBehaviour
 
             float normalizedScore = (armyScores[i] / maxArmy) +
                                     (cityScores[i] / maxCities) +
-                                    (goldScores[i] / maxGold)+ 
+                                    (goldScores[i] / maxGold) +
                                     wonderScores[i];
 
             Debug.Log(
@@ -135,7 +149,7 @@ public class VictoryManager : MonoBehaviour
 
             GameSettings.FinalScore = (armyScores[0] / maxArmy) +
                                       (cityScores[0] / maxCities) +
-                                      (goldScores[0] / maxGold)+ 
+                                      (goldScores[0] / maxGold) +
                                       wonderScores[0];
 
             UnityEngine.SceneManagement.SceneManager.LoadScene("EndScene");

@@ -34,6 +34,8 @@ public class AIManager : MonoBehaviour
 
     private void HandlePlayerTurn(int playerId)
     {
+        if (turnManager != null && playerId == turnManager.TotalPlayers - 1) return;
+
         PlayerData currentPlayer = playerManager.GetPlayer(playerId);
 
         if (currentPlayer != null && currentPlayer.isAI)

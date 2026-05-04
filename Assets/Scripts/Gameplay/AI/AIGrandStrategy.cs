@@ -57,10 +57,14 @@ public class AIGrandStrategy : MonoBehaviour
     private void DeterminePersonality(int playerId)
     {
         PlayerData pd = playerManager.GetPlayer(playerId);
-        string personalityString = pd.civilization.aiPersonality;
 
-        if (!string.IsNullOrEmpty(personalityString) &&
-            System.Enum.TryParse(personalityString, true, out AIPersonality parsedPersonality))
+        if (pd == null || pd.civilization == null || string.IsNullOrEmpty(pd.civilization.aiPersonality))
+        {
+            basePersonality = AIPersonality.Balanced;
+            return;
+        }
+
+        if (System.Enum.TryParse(pd.civilization.aiPersonality, true, out AIPersonality parsedPersonality))
         {
             basePersonality = parsedPersonality;
         }
@@ -110,6 +114,32 @@ public class AIGrandStrategy : MonoBehaviour
 
         bool isAtWar = false;
         bool isLosingWar = false;
+        int enemyMilitaryPower = 0;
+
+        if (playerManager != null)
+        {
+            PlayerData pd = playerManager.GetPlayer(playerId);
+            if (pd != null && pd.atWarWith.Count > 0)
+            {
+                isAtWar = true;
+            }
+        }
+
+        if (isAtWar && unitManager != null)
+        {
+            foreach (Unit u in unitManager.GetActiveUnits())
+            {
+                if (u.unitClass != UnitClass.Civilian && playerManager.IsAtWar(playerId, u.ownerID))
+                {
+                    enemyMilitaryPower += (u.meleeStrength + u.rangedStrength);
+                }
+            }
+
+            if (enemyMilitaryPower > myMilitaryPower * 2.0f)
+            {
+                isLosingWar = true;
+            }
+        }
 
         if (isLosingWar)
         {

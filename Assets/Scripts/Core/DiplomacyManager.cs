@@ -27,6 +27,13 @@ public class DiplomacyManager : MonoBehaviour
 
     public DiplomaticState GetState(int playerA, int playerB)
     {
+        if (turnManager != null)
+        {
+            int barbarianId = turnManager.TotalPlayers - 1;
+            if (playerA == barbarianId || playerB == barbarianId)
+                return DiplomaticState.War;
+        }
+
         if (relationships.ContainsKey(playerA) && relationships[playerA].ContainsKey(playerB))
             return relationships[playerA][playerB];
 
@@ -35,6 +42,16 @@ public class DiplomacyManager : MonoBehaviour
 
     public void SetState(int playerA, int playerB, DiplomaticState newState)
     {
+        if (turnManager != null)
+        {
+            int barbarianId = turnManager.TotalPlayers - 1;
+            if (playerA == barbarianId || playerB == barbarianId)
+            {
+                Debug.Log($"[DIPLOMACY] Blocked attempt to change state to {newState} with Barbarians.");
+                return;
+            }
+        }
+
         if (!relationships.ContainsKey(playerA)) relationships[playerA] = new Dictionary<int, DiplomaticState>();
         if (!relationships.ContainsKey(playerB)) relationships[playerB] = new Dictionary<int, DiplomaticState>();
 

@@ -138,6 +138,12 @@ public class PlayerManager : MonoBehaviour
             string leader = assignedCiv != null ? assignedCiv.leaderName : "Unknown";
             Debug.Log($"[PLAYER] Player {i} initialized as {civName} (Leader: {leader})");
         }
+
+        int barbarianId = count - 1;
+        for (int i = 0; i < barbarianId; i++)
+        {
+            DeclareWar(i, barbarianId);
+        }
     }
 
     public PlayerData GetPlayer(int id)
