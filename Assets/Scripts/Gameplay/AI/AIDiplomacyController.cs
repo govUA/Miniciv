@@ -35,27 +35,33 @@ public class AIDiplomacyController : MonoBehaviour
 
             if (currentState == DiplomaticState.Neutral && strategy.currentState == AIState.WarPreparation)
             {
-                float myPower = GetMilitaryPower(aiPlayerId);
-                float enemyPower = GetMilitaryPower(otherId);
-                float powerRatio = enemyPower > 0f ? myPower / enemyPower : 5f;
-                float warDesire = ResponseCurves.Logistic(powerRatio, 4f, 1.5f);
-
-                if (strategy.basePersonality == AIPersonality.Militaristic) warDesire += 0.2f;
-                if (strategy.basePersonality == AIPersonality.Capitalist) warDesire -= 0.15f;
-
-                if (Random.value < warDesire)
+                if (!diplomacyManager.HasTruce(aiPlayerId, otherId))
                 {
-                    diplomacyManager.SetState(aiPlayerId, otherId, DiplomaticState.War);
+                    float myPower = GetMilitaryPower(aiPlayerId);
+                    float enemyPower = GetMilitaryPower(otherId);
+                    float powerRatio = enemyPower > 0f ? myPower / enemyPower : 5f;
+                    float warDesire = ResponseCurves.Logistic(powerRatio, 4f, 1.5f);
+
+                    if (strategy.basePersonality == AIPersonality.Militaristic) warDesire += 0.2f;
+                    if (strategy.basePersonality == AIPersonality.Capitalist) warDesire -= 0.15f;
+
+                    if (Random.value < warDesire)
+                    {
+                        diplomacyManager.SetState(aiPlayerId, otherId, DiplomaticState.War);
+                    }
                 }
             }
 
-            if (currentState == DiplomaticState.War && strategy.currentState == AIState.Panic)
+            if (currentState == DiplomaticState.War)
             {
-                PlayerData otherPlayer = playerManager.GetPlayer(otherId);
-                if (otherPlayer != null && otherPlayer.isAI)
+                if (strategy.currentState == AIState.Panic || strategy.warExhaustion > 0.65f)
                 {
-                    bool accepted = EvaluatePeaceOffer(otherId, aiPlayerId);
-                    if (accepted) diplomacyManager.SetState(aiPlayerId, otherId, DiplomaticState.Neutral);
+                    PlayerData otherPlayer = playerManager.GetPlayer(otherId);
+                    if (otherPlayer != null && otherPlayer.isAI)
+                    {
+                        bool accepted = EvaluatePeaceOffer(otherId, aiPlayerId);
+                        if (accepted) diplomacyManager.SetState(aiPlayerId, otherId, DiplomaticState.Neutral);
+                    }
                 }
             }
         }
@@ -78,7 +84,10 @@ public class AIDiplomacyController : MonoBehaviour
     public bool EvaluatePeaceOffer(int aiId, int proposerId)
     {
         strategy.EvaluateState(aiId);
-        if (strategy.currentState == AIState.Panic || strategy.currentState == AIState.PeacefulDevelopment)
+
+        if (strategy.currentState == AIState.Panic ||
+            strategy.currentState == AIState.PeacefulDevelopment ||
+            strategy.warExhaustion > 0.5f)
         {
             return true;
         }

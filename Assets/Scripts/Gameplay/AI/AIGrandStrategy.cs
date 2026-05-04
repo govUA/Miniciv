@@ -33,6 +33,8 @@ public class AIGrandStrategy : MonoBehaviour
     public float expansionWeight { get; private set; }
     public float scienceWeight { get; private set; }
 
+    public float warExhaustion { get; private set; } = 0f;
+
     public void InitializeStrategy(int playerId)
     {
         playerManager = FindObjectOfType<PlayerManager>();
@@ -76,39 +78,17 @@ public class AIGrandStrategy : MonoBehaviour
 
     public void EvaluateState(int playerId)
     {
-        if (cityManager == null) cityManager = FindAnyObjectByType<CityManager>();
-        if (unitManager == null) unitManager = FindAnyObjectByType<UnitManager>();
-        if (economyManager == null) economyManager = FindAnyObjectByType<EconomyManager>();
-        if (grid == null) grid = FindAnyObjectByType<HexGrid>();
-        if (playerManager == null) playerManager = FindAnyObjectByType<PlayerManager>();
+        if (cityManager == null || unitManager == null || playerManager == null) return;
 
-        int myCities = 0;
-        int myMilitaryPower = 0;
+        int happiness = 0;
+        int availableFreeTiles = 10;
 
-        foreach (City c in cityManager.GetActiveCities())
-            if (c.ownerID == playerId)
-                myCities++;
-
+        float myMilitaryPower = 0f;
         foreach (Unit u in unitManager.GetActiveUnits())
-            if (u.ownerID == playerId && u.unitClass != UnitClass.Civilian)
-                myMilitaryPower += (u.meleeStrength + u.rangedStrength);
-
-        int happiness = economyManager != null ? economyManager.GetHappiness(playerId) : 10;
-        int income = economyManager != null ? economyManager.GetIncome(playerId) : 10;
-
-        int availableFreeTiles = 0;
-        if (grid != null)
         {
-            foreach (City c in cityManager.GetActiveCities())
+            if (u.ownerID == playerId && u.unitClass != UnitClass.Civilian)
             {
-                if (c.ownerID == playerId)
-                {
-                    List<HexNode> nearbyNodes = grid.GetNodesInRange(c.centerNode, 5);
-                    foreach (HexNode node in nearbyNodes)
-                    {
-                        if (node.isLand && node.ownerID == -1) availableFreeTiles++;
-                    }
-                }
+                myMilitaryPower += (u.meleeStrength + u.rangedStrength);
             }
         }
 
@@ -116,16 +96,15 @@ public class AIGrandStrategy : MonoBehaviour
         bool isLosingWar = false;
         int enemyMilitaryPower = 0;
 
-        if (playerManager != null)
+        PlayerData pd = playerManager.GetPlayer(playerId);
+        if (pd != null && pd.atWarWith.Count > 0)
         {
-            PlayerData pd = playerManager.GetPlayer(playerId);
-            if (pd != null && pd.atWarWith.Count > 0)
-            {
-                isAtWar = true;
-            }
+            isAtWar = true;
         }
 
-        if (isAtWar && unitManager != null)
+        warExhaustion = 0f;
+
+        if (isAtWar)
         {
             foreach (Unit u in unitManager.GetActiveUnits())
             {
@@ -139,17 +118,47 @@ public class AIGrandStrategy : MonoBehaviour
             {
                 isLosingWar = true;
             }
+
+            if (pd != null && pd.gold < 20f)
+            {
+                warExhaustion += 0.5f;
+            }
+
+            int myCitiesCount = 0;
+            foreach (var city in cityManager.GetActiveCities())
+                if (city.ownerID == playerId)
+                    myCitiesCount++;
+
+            float desiredArmySize = (myCitiesCount * 3f) + 2f;
+
+            int actualArmySize = 0;
+            foreach (Unit u in unitManager.GetActiveUnits())
+            {
+                if (u.ownerID == playerId && u.unitClass != UnitClass.Civilian) actualArmySize++;
+            }
+
+            float armyDeficit = 1f - Mathf.Clamp01(actualArmySize / desiredArmySize);
+            if (armyDeficit > 0)
+            {
+                warExhaustion += armyDeficit * 0.7f;
+            }
+
+            warExhaustion = Mathf.Clamp01(warExhaustion);
         }
 
         if (isLosingWar)
         {
             currentState = AIState.Panic;
         }
-        else if (isAtWar || (basePersonality == AIPersonality.Militaristic && myMilitaryPower < 100))
+        else if (isAtWar)
         {
             currentState = AIState.WarPreparation;
         }
-        else if (availableFreeTiles > 15 && happiness > 2 && income > -5)
+        else if (myMilitaryPower < 30f && basePersonality == AIPersonality.Militaristic)
+        {
+            currentState = AIState.WarPreparation;
+        }
+        else if (availableFreeTiles > 5)
         {
             currentState = AIState.Expansion;
         }
@@ -189,9 +198,6 @@ public class AIGrandStrategy : MonoBehaviour
             case AIState.PeacefulDevelopment:
                 economyWeight *= 1.5f;
                 scienceWeight *= 1.5f;
-                militaryWeight *= 0.5f;
-
-                if (happiness < 0 || freeTiles < 10) expansionWeight = 0f;
                 break;
         }
     }
