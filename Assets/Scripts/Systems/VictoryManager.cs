@@ -70,6 +70,27 @@ public class VictoryManager : MonoBehaviour
             Debug.Log($"[VICTORY] Player {playerId} was defeated!");
             eliminatedPlayers.Add(playerId);
 
+            if (playerId == 0)
+            {
+                Debug.Log("<color=red>[VICTORY] You have been defeated!</color>");
+                gameEnded = true;
+                GameSettings.DidPlayerWin = false;
+                GameSettings.FinalScore = GetPlayerWonderCount(0);
+                UnityEngine.SceneManagement.SceneManager.LoadScene("EndScene");
+                return;
+            }
+
+            int activePlayersCount = (turnManager.TotalPlayers - 1) - eliminatedPlayers.Count;
+            if (activePlayersCount <= 1 && !eliminatedPlayers.Contains(0))
+            {
+                Debug.Log("<color=green>[VICTORY] You are the last civilization standing! Domination Victory!</color>");
+                gameEnded = true;
+                GameSettings.DidPlayerWin = true;
+                GameSettings.FinalScore = 100f + GetPlayerWonderCount(0);
+                UnityEngine.SceneManagement.SceneManager.LoadScene("EndScene");
+                return;
+            }
+
             if (turnManager.CurrentPlayerID == playerId)
             {
                 turnManager.EndTurn();

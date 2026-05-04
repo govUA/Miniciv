@@ -40,8 +40,14 @@ public class BarbarianManager : MonoBehaviour
         Debug.Log("[BARBARIAN] Turn started.");
         yield return new WaitForSeconds(0.5f);
 
-        // TODO: Unit logic
-        // unitController.ExecuteBarbarianMoves();
+        AIUnitController aiUnitController = FindAnyObjectByType<AIUnitController>();
+        if (aiUnitController != null)
+        {
+            aiUnitController.ExecuteUnitActions(BarbarianID);
+        }
+
+        yield return new WaitForSeconds(1.0f);
+
         if (turnManager != null && turnManager.CurrentPlayerID == BarbarianID)
         {
             turnManager.EndTurn();
