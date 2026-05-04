@@ -5,6 +5,8 @@ using TMPro;
 public class DiplomacyWindowUIManager : MonoBehaviour
 {
     [Header("UI Elements")] public GameObject windowPanel;
+    public Image leaderPortrait;
+    public Image civIcon;
     public TextMeshProUGUI leaderNameText;
     public TextMeshProUGUI relationshipStatusText;
     public TextMeshProUGUI feedbackText;
@@ -53,9 +55,16 @@ public class DiplomacyWindowUIManager : MonoBehaviour
         int myId = turnManager.CurrentPlayerID;
         DiplomaticState state = diplomacyManager.GetState(myId, currentTargetId);
 
-        leaderNameText.text = targetData.civilization != null
-            ? targetData.civilization.leaderName
-            : $"Player {currentTargetId}";
+        string leaderName = targetData.civilization != null ? targetData.civilization.leaderName : "Unknown Leader";
+        string civName = targetData.civilization != null ? targetData.civilization.civName : "Unknown Civ";
+
+        leaderNameText.text = leaderName;
+
+        Sprite portraitSprite = Resources.Load<Sprite>($"Portraits/{leaderName}");
+        if (portraitSprite != null) leaderPortrait.sprite = portraitSprite;
+
+        Sprite iconSprite = Resources.Load<Sprite>($"Icons/Civilizations/{civName}");
+        if (iconSprite != null) civIcon.sprite = iconSprite;
 
         relationshipStatusText.text = $"Status: {state}";
         switch (state)
