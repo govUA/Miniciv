@@ -87,7 +87,11 @@ public class AIUnitController : MonoBehaviour
         TurnManager tm = FindObjectOfType<TurnManager>();
         bool isBarbarian = (tm != null && unit.ownerID == tm.TotalPlayers - 1);
 
-        if (unit.currentHP < 30 || (unit.isHealing && unit.currentHP < 90))
+        float hpPercentage = unit.currentHP / 100f;
+        float damageTaken = 1f - hpPercentage;
+        float fleeDesire = ResponseCurves.Polynomial(damageTaken, 2.5f);
+
+        if (fleeDesire > 0.35f || (unit.isHealing && hpPercentage < 0.95f))
         {
             unit.isHealing = true;
             City nearestFriendlyCity = GetNearestFriendlyCity(unit, grid);
@@ -149,7 +153,23 @@ public class AIUnitController : MonoBehaviour
                 if (dist < minDistance)
                 {
                     minDistance = dist;
-                    bestTargetNode = u.CurrentNode;
+
+                    int attackRange = unit.GetEffectiveAttackRange();
+
+                    bool isCavalry = unit.unitClass == UnitClass.Cavalry;
+
+                    if (attackRange > 1 && dist > attackRange)
+                    {
+                        bestTargetNode = FindOptimalRangedPosition(unit, u.CurrentNode, attackRange, grid, canSail);
+                    }
+                    else if (isCavalry && dist > 1)
+                    {
+                        bestTargetNode = FindOptimalFlankingPosition(unit, u.CurrentNode, grid, canSail);
+                    }
+                    else
+                    {
+                        bestTargetNode = u.CurrentNode;
+                    }
                 }
             }
         }
@@ -169,6 +189,105 @@ public class AIUnitController : MonoBehaviour
 
         City cityToGuard = GetNearestFriendlyCity(unit, grid);
         return cityToGuard != null ? cityToGuard.centerNode : unit.CurrentNode;
+    }
+
+    private HexNode FindOptimalFlankingPosition(Unit cavalry, HexNode targetNode, HexGrid grid, bool canSail)
+    {
+        List<HexNode> candidateNodes = grid.GetNodesInRange(targetNode, 1);
+
+        HexNode bestNode = targetNode;
+        float bestScore = -9999f;
+
+        foreach (HexNode node in candidateNodes)
+        {
+            if (cavalry.unitClass == UnitClass.Naval && node.isLand) continue;
+            if (cavalry.unitClass != UnitClass.Naval && !node.isLand && !canSail) continue;
+
+            bool isOccupied = false;
+            foreach (Unit u in unitManager.GetUnitsAtNode(node))
+            {
+                if (u != cavalry) isOccupied = true;
+            }
+
+            if (isOccupied) continue;
+
+            int distToUs = grid.GetDistance(cavalry.CurrentNode, node);
+            float score = -(distToUs * 10f);
+            int friendlyInfantryNearby = 0;
+
+            foreach (HexNode neighbor in grid.GetNeighbors(node))
+            {
+                foreach (Unit u in unitManager.GetUnitsAtNode(neighbor))
+                {
+                    if (u.ownerID == cavalry.ownerID && u != cavalry && u.unitClass != UnitClass.Civilian)
+                    {
+                        friendlyInfantryNearby++;
+                    }
+                }
+            }
+
+            score -= (friendlyInfantryNearby * 25f);
+
+            if (node.terrainType == TerrainType.Plains)
+            {
+                score += 15f;
+            }
+
+            if (score > bestScore)
+            {
+                bestScore = score;
+                bestNode = node;
+            }
+        }
+
+        return bestNode;
+    }
+
+    private HexNode FindOptimalRangedPosition(Unit attacker, HexNode targetNode, int range, HexGrid grid, bool canSail)
+    {
+        List<HexNode> candidateNodes = grid.GetNodesInRange(targetNode, range);
+
+        HexNode bestNode = targetNode;
+        float bestScore = -9999f;
+
+        foreach (HexNode node in candidateNodes)
+        {
+            if (attacker.unitClass == UnitClass.Naval && node.isLand) continue;
+            if (attacker.unitClass != UnitClass.Naval && !node.isLand && !canSail) continue;
+
+            bool isOccupied = false;
+            foreach (Unit u in unitManager.GetUnitsAtNode(node))
+            {
+                if (u != attacker && u.unitClass != UnitClass.Civilian) isOccupied = true;
+            }
+
+            if (isOccupied) continue;
+
+            int distToTarget = grid.GetDistance(node, targetNode);
+
+            if (distToTarget > 1 && distToTarget <= range)
+            {
+                int distToUs = grid.GetDistance(attacker.CurrentNode, node);
+                float score = -(distToUs * 10f);
+
+                if (node.terrainType == TerrainType.Mountain)
+                {
+                    score += 45f;
+                }
+                else if (node.terrainType == TerrainType.Forest)
+                {
+                    score += 25f;
+                }
+
+                if (score > bestScore)
+                {
+                    bestScore = score;
+                    bestNode = node;
+                }
+            }
+        }
+
+        return bestNode;
     }
 
     private City DetermineCampaignTarget(int playerId, HexGrid grid)
@@ -309,8 +428,12 @@ public class AIUnitController : MonoBehaviour
 
         foreach (Unit u in potentialUnitTargets)
         {
-            float score = 100f - u.currentHP;
-            if (u.unitClass == UnitClass.Civilian) score += 50f;
+            float targetHpPercentage = u.currentHP / 100f;
+            float damageAlreadyTaken = 1f - targetHpPercentage;
+            float killDesireBonus = ResponseCurves.Logistic(damageAlreadyTaken, 8f, 0.6f) * 80f;
+            float score = 50f + killDesireBonus;
+
+            if (u.unitClass == UnitClass.Civilian) score += 200f;
 
             if (score > bestScore)
             {
@@ -322,7 +445,7 @@ public class AIUnitController : MonoBehaviour
 
         foreach (City c in potentialCityTargets)
         {
-            float score = 150f - (c.currentHP * 0.2f);
+            float score = 100f - (c.currentHP * 0.2f);
             if (score > bestScore)
             {
                 bestScore = score;
