@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public class City : MonoBehaviour
 {
@@ -28,8 +29,10 @@ public class City : MonoBehaviour
     public List<string> builtBuildings = new List<string>();
     public List<HexNode> territoryNodes = new List<HexNode>();
 
-    public TextMeshPro nameText;
-    public SpriteRenderer nameBackgroundRenderer;
+    [Header("UI Elements")] public TextMeshProUGUI nameText;
+    public Image nameBackgroundRenderer;
+    public TextMeshProUGUI populationText;
+    public Image projectIcon;
 
     private UnitManager unitManager;
     private CityManager cityManager;
@@ -50,6 +53,7 @@ public class City : MonoBehaviour
 
         currentHP = maxHP;
         UpdateColor();
+        UpdateNameplateUI();
     }
 
     private void UpdateColor()
@@ -63,6 +67,48 @@ public class City : MonoBehaviour
             {
                 if (nameText != null) nameText.color = pd.primaryColor;
                 if (nameBackgroundRenderer != null) nameBackgroundRenderer.color = pd.secondaryColor;
+            }
+        }
+    }
+
+    public void UpdateNameplateUI()
+    {
+        if (populationText != null) populationText.text = population.ToString();
+
+        if (projectIcon != null)
+        {
+            bool isMyCity = (ownerID == 0);
+
+            if (!isMyCity)
+            {
+                PlayerData pd = playerManager?.GetPlayer(ownerID);
+                string civName = pd?.civilization != null ? pd.civilization.civName : "Unknown";
+                Sprite civSprite = Resources.Load<Sprite>($"Icons/Civilizations/{civName}");
+
+                projectIcon.sprite = civSprite;
+                projectIcon.enabled = (civSprite != null);
+            }
+            else
+            {
+                if (currentProject != null)
+                {
+                    string folder = currentProject.type switch
+                    {
+                        ProjectType.Building => "Icons/Projects/Buildings",
+                        ProjectType.Unit => "Icons/Projects/Units",
+                        ProjectType.Process => "Icons/Projects/Projects",
+                        _ => "Icons/Projects"
+                    };
+                    Sprite loadedIcon = Resources.Load<Sprite>($"{folder}/{currentProject.name}");
+                    projectIcon.sprite = loadedIcon;
+                    projectIcon.enabled = (loadedIcon != null);
+                }
+                else
+                {
+                    Sprite noneSprite = Resources.Load<Sprite>("Icons/Projects/Projects/None");
+                    projectIcon.sprite = noneSprite;
+                    projectIcon.enabled = (noneSprite != null);
+                }
             }
         }
     }
@@ -83,6 +129,7 @@ public class City : MonoBehaviour
         hasAttackedThisTurn = true;
 
         UpdateColor();
+        UpdateNameplateUI();
         if (cityManager != null) cityManager.UpdateCityOwnership(this);
     }
 
@@ -112,6 +159,7 @@ public class City : MonoBehaviour
 
         currentProject = project;
         Debug.Log($"[CITY] {cityName} started building: {project.name} ({project.cost} Prod)");
+        UpdateNameplateUI();
     }
 
     public void ProcessTurn(HexGrid grid)
@@ -212,6 +260,8 @@ public class City : MonoBehaviour
             int nextFoodReq = 8 + 8 * (population - 1) + (int)Mathf.Pow(population - 1, 1.5f);
             Debug.Log(
                 $"[CITY] {cityName} grew! Population is now {population}. Next citizen needs {nextFoodReq} food.");
+
+            UpdateNameplateUI();
         }
 
         int cultureThreshold = 5 + (int)(6 * Mathf.Pow(borderExpansions, 1.3f));
@@ -234,11 +284,16 @@ public class City : MonoBehaviour
                 if (currentHP < maxHP)
                 {
                     currentHP = Mathf.Clamp(currentHP + 20, 0, maxHP);
-                    if (currentHP == maxHP) currentProject = null;
+                    if (currentHP == maxHP)
+                    {
+                        currentProject = null;
+                        UpdateNameplateUI();
+                    }
                 }
                 else
                 {
                     currentProject = null;
+                    UpdateNameplateUI();
                 }
             }
             else
@@ -296,12 +351,16 @@ public class City : MonoBehaviour
         }
 
         currentProject = null;
+        UpdateNameplateUI();
     }
 
     public void SetVisibility(bool isVisible)
     {
         SpriteRenderer sr = GetComponent<SpriteRenderer>();
         if (sr != null) sr.enabled = isVisible;
+
+        Canvas cityCanvas = GetComponentInChildren<Canvas>();
+        if (cityCanvas != null) cityCanvas.enabled = isVisible;
     }
 
     void Update()
